@@ -14,6 +14,7 @@
 /* eslint-disable max-params */
 
 'use strict';
+
 //
 // Toss executables (scripts too) in /etc/node-agent.d
 // Each program should produce lines as follows:
@@ -27,15 +28,15 @@
 
 // require //////////////////////////////////////////////////////////////
 
+const crypto = require('crypto');
 const fs = require('fs');
-const os = require('os');
-const tls = require('tls');
 const http = require('http');
 const https = require('https');
-const url = require('url');
+const os = require('os');
 const path = require('path');
-const crypto = require('crypto');
 const spawn = require('child_process').spawn;
+const tls = require('tls');
+const url = require('url');
 
 const pino = require('pino');
 const logger = pino({
@@ -46,6 +47,8 @@ const logger = pino({
 
 const circapi = require('circonusapi2');
 const dutil = require('debug_util');
+
+// isolate windows-specific stuff
 let circwmi = null;
 let is_windows = false;
 
@@ -57,7 +60,6 @@ if (process.platform === 'win32') {
 // "globals" ///////////////////////////////////////////////////////////
 
 let booted = false;
-const ext = /(?:\.([^.]+))?$/;
 
 // cache of previous results of running scripts
 // this is responded with if a script is still running when
@@ -104,16 +106,6 @@ let brokerid = null;
 let configfile = null;
 let debugdir = null;                        // if set, a dir to write debug logs to
 let wipedebugdir = false;                  // if true, wipe debug logs clean before each write
-
-// procre is a regular expression that captures
-// the main part of a filename (i.e. without)
-let procre = null;
-
-if (is_windows) {
-    procre = /^(?!\.)([^\\]*?)(?:\..*)$/;
-} else {
-    procre = /^(?!\.)([^/]*?)(?:\..*)$/;
-}
 
 let configdir = '/opt/circonus/etc/node-agent.d';
 let port = [];
@@ -196,7 +188,7 @@ function help(err) {
 // this is a module local dict to hold the reverse connections we make
 // in setup_reverse.  it exists merely to keep the connections alive which
 // act as proxies and all incoming calls to this nad instance will be "pull"
-// style HTTP GET requests and be handled in the normal "handler" function.
+// style HTTP GET requests handled by the normal "handler" function.
 const revs = {};
 
 let revSetupAttempts = 0;
@@ -643,6 +635,7 @@ for (let i = 2; i < process.argv.length; i++) {
     switch (process.argv[i]) {
         case '-d': {
             logger.level = 'debug';
+            logger.debug('debug logging enabled');
             break;
         }
 
@@ -805,7 +798,7 @@ if (attempt_reverse) {
 if (do_index) {
     const index = require('indexer');
 
-    index(configdir, is_windows, procre, ext);
+    index(configdir);
     process.exit(0);
 }
 
@@ -878,6 +871,7 @@ function initial_pass() {
     }
 }
 
+
 // look on disk for updates to the config dir where
 // we keep all our modules (aka plugins / aka scripts)
 function rescan_modules() {
@@ -885,6 +879,11 @@ function rescan_modules() {
     // this keeps track of how many filesystem stats we have
     // "in progress" and are still waiting for callbacks on
     let progress = 0;
+
+    // generation is the global number of times rescan_modules has been
+    // called.  Each time we rescan our modules we increase it
+    // by one.
+    generation++;
 
     // this is a handy private function that goes through
     // all the scripts in our scripts object and removes
@@ -912,10 +911,65 @@ function rescan_modules() {
         initial_pass();
     }
 
-    // generation is the global number of times rescan_modules has been
-    // called.  Each time we rescan our modules we increase it
-    // by one.
-    generation++;
+    function genStatCallback(name, file) {
+        return (err, sb) => {
+            if (err !== null) {
+                logger.warn({ err, file }, 'unable to stat file');
+                return;
+            }
+
+            if (!sb) {
+                logger.warn({ sb, file }, 'bad stat object for file');
+                return;
+            }
+
+            if (!sb.isFile()) {
+                logger.debug({ file }, 'not a file, ignoring');
+                return;
+            }
+
+            const is_native = (/\.js$/).test(file);
+            const is_executable = sb.mode & parseInt('0111', 8);
+
+            // if the file is something we should deal with
+            // (is a file, and either ends in .js or is executable, or we're running on
+            // windows where everything is considered executable)
+            if (is_windows || is_native || is_executable) {
+                // watch the file for future updates.  i.e. if the file changes
+                // again later then retrigger this rescan_modules routine
+                fs.watchFile(file, onchange(rescan_modules));
+                // setup the details in the scripts object for this file
+                if (!(name in scripts)) {
+                    scripts[name] = {};
+                }
+                const def = scripts[name];
+
+                def.name = name;
+                def.generation = generation;
+                def.command = file;
+                def.native_plugin = is_native;
+                def.running = false;
+                def.sb = sb;
+
+                // if this is a "native plugin", i.e. a plugin written in
+                // javascript with a ".js" extension then simply load
+                // the code directly into node and then create
+                // an instance 'obj' to shove in the scripts data structure
+                if (def.native_plugin) {
+                    const module = require(def.command);
+
+                    def.obj = new module();
+                }
+
+                // Only remove items on initial scan
+                if (generation === 1) {
+                    dutil.init_debug(name, debugdir);
+                }
+            }
+            progress--;
+            sweep();
+        };
+    }
 
     // look in the config directory
     fs.readdir(configdir, (err, files) => {
@@ -932,79 +986,29 @@ function rescan_modules() {
 
         // for each file in the config directory
         for (let i = 0; i < files.length; i++) {
+            const fileParts = path.parse(path.join(configdir, files[i]));
 
-            // check if the file is of the form something.something
-            // and if it doen't match, ignore this file
-            // (this regex will contain a platform dependent regex)
-            const matches = procre.exec(files[i]);
-
-            if (!matches) {
+            // if file is not in form name.extension, ignore
+            if (fileParts.name === '' || fileParts.ext === '') {
                 continue;
             }
 
-            // ignore files that are something.conf or something.json
-            // these are config files, not plugins
-            const extension = ext.exec(files[i])[1];
-
-            if (extension === 'conf' || extension === 'json') {
+            // if a configuration file, ignore
+            if (fileParts.ext === '.conf' || fileParts.ext === '.json') {
                 continue;
             }
 
-            const filename = path.join(configdir, files[i]);
+            const filename = path.join(fileParts.dir, fileParts.base);
 
             // stop watching the file for updates
             fs.unwatchFile(filename);
 
-            // note we need to wait for another stat callback to be
+            // note we need to wait for stat callback to be
             // called before we're done
             progress++;
 
             // stat the file
-            fs.stat(filename, (function statTest(fn, name) { // eslint-disable-line no-loop-func
-                return (serr, sb) => {
-
-                    // rewatch the file for future updates.  i.e. if the file changes
-                    // again later then retrigger this rescan_modules routine
-                    if (sb && sb.isFile()) {
-                        fs.watchFile(fn, onchange(rescan_modules));
-                    }
-
-                    // if the file is something we should deal with
-                    // (is a file, and either ends in .js or is executable, or we're running on
-                    // windows where everything is considered executable)
-                    if (sb && sb.isFile() && (is_windows || (/\.js$/).test(fn) || sb.mode & parseInt('0111', 8))) {
-                        // setup the details in the scripts object for this file
-                        if (!(name in scripts)) {
-                            scripts[name] = {};
-                        }
-                        const def = scripts[name];
-
-                        def.name = name;
-                        def.generation = generation;
-                        def.command = fn;
-                        def.native_plugin = (/\.js$/).test(fn);
-                        def.running = false;
-                        def.sb = sb;
-
-                        // if this is a "native plugin", i.e. a plugin written in
-                        // javascript with a ".js" extension then simply load
-                        // the code directly into node and then create
-                        // an instance 'obj' to shove in the scripts data structure
-                        if (def.native_plugin) {
-                            const module = require(def.command);
-
-                            def.obj = new module();
-                        }
-
-                        // Only remove items on initial scan
-                        if (generation === 1) {
-                            dutil.init_debug(name, debugdir);
-                        }
-                    }
-                    progress--;
-                    sweep();
-                };
-            }(filename, matches[1])));
+            fs.stat(filename, genStatCallback(fileParts.name, filename));
         }
         progress--;
         sweep();
@@ -1172,10 +1176,7 @@ function handler(req, res) {
     req.addListener('data', () => {});
 }
 
-
-// //////////////////////////////////////////////////////////////////////
-// start webservers
-// //////////////////////////////////////////////////////////////////////
+logger.debug({ dir: configdir }, 'plugin directory');
 
 // initialize: look for modules, and register a handler to
 // rescan the modules every time the directory with the modules
@@ -1197,10 +1198,14 @@ try {
     process.exit(1);
 }
 
+// //////////////////////////////////////////////////////////////////////
+// start webservers
+// //////////////////////////////////////////////////////////////////////
+
 // listen on all non-secure ports
 try {
     for (let i = 0; i < port.length; i++) {
-        logger.debug({ addr: port[i][0], port: port[i][1] }, 'starting server');
+        logger.debug({ port: port[i][0], address: port[i][1] }, 'starting server');
         http.createServer(handler).listen(port[i][0], port[i][1]);
     }
 } catch (err) {
@@ -1211,7 +1216,7 @@ try {
 // listen on all secure ports
 try {
     for (let i = 0; i < sslport.length; i++) {
-        logger.debug({ addr: sslport[i][0], port: sslport[i][1] }, 'starting SSL server');
+        logger.debug({ port: sslport[i][0], address: sslport[i][1] }, 'starting SSL server');
         https.createServer(creds, handler).listen(sslport[i][0], sslport[i][1]);
     }
 } catch (err) {
