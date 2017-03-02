@@ -8,7 +8,6 @@
 /* eslint-disable global-require */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-param-reassign */
-/* eslint-disable new-cap */
 /* eslint-disable guard-for-in */
 /* eslit-disable no-nested-ternary */
 /* eslint-disable max-params */
@@ -45,7 +44,6 @@ const logger = pino({
     enabled: true
 });
 
-const circapi = require('circonusapi2');
 const dutil = require('debug_util');
 
 // isolate windows-specific stuff
@@ -117,7 +115,14 @@ let verify = false;
 // autoconfig with circonus
 // //////////////////////////////////////////////////////////////////////
 function configure_circonus() {
-    const nadapi = require('nad_circapi');
+    let nadapi = null;
+
+    try {
+        nadapi = require('nad_circapi');
+    } catch (err) {
+        logger.fatal({ err }, 'failed to load nad_circapi module');
+        process.exit(1);
+    }
 
     let error = false;
 
@@ -149,7 +154,7 @@ function configure_circonus() {
 // //////////////////////////////////////////////////////////////////////
 // help
 // //////////////////////////////////////////////////////////////////////
-function help(err) {
+function help(errMsg) {
     console.log(`${process.argv[1]}\n` +
               `\t-h\t\t\tthis help message\n` +
               `\t-i\t\t\toffline inventory\n` +
@@ -174,8 +179,8 @@ function help(err) {
               `\t--apiprotocol\t\tOverride the protocol for the Circonus API server (default: https)\n` +
               `\t--apiverbose\t\tOutput API traffic to STDERR\n`
             );
-    if (err) {
-        console.error('Error:', err);
+    if (errMsg) {
+        console.error(`Error: ${errMsg}`);
         process.exit(-1);
     }
 }
@@ -202,15 +207,25 @@ function getRetryInterval() {
 }
 
 function setup_reverse() {
+    logger.debug('setting up reverse connection');
+
     let noit = null;
+    let circapi = null;
 
     try {
         noit = require('noit-connection');
     } catch (err) {
-        logger.fatal({ error: err }, 'failed to load noit-connection module');
+        logger.fatal({ err }, 'failed to load noit-connection module');
         // explicit request to use reverse connections but, unable to establish the connection
         // exit intentionally so there is a record in logging and service management can handle
         // a persistently failing service in its usual manner.
+        process.exit(1);
+    }
+
+    try {
+        circapi = require('circonusapi2');
+    } catch (err) {
+        logger.fatal({ err }, 'failed to load circonusapi2 module');
         process.exit(1);
     }
 
@@ -323,7 +338,7 @@ function setup_reverse() {
             const parts = (/^mtev_reverse:\/\/(.+):(\d+)\/([^.]+)$/).exec(rcURL);
 
             if (parts) {
-                revs[url] = new noit.connection(parts[2], parts[1], getNoitCreds());
+                revs[url] = new noit.connection(parts[2], parts[1], getNoitCreds()); // eslint-disable-line new-cap
                 revs[url].reverse(parts[3], '127.0.0.1', port[0][0]);
             } else if (check._reverse_connection_urls.length === 1) {
                 logger.fatal({ url: rcURL }, 'invalid reverse connection URL');
@@ -406,6 +421,8 @@ function merge_types(typeA, typeB) {
 //   args is any arguments that came from the per script config file
 //   instance is
 function run_script(def, cb, req, args, instance) {
+
+    logger.debug({ name: def.name }, 'running plugin');
 
     // mark it as running
     // (we don't re-run scripts that are still running)
@@ -618,6 +635,7 @@ function get_config(req, def, cb) {
 }
 
 function init_script(def, req, cb) {
+    logger.debug('init_script called');
     if (def.running) {
         cb(def, past_results[def.name], def.name);
         return;
@@ -642,7 +660,7 @@ for (let i = 2; i < process.argv.length; i++) {
         // display help
         case '-h': {
             help();
-            process.exit(-1);
+            process.exit(0);
             break;
         }
 
@@ -845,7 +863,7 @@ if (sslport.length > 0) {
 // determine if a file has changed on not.
 // Used by rescan_modules
 function onchange(cb) {
-    return function onchangecb(curr, prev) {
+    return (curr, prev) => {
         if (curr.ino !== prev.ino ||
             curr.size !== prev.size ||
             curr.mtime.valueOf() !== prev.mtime.valueOf() ||
@@ -859,8 +877,12 @@ function onchange(cb) {
 // run each script in scripts that hasn't had an initial
 // run yet (and then remember it _has_ had an initial run)
 function initial_pass() {
+
+    logger.debug('initial pass');
+
     for (const which in scripts) {
         if (!(which in scripts_once)) {
+            logger.debug({ name: which }, 'initializing plugin');
             init_script(scripts[which], null, () => {});
             scripts_once[which] = true;
         }
@@ -875,6 +897,8 @@ function initial_pass() {
 // look on disk for updates to the config dir where
 // we keep all our modules (aka plugins / aka scripts)
 function rescan_modules() {
+
+    logger.debug({ dir: configdir }, 'scanning for plugins');
 
     // this keeps track of how many filesystem stats we have
     // "in progress" and are still waiting for callbacks on
@@ -956,9 +980,15 @@ function rescan_modules() {
                 // the code directly into node and then create
                 // an instance 'obj' to shove in the scripts data structure
                 if (def.native_plugin) {
-                    const module = require(def.command);
+                    let Plugin = null;
 
-                    def.obj = new module();
+                    try {
+                        Plugin = require(def.command);
+                    } catch (perr) {
+                        logger.fatal({ err: perr, file: def.command }, 'unable to load native plugin');
+                    }
+
+                    def.obj = new Plugin();
                 }
 
                 // Only remove items on initial scan
@@ -1020,6 +1050,7 @@ function rescan_modules() {
 //   1. Run all scripts
 //   2. Put the output as JSON into the passed result
 function run_scripts(req, res, which) {
+    logger.debug('run_scripts call');
     // this is a per-request counter that lets us know
     // when all scripts have returned and it's safe to
     // stringify out the output.
@@ -1176,8 +1207,6 @@ function handler(req, res) {
     req.addListener('data', () => {});
 }
 
-logger.debug({ dir: configdir }, 'plugin directory');
-
 // initialize: look for modules, and register a handler to
 // rescan the modules every time the directory with the modules
 // in it changes
@@ -1186,15 +1215,27 @@ rescan_modules();
 
 // add our specialized push script that handles incoming POST data from any local data spurters
 try {
-    const module = require('push_receiver');
+    logger.debug('loading push receiver');
+
+    let PushReceiver = null;
+
+    try {
+        PushReceiver = require('push_receiver');
+    } catch (err) {
+        logger.fatal({ err }, 'failed to load push_recever module');
+        process.exit(1);
+    }
 
     push_script = {};
     push_script.name = 'dumpster';
     push_script.native_plugin = true;
     push_script.running = false;
-    push_script.obj = new module();
+    push_script.obj = new PushReceiver();
+
+    logger.info('push receiver server started');
+
 } catch (err) {
-    logger.fatal({ err }, 'unable to initialize push_receiver');
+    logger.fatal({ err }, 'unable to initialize push receiver');
     process.exit(1);
 }
 
@@ -1202,26 +1243,35 @@ try {
 // start webservers
 // //////////////////////////////////////////////////////////////////////
 
-// listen on all non-secure ports
-try {
-    for (let i = 0; i < port.length; i++) {
-        logger.debug({ port: port[i][0], address: port[i][1] }, 'starting server');
-        http.createServer(handler).listen(port[i][0], port[i][1]);
+for (const server of port) {
+    const svrAddr = server[1];
+    const svrPort = server[0];
+
+    logger.debug({ port: svrPort, address: svrAddr }, 'starting server');
+
+    try {
+        http.createServer(handler).listen(svrPort, svrAddr);
+        logger.info({ port: svrPort, address: svrAddr }, 'server started');
+    } catch (err) {
+        logger.fatal({ port: svrPort, address: svrAddr }, 'failed to start server');
+        process.exit(-1);
     }
-} catch (err) {
-    logger.fatal({ port, err }, 'failed to start server');
-    process.exit(-1);
 }
 
-// listen on all secure ports
-try {
-    for (let i = 0; i < sslport.length; i++) {
-        logger.debug({ port: sslport[i][0], address: sslport[i][1] }, 'starting SSL server');
-        https.createServer(creds, handler).listen(sslport[i][0], sslport[i][1]);
+
+for (const server of sslport) {
+    const svrAddr = server[1];
+    const svrPort = server[0];
+
+    logger.debug({ port: svrPort, address: svrAddr }, 'starting SSL server');
+
+    try {
+        https.createServer(creds, handler).listen(svrPort, svrAddr);
+        logger.info({ port: svrPort, address: svrAddr }, 'server started');
+    } catch (err) {
+        logger.fatal({ port: svrPort, address: svrAddr }, 'failed to start SSL server');
+        process.exit(-1);
     }
-} catch (err) {
-    logger.fatal({ sslport, err }, 'failed to start SSL server');
-    process.exit(-1);
 }
 
 
