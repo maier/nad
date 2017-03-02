@@ -1,0 +1,31 @@
+{
+  "name": "nad",
+  "version": "1.0.0",
+  "description": "Circonus Node Agent",
+  "main": "nad",
+  "dependencies": {
+    "https-proxy-agent": "1.0.0",
+    "pino": "4.0.1",
+    "thirty-two": "1.0.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/circonus-labs/nad.git"
+  },
+  "keywords": [
+    "circonus",
+    "agent",
+    "nad",
+    "metrics"
+  ],
+  "author": "Circonus",
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/circonus-labs/nad/issues"
+  },
+  "homepage": "https://github.com/circonus-labs/nad#readme"
+}

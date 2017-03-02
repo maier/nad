@@ -32,7 +32,9 @@ install-plugins:	install-dirs
 	rsync -a plugins/ $(DESTDIR)$(CONF)/
 
 install-modules:
+	PATH="$(PATH):$(DESTDIR)$(PREFIX)/bin" npm install --no-progress
 	rsync -a node_modules/ $(DESTDIR)$(MODULES)/
+	rsync -a lib/* $(DESTDIR)$(MODULES)/
 
 install-illumos:	install
 	/bin/sed \
@@ -93,8 +95,8 @@ install-freebsd:	install
 	A=$(shell /sbin/sysctl kstat.zfs > /dev/null 2>&1 ; echo $$?)
 ifeq ($(A),0)
 	cd $(DESTDIR)$(CONF) ; /bin/ln -sf zfsinfo.sh ; \
-	cd $(DESTDIR)$(CONF) ; /bin/ln -sf common/zpool.sh 
-endif 
+	cd $(DESTDIR)$(CONF) ; /bin/ln -sf common/zpool.sh
+endif
 
 install-openbsd:	install
 	cd $(DESTDIR)$(CONF)/openbsd ; $(MAKE)

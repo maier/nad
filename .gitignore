@@ -13,3 +13,7 @@ linux-init/*.out
 packaging/omnibus-rpm.spec
 smf/circonus-nad.out
 smf/nad.xml.out
+
+# 
+node_modules/
+node-*.tar.xz

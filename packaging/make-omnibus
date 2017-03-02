@@ -184,11 +184,24 @@ nad_src() {
     fi
 
     pushd $BUILDDIR/nad > /dev/null
-    # Looks like: 2013-07-23 11:23:43 -0700
-    NAD_VERSION=$(git log -1  --format=format:%ad --date=iso)
-    # Normalize to UTC
-    # This requires GNU date-- maybe there's a better way
-    TSTAMP=$(date -d "$NAD_VERSION" -u +%Y%m%dT%H%M%SZ)
+
+    # # Looks like: 2013-07-23 11:23:43 -0700
+    # NAD_VERSION=$(git log -1  --format=format:%ad --date=iso)
+    # # Normalize to UTC
+    # # This requires GNU date-- maybe there's a better way
+    # TSTAMP=$(date -d "$NAD_VERSION" -u +%Y%m%dT%H%M%SZ)
+
+    # Set TZ to UTC, tell git to format the date using
+    # 'local' timezone with specified format string
+    # e.g.
+    # given:
+    #   git log -1 --format=format:%ad
+    #   Fri Feb 24 14:25:05 2017 -0500
+    # output is:
+    #   TZ=UTC git log -1 --format=format:%ad --date=format-local:%Y%m%dT%H%M%SZ
+    #   20170224T192505Z
+    TSTAMP=$(TZ=UTC git log -1 --format=format:%ad --date=format-local:%Y%m%dT%H%M%SZ)
+
     popd > /dev/null
 }
 
