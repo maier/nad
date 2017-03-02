@@ -45,10 +45,14 @@ const logger = pino({
 });
 
 const circapi = require('circonusapi2');
-const nadapi = require('nad_circapi');
-const circwmi = require('circwmi');
 const dutil = require('debug_util');
+let circwmi = null;
+let is_windows = false;
 
+if (process.platform === 'win32') {
+    circwmi = require('circwmi');
+    is_windows = true;
+}
 
 // "globals" ///////////////////////////////////////////////////////////
 
@@ -100,8 +104,6 @@ let brokerid = null;
 let configfile = null;
 let debugdir = null;                        // if set, a dir to write debug logs to
 let wipedebugdir = false;                  // if true, wipe debug logs clean before each write
-const platform = process.platform;
-const is_windows = platform === 'win32';    // windows
 
 // procre is a regular expression that captures
 // the main part of a filename (i.e. without)
@@ -123,22 +125,24 @@ let verify = false;
 // autoconfig with circonus
 // //////////////////////////////////////////////////////////////////////
 function configure_circonus() {
+    const nadapi = require('nad_circapi');
+
     let error = false;
 
     if (!(/^[0-9a-fA-F]{4}(?:[0-9a-fA-F]{4}-){4}[0-9a-fA-F]{12}$/).test(auth_token)) {
-        console.log('--authtoken should be a UUID.');
+        console.error('--authtoken should be a UUID.');
         error = true;
     }
     if (target === null) {
-        console.log('--target is required.');
+        console.error('--target is required.');
         error = true;
     }
     if (brokerid === null || !(/^\d+$/).test(brokerid)) {
-        console.log('--brokerid is required and should be an integer.');
+        console.error('--brokerid is required and should be an integer.');
         error = true;
     }
     if (configfile === null) {
-        console.log('--configfile is required.');
+        console.error('--configfile is required.');
         error = true;
     }
     if (error) {
@@ -146,6 +150,7 @@ function configure_circonus() {
     }
 
     nadapi.configure(auth_token, target, hostname, brokerid, configfile, api_options);
+    process.exit(0);
 }
 
 
@@ -1131,14 +1136,16 @@ function handler(req, res) {
         }
 
         // wmi
-        if ((/^\/wmi\/get-categories$/).test(path)) {
-            circwmi.get_categories(res);
-            return;
-        }
-        matches = (/^\/wmi\/(.+)$/).exec(path);
-        if (matches) {
-            circwmi.get_counters_for_category(res, matches[1], debugdir, wipedebugdir);
-            return;
+        if (is_windows) {
+            if ((/^\/wmi\/get-categories$/).test(path)) {
+                circwmi.get_categories(res);
+                return;
+            }
+            matches = (/^\/wmi\/(.+)$/).exec(path);
+            if (matches) {
+                circwmi.get_counters_for_category(res, matches[1], debugdir, wipedebugdir);
+                return;
+            }
         }
 
         // plugin
