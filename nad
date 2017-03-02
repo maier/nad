@@ -55,6 +55,8 @@ if (process.platform === 'win32') {
     is_windows = true;
 }
 
+logger.info('initializing');
+
 // "globals" ///////////////////////////////////////////////////////////
 
 let booted = false;
@@ -363,10 +365,8 @@ function setup_reverse() {
 // //////////////////////////////////////////////////////////////////////
 
 function post_boot() {
-    logger.info('started');
-
     if (process.setuid && drop_uid) {
-        logger.info(`Dropping privileges: ${drop_uid}`);
+        logger.info({ uid: drop_uid }, 'dropping privileges');
         process.setuid(drop_uid);
     }
 
@@ -413,20 +413,19 @@ function merge_types(typeA, typeB) {
     return 'n';
 }
 
-
 // runs a single script / native plugin and then fire a callback
 //   d is the object for the script that's stored in 'scripts'
 //   cb is what we call back when done
 //   req is the request object (passed to native plugins)
 //   args is any arguments that came from the per script config file
 //   instance is
-function run_script(def, cb, req, args, instance) {
+function run_script(plugin, cb, req, args, instance) {
 
-    logger.debug({ name: def.name }, 'running plugin');
+    logger.info({ name: instance }, 'running plugin');
 
     // mark it as running
     // (we don't re-run scripts that are still running)
-    def.running = true;
+    plugin.running = true;
 
     // per process data
     const proc_data = {
@@ -445,18 +444,18 @@ function run_script(def, cb, req, args, instance) {
     };
 
     // mark that we're starting now
-    def.last_start = Number(new Date());
+    plugin.last_start = Number(new Date());
 
     // if this is a native plugin then all we need to do
     // is call the run method on the instance stored within d.obj
     // and we're done, so return
-    if (def.native_plugin) {
-        def.obj.run(def, past_set_cb(cb), req, args, instance);
+    if (plugin.native_plugin) {
+        plugin.obj.run(plugin, past_set_cb(cb), req, args, instance);
         return;
     }
 
     // execute the command
-    const cmd = spawn(def.command, args);
+    const cmd = spawn(plugin.command, args);
 
     function kill_func() {
         cmd.stdin.destroy();
@@ -469,18 +468,17 @@ function run_script(def, cb, req, args, instance) {
     // just created.  This will be called from the code below whenever
     // we reach the end of the process output, or a blank line is found in
     // the output
-    function handle_output(def2, cb2, instance2) {
+    function handle_output(pluginDef, pluginCB, pluginInstance) {
         if (proc_data.timeout) {
             clearTimeout(proc_data.timeout);
         }
-        def2.last_finish = Number(new Date());
-        let i = null;
+        pluginDef.last_finish = Number(new Date());
         let results = {};
 
         // if someone has specified a debug dir, then log out
         // the record we collected to that
         if (debugdir) {
-            dutil.write_debug_output(def2.name, proc_data.lines, debugdir, wipedebugdir);
+            dutil.write_debug_output(pluginDef.name, proc_data.lines, debugdir, wipedebugdir);
         }
 
         // attempt to process the lines as json...
@@ -488,8 +486,8 @@ function run_script(def, cb, req, args, instance) {
             results = JSON.parse(proc_data.lines.join(' '));
         } catch (err) {
             // ... but if that doesn't work, try the tab delim format
-            for (i = 0; i < proc_data.lines.length; i++) {
-                const parts = (/^\s*(metric\s+)?(\S+)\s+(string|int|float|[iIlLns])(\s*)(.*)$/).exec(proc_data.lines[i]);
+            for (const line of proc_data.lines) {
+                const parts = (/^\s*(metric\s+)?(\S+)\s+(string|int|float|[iIlLns])(\s*)(.*)$/).exec(line);
 
                 if (parts) {
                     const name = parts[2];
@@ -521,10 +519,10 @@ function run_script(def, cb, req, args, instance) {
         }
 
         // remember the past results
-        past_results[instance2] = results;
+        past_results[pluginInstance] = results;
 
         // execute the callback
-        cb2(def2, results, instance2);
+        pluginCB(pluginDef, results, pluginInstance);
     }
 
     // hook up the process so whenever we complete reading data
@@ -532,7 +530,7 @@ function run_script(def, cb, req, args, instance) {
     // any remaining data (i.e. any partial line still in
     // our between callback buffer)
     cmd.stdout.on('end', () => {
-        handle_output(def, cb, instance);
+        handle_output(plugin, cb, instance);
     });
 
     // hook up an anonymous function to the process to be called
@@ -580,7 +578,7 @@ function run_script(def, cb, req, args, instance) {
                     // however if the line doesn't have data in it it's a blank
                     // line, meaning we should attempt to process everything that
                     // we've collected so far up until this point
-                    handle_output(def, cb, instance);
+                    handle_output(plugin, cb, instance);
                 }
             }
 
@@ -593,55 +591,50 @@ function run_script(def, cb, req, args, instance) {
 
     // when the command is done, mark it as no longer running.
     cmd.on('exit', (code, signal) => { // eslint-disable-line no-unused-vars
-        def.running = false;
+        plugin.running = false;
     });
 
   // if there's any error running the command, log it and remove
   // it from the list of scripts we're running
     cmd.on('error', (err) => {
-        logger.error({ err, cmd: def.command }, `Error on command, removing from scripts`);
+        logger.error({ err, cmd: plugin.command }, `Error on command, removing from scripts`);
         proc_data.data = '';
-        def.running = false;
-        delete scripts[def.name];
+        plugin.running = false;
+        delete scripts[plugin.name];
     });
 }
 
 // per script config
-function get_config(req, def, cb) {
-    logger.debug({ name: def.name }, 'get_config');
-    fs.exists(path.join(configdir, `${def.name}.json`), (exists) => {
-        if (exists) {
-            fs.readFile(path.join(configdir, `${def.name}.json`), (err, data) => {
-                if (err) {
-                    throw err;
-                }
-                const json_config = JSON.parse(data);
-                const instance_count = Object.keys(json_config).length;
-
-                // Add the number of time we will run this script to our
-                // total run_count so we don't finish early.
-                if (instance_count > 1) {
-                    req.nad_run_count += instance_count - 1;
-                }
-
-                for (const instance in json_config) {
-                    run_script(def, cb, req, json_config[instance], `${def.name}\`${instance}`);
-                }
-            });
-        } else {
-            run_script(def, cb, req, [], def.name);
-        }
-    });
-}
-
-function init_script(def, req, cb) {
-    logger.debug('init_script called');
-    if (def.running) {
-        cb(def, past_results[def.name], def.name);
+function get_config(req, plugin, cb) {
+    // short-circuit if the plugin doesn't have a config
+    if (!plugin.config) {
+        run_script(plugin, cb, req, [], plugin.name);
         return;
     }
 
-    get_config(req, def, cb);
+    logger.debug({ name: plugin.name, config: plugin.config }, 'applying plugin config');
+
+    const instance_count = Object.keys(plugin.config).length;
+
+    // Add the number of time we will run this script to our
+    // total run_count so we don't finish early.
+    if (req && instance_count > 1) {
+        req.nad_run_count += instance_count - 1;
+    }
+
+    for (const instance in plugin.config) {
+        run_script(plugin, cb, req, plugin.config[instance], `${plugin.name}\`${instance}`);
+    }
+}
+
+function init_script(plugin, req, cb) {
+    logger.debug({ name: plugin.name }, 'initializing plugin');
+    if (plugin.running) {
+        logger.debug({ name: plugin.name }, 'plugin already running, returning previous result');
+        cb(plugin, past_results[plugin.name], plugin.name);
+        return;
+    }
+    get_config(req, plugin, cb);
 }
 
 
@@ -877,16 +870,15 @@ function onchange(cb) {
 // run each script in scripts that hasn't had an initial
 // run yet (and then remember it _has_ had an initial run)
 function initial_pass() {
-
     logger.debug('initial pass');
 
     for (const which in scripts) {
         if (!(which in scripts_once)) {
-            logger.debug({ name: which }, 'initializing plugin');
             init_script(scripts[which], null, () => {});
             scripts_once[which] = true;
         }
     }
+
     if (!booted) {
         post_boot();
         booted = true;
@@ -915,16 +907,18 @@ function rescan_modules() {
     // to our current generation number once we've done
     // scanning
     function sweep() {
-
         // don't do this while we're still waiting for
         // stat requests that are in progress
         if (progress !== 0) {
             return;
         }
 
+        logger.debug('sweep');
+
         // clear out any out of date scripts
         for (const script in scripts) {
             if (scripts[script].generation < generation) {
+                logger.debug({ name: script.name }, 'removing expired plugin');
                 fs.unwatchFile(scripts[script].command);
                 delete scripts[script];
                 delete scripts_once[script];
@@ -948,54 +942,74 @@ function rescan_modules() {
             }
 
             if (!sb.isFile()) {
-                logger.debug({ file }, 'not a file, ignoring');
+                logger.debug({ dir_entry: name }, 'ignoring, not a file');
                 return;
             }
 
             const is_native = (/\.js$/).test(file);
             const is_executable = sb.mode & parseInt('0111', 8);
 
+            if (!(is_windows || is_native || is_executable)) {
+                logger.debug({ dir_entry: name }, 'ignoring, not a valid file');
+                return;
+            }
+
             // if the file is something we should deal with
             // (is a file, and either ends in .js or is executable, or we're running on
             // windows where everything is considered executable)
-            if (is_windows || is_native || is_executable) {
+
+            logger.debug({ name }, 'found plugin');
                 // watch the file for future updates.  i.e. if the file changes
                 // again later then retrigger this rescan_modules routine
-                fs.watchFile(file, onchange(rescan_modules));
+            fs.watchFile(file, onchange(rescan_modules));
                 // setup the details in the scripts object for this file
-                if (!(name in scripts)) {
-                    scripts[name] = {};
-                }
-                const def = scripts[name];
+            if (!(name in scripts)) {
+                scripts[name] = {};
+            }
+            const def = scripts[name];
 
-                def.name = name;
-                def.generation = generation;
-                def.command = file;
-                def.native_plugin = is_native;
-                def.running = false;
-                def.sb = sb;
+            def.name = name;
+            def.generation = generation;
+            def.command = file;
+            def.native_plugin = is_native;
+            def.running = false;
+            def.sb = sb;
+            def.config = null;
 
-                // if this is a "native plugin", i.e. a plugin written in
-                // javascript with a ".js" extension then simply load
-                // the code directly into node and then create
-                // an instance 'obj' to shove in the scripts data structure
-                if (def.native_plugin) {
-                    let Plugin = null;
+            const cfgFile = path.join(configdir, `${name}.json`);
 
-                    try {
-                        Plugin = require(def.command);
-                    } catch (perr) {
-                        logger.fatal({ err: perr, file: def.command }, 'unable to load native plugin');
+            if (fs.existsSync(cfgFile)) {
+                try {
+                    def.config = require(cfgFile);
+                } catch (cfgErr) {
+                    if (cfgErr.code !== 'MODULE_NOT_FOUND') {
+                        logger.fatal({ err: cfgErr, file: cfgFile }, 'error loading config file');
+                        process.exit(1);
                     }
-
-                    def.obj = new Plugin();
-                }
-
-                // Only remove items on initial scan
-                if (generation === 1) {
-                    dutil.init_debug(name, debugdir);
                 }
             }
+
+            // if this is a "native plugin", i.e. a plugin written in
+            // javascript with a ".js" extension then simply load
+            // the code directly into node and then create
+            // an instance 'obj' to shove in the scripts data structure
+            if (def.native_plugin) {
+                let Plugin = null;
+
+                try {
+                    Plugin = require(def.command);
+                } catch (perr) {
+                    logger.fatal({ err: perr, file: def.command }, 'unable to load native plugin');
+                }
+
+                def.obj = new Plugin();
+            }
+
+                // Only remove items on initial scan
+            if (generation === 1) {
+                dutil.init_debug(name, debugdir);
+            }
+
             progress--;
             sweep();
         };
@@ -1015,16 +1029,18 @@ function rescan_modules() {
         progress++;
 
         // for each file in the config directory
-        for (let i = 0; i < files.length; i++) {
-            const fileParts = path.parse(path.join(configdir, files[i]));
+        for (const file of files) {
+            const fileParts = path.parse(path.join(configdir, file));
 
             // if file is not in form name.extension, ignore
             if (fileParts.name === '' || fileParts.ext === '') {
+                logger.debug({ dir_entry: file }, 'ignoring, invalid name');
                 continue;
             }
 
             // if a configuration file, ignore
             if (fileParts.ext === '.conf' || fileParts.ext === '.json') {
+                logger.debug({ dir_entry: file }, 'ignoring, config file');
                 continue;
             }
 
@@ -1273,7 +1289,6 @@ for (const server of sslport) {
         process.exit(-1);
     }
 }
-
 
 // //////////////////////////////////////////////////////////////////////
 // done
