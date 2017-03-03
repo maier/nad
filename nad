@@ -947,7 +947,7 @@ function rescan_modules() {
             }
 
                 // Only remove items on initial scan
-            if (generation === 1) {
+            if (generation === 1 && settings.debug_dir !== null) {
                 dutil.init_debug(name, settings.debug_dir);
             }
 
@@ -1010,7 +1010,7 @@ function rescan_modules() {
 //   1. Run all scripts
 //   2. Put the output as JSON into the passed result
 function run_scripts(req, res, which) {
-    log.debug('run_scripts call');
+    log.info('script run - web access');
     // this is a per-request counter that lets us know
     // when all scripts have returned and it's safe to
     // stringify out the output.
@@ -1049,7 +1049,7 @@ function run_scripts(req, res, which) {
         }
 
         // add one for the push_script
-        if (!which) {
+        if (!which && push_script !== null) {
             req.nad_run_count++;
         }
 
@@ -1067,9 +1067,8 @@ function run_scripts(req, res, which) {
             });
         }
 
-        // call the global push receiver script to spit out anything collected
-        // over http
-        if (!which) {
+        // call the global push receiver script to spit out anything collected over http
+        if (!which && push_script !== null) {
             init_script(push_script, req, (def, results, name) => {
                 req.nad_run_count--;
                 if (results !== null) {
@@ -1143,22 +1142,27 @@ function handler(req, res) {
             }
         }
 
-        // plugin
-        matches = (/^\/write\/(.+)$/).exec(path);
-        if (matches) {
-            if (req.method !== 'PUT' && req.method !== 'POST') {
-                res.writeHead(405, 'Method Not Allowed', { Allow : 'PUT, POST' });
+        // push plugin
+        if (push_script !== null) {
+            matches = (/^\/write\/(.+)$/).exec(path);
+            if (matches) {
+                if (req.method !== 'PUT' && req.method !== 'POST') {
+                    res.writeHead(405, 'Method Not Allowed', { Allow : 'PUT, POST' });
+                    res.end();
+                    return;
+                }
+                if (settings.debug_dir !== null) {
+                    dutil.write_debug_output(matches[1], [ 'Receiving push_receiver data', body ], settings.debug_dir, settings.wipe_debug_dir);
+                }
+                push_script.obj.some_data(matches[1], body);
+                res.writeHead(200, 'OK', { 'Content-Type': 'text/plan' });
                 res.end();
                 return;
             }
-            if (settings.debug_dir !== null) {
-                dutil.write_debug_output(matches[1], [ 'Receiving push_receiver data', body ], settings.debug_dir, settings.wipe_debug_dir);
-            }
-            push_script.obj.some_data(matches[1], body);
-            res.writeHead(200, 'OK', { 'Content-Type': 'text/plan' });
-            res.end();
-            return;
         }
+
+        // otherwise... consider it an invalid request
+
         res.writeHead(404);
         res.end();
     });
@@ -1189,13 +1193,15 @@ try {
         process.exit(1);
     }
 
-    push_script = {};
-    push_script.name = 'dumpster';
-    push_script.native_plugin = true;
-    push_script.running = false;
-    push_script.obj = new PushReceiver();
+    // NOTE: this *simulates* a regular plugin
+    push_script = {
+        name: 'dumpster',
+        native_plugin: true,
+        running: false,
+        obj: new PushReceiver()
+    };
 
-    log.info('push receiver server started');
+    log.info('push receiver loaded');
 
 } catch (err) {
     const msg = 'unable to initialize push receiver';
@@ -1214,7 +1220,7 @@ for (const server of settings.listen) {
 
     try {
         http.createServer(handler).listen(server.port, server.address);
-        log.info({ server }, 'server started');
+        log.info({ server }, 'started');
     } catch (err) {
         const msg = 'failed to start server';
 
@@ -1230,7 +1236,7 @@ for (const server of settings.ssl.listen) {
 
     try {
         https.createServer(settings.ssl.creds, handler).listen(server.port, server.address);
-        log.info({ server }, 'server started');
+        log.info({ server }, 'started (SSL)');
     } catch (err) {
         const msg = 'failed to start SSL server';
 
