@@ -36,7 +36,7 @@ const spawn = require('child_process').spawn;
 const url = require('url');
 
 const pino = require('pino');
-const logger = pino({
+const log = pino({
     name: 'nad',
     level: 'info',
     enabled: true
@@ -53,7 +53,7 @@ if (process.platform === 'win32') {
     is_windows = true;
 }
 
-logger.info('initializing');
+log.info('initializing');
 
 // "globals" ///////////////////////////////////////////////////////////
 
@@ -120,7 +120,7 @@ function configure_circonus() {
     try {
         nadapi = require('nad_circapi');
     } catch (err) {
-        logger.fatal({ err }, 'failed to load nad_circapi module');
+        log.fatal({ err }, 'failed to load nad_circapi module');
         process.exit(1);
     }
 
@@ -191,18 +191,18 @@ function help(errMsg) {
 
 function post_boot() {
     if (process.setuid && drop_uid) {
-        logger.info({ uid: drop_uid }, 'dropping privileges');
+        log.info({ uid: drop_uid }, 'dropping privileges');
         process.setuid(drop_uid);
     }
 
     if (attempt_reverse) {
-        logger.info('setting up reverse connection');
+        log.info('setting up reverse connection');
         let reverse = null;
 
         try {
             reverse = require('reverse');
         } catch (err) {
-            logger.fatal({ err }, 'unable to set up reverse connection');
+            log.fatal({ err }, 'unable to set up reverse connection');
             process.exit(1);
         }
         const options = {
@@ -214,7 +214,7 @@ function post_boot() {
             server_port: port[0][0]
         };
 
-        reverse(options, logger);
+        reverse(options, log);
     }
 }
 
@@ -222,15 +222,15 @@ function post_boot() {
 // executing scripts
 // //////////////////////////////////////////////////////////////////////
 
-// utility function;  Returns the callback wrapped in an
-// additional function that that stores the results in
-// past results before calling the callback
-function past_set_cb(cb) {
-    return function past_set_cb_cb(_d, _r, _i) {
-        past_results[_i] = _r;
-        cb(_d, _r, _i);
-    };
-}
+// // utility function;  Returns the callback wrapped in an
+// // additional function that that stores the results in
+// // past results before calling the callback
+// function past_set_cb(cb) {
+//     return function past_set_cb_cb(_plugin, _results, _instance) {
+//         past_results[_instance] = _results;
+//         cb(_plugin, _results, _instance);
+//     };
+// }
 
 // merge_types takes two char type descriptors and returns the
 // smallest type that could non-erroneously represent them
@@ -256,23 +256,22 @@ function merge_types(typeA, typeB) {
 }
 
 // runs a single script / native plugin and then fire a callback
-//   d is the object for the script that's stored in 'scripts'
+//   plugin is the object for the script that's stored in 'scripts'
 //   cb is what we call back when done
 //   req is the request object (passed to native plugins)
 //   args is any arguments that came from the per script config file
-//   instance is
+//   instance is the specific instance of plugin to run
 function run_script(plugin, cb, req, args, instance) {
 
-    logger.info({ name: instance }, 'running plugin');
+    log.info({ name: instance }, 'running plugin');
 
-    // mark it as running
-    // (we don't re-run scripts that are still running)
+    // (we don't re-run scripts that are already running)
     plugin.running = true;
+    plugin.last_start = Date.now();
 
     // per process data
     const proc_data = {
-        // incomplete line of data buffered between
-        // callbacks.  This will be
+        // incomplete line of data buffered between callbacks.
         data: '',
 
         // complete lines of data that have yet to
@@ -285,14 +284,15 @@ function run_script(plugin, cb, req, args, instance) {
         options: {}
     };
 
-    // mark that we're starting now
-    plugin.last_start = Number(new Date());
-
     // if this is a native plugin then all we need to do
     // is call the run method on the instance stored within d.obj
     // and we're done, so return
     if (plugin.native_plugin) {
-        plugin.obj.run(plugin, past_set_cb(cb), req, args, instance);
+        plugin.obj.run(plugin,
+            (_plugin, _metrics, _instance) => {
+                past_results[_instance] = _metrics;
+                cb(_plugin, _metrics, _instance);
+            }, req, args, instance);
         return;
     }
 
@@ -314,7 +314,7 @@ function run_script(plugin, cb, req, args, instance) {
         if (proc_data.timeout) {
             clearTimeout(proc_data.timeout);
         }
-        pluginDef.last_finish = Number(new Date());
+        pluginDef.last_finish = Date.now();
         let results = {};
 
         // if someone has specified a debug dir, then log out
@@ -403,7 +403,7 @@ function run_script(plugin, cb, req, args, instance) {
                 try {
                     proc_data.options = JSON.parse(line.substring(1));
                 } catch (err) {
-                    logger.error({ err }, 'Error parsing proc otions');
+                    log.error({ err }, 'Error parsing proc otions');
                 }
 
                 // set a timeout to stop this run if requested in meta block
@@ -439,7 +439,7 @@ function run_script(plugin, cb, req, args, instance) {
   // if there's any error running the command, log it and remove
   // it from the list of scripts we're running
     cmd.on('error', (err) => {
-        logger.error({ err, cmd: plugin.command }, `Error on command, removing from scripts`);
+        log.error({ err, cmd: plugin.command }, `Error on command, removing from scripts`);
         proc_data.data = '';
         plugin.running = false;
         delete scripts[plugin.name];
@@ -454,7 +454,7 @@ function get_config(req, plugin, cb) {
         return;
     }
 
-    logger.debug({ name: plugin.name, config: plugin.config }, 'applying plugin config');
+    log.debug({ name: plugin.name, config: plugin.config }, 'applying plugin config');
 
     const instance_count = Object.keys(plugin.config).length;
 
@@ -470,9 +470,9 @@ function get_config(req, plugin, cb) {
 }
 
 function init_script(plugin, req, cb) {
-    logger.debug({ name: plugin.name }, 'initializing plugin');
+    log.debug({ name: plugin.name }, 'initializing plugin');
     if (plugin.running) {
-        logger.debug({ name: plugin.name }, 'plugin already running, returning previous result');
+        log.debug({ name: plugin.name }, 'plugin already running, returning previous result');
         cb(plugin, past_results[plugin.name], plugin.name);
         return;
     }
@@ -487,8 +487,8 @@ function init_script(plugin, req, cb) {
 for (let i = 2; i < process.argv.length; i++) {
     switch (process.argv[i]) {
         case '-d': {
-            logger.level = 'debug';
-            logger.debug('debug logging enabled');
+            log.level = 'debug';
+            log.debug('debug logging enabled');
             break;
         }
 
@@ -679,13 +679,13 @@ if (sslport.length > 0) {
             creds.ca = fs.readFileSync(path.join(configdir, 'na.ca')).toString();
         }
     } catch (err) {
-        logger.error('Make sure:');
-        logger.error(`\tyour key is available: ${path.join(configdir, 'na.key')}`);
-        logger.error(`\tyour cert is available: ${path.join(configdir, 'na.crt')}`);
+        log.error('Make sure:');
+        log.error(`\tyour key is available: ${path.join(configdir, 'na.key')}`);
+        log.error(`\tyour cert is available: ${path.join(configdir, 'na.crt')}`);
         if (verify) {
-            logger.error(`\tyour ca is available: ${path.join(configdir, 'na.ca')}`);
+            log.error(`\tyour ca is available: ${path.join(configdir, 'na.ca')}`);
         }
-        logger.error(`\n${err}`);
+        log.error(`\n${err}`);
         process.exit(-1);
     }
 }
@@ -712,7 +712,7 @@ function onchange(cb) {
 // run each script in scripts that hasn't had an initial
 // run yet (and then remember it _has_ had an initial run)
 function initial_pass() {
-    logger.debug('initial pass');
+    log.debug('initial pass');
 
     for (const which in scripts) {
         if (!(which in scripts_once)) {
@@ -732,7 +732,7 @@ function initial_pass() {
 // we keep all our modules (aka plugins / aka scripts)
 function rescan_modules() {
 
-    logger.debug({ dir: configdir }, 'scanning for plugins');
+    log.debug({ dir: configdir }, 'scanning for plugins');
 
     // this keeps track of how many filesystem stats we have
     // "in progress" and are still waiting for callbacks on
@@ -755,12 +755,12 @@ function rescan_modules() {
             return;
         }
 
-        logger.debug('sweep');
+        log.debug('sweep');
 
         // clear out any out of date scripts
         for (const script in scripts) {
             if (scripts[script].generation < generation) {
-                logger.debug({ name: script.name }, 'removing expired plugin');
+                log.debug({ name: script.name }, 'removing expired plugin');
                 fs.unwatchFile(scripts[script].command);
                 delete scripts[script];
                 delete scripts_once[script];
@@ -774,17 +774,17 @@ function rescan_modules() {
     function genStatCallback(name, file) {
         return (err, sb) => {
             if (err !== null) {
-                logger.warn({ err, file }, 'unable to stat file');
+                log.warn({ err, file }, 'unable to stat file');
                 return;
             }
 
             if (!sb) {
-                logger.warn({ sb, file }, 'bad stat object for file');
+                log.warn({ sb, file }, 'bad stat object for file');
                 return;
             }
 
             if (!sb.isFile()) {
-                logger.debug({ dir_entry: name }, 'ignoring, not a file');
+                log.debug({ dir_entry: name }, 'ignoring, not a file');
                 return;
             }
 
@@ -792,7 +792,7 @@ function rescan_modules() {
             const is_executable = sb.mode & parseInt('0111', 8);
 
             if (!(is_windows || is_native || is_executable)) {
-                logger.debug({ dir_entry: name }, 'ignoring, not a valid file');
+                log.debug({ dir_entry: name }, 'ignoring, not a valid file');
                 return;
             }
 
@@ -800,7 +800,7 @@ function rescan_modules() {
             // (is a file, and either ends in .js or is executable, or we're running on
             // windows where everything is considered executable)
 
-            logger.debug({ name }, 'found plugin');
+            log.debug({ name }, 'found plugin');
                 // watch the file for future updates.  i.e. if the file changes
                 // again later then retrigger this rescan_modules routine
             fs.watchFile(file, onchange(rescan_modules));
@@ -825,7 +825,7 @@ function rescan_modules() {
                     def.config = require(cfgFile);
                 } catch (cfgErr) {
                     if (cfgErr.code !== 'MODULE_NOT_FOUND') {
-                        logger.fatal({ err: cfgErr, file: cfgFile }, 'error loading config file');
+                        log.fatal({ err: cfgErr, file: cfgFile }, 'error loading config file');
                         process.exit(1);
                     }
                 }
@@ -841,7 +841,7 @@ function rescan_modules() {
                 try {
                     Plugin = require(def.command);
                 } catch (perr) {
-                    logger.fatal({ err: perr, file: def.command }, 'unable to load native plugin');
+                    log.fatal({ err: perr, file: def.command }, 'unable to load native plugin');
                 }
 
                 def.obj = new Plugin();
@@ -863,7 +863,7 @@ function rescan_modules() {
         // bomb out if there's any error (we don't do any fancy
         // error handling or attempt any form of recovery)
         if (err) {
-            logger.fatal({ err, dir: configdir }, 'unable to read config directory');
+            log.fatal({ err, dir: configdir }, 'unable to read config directory');
             process.exit(-1);
         }
 
@@ -876,13 +876,13 @@ function rescan_modules() {
 
             // if file is not in form name.extension, ignore
             if (fileParts.name === '' || fileParts.ext === '') {
-                logger.debug({ dir_entry: file }, 'ignoring, invalid name');
+                log.debug({ dir_entry: file }, 'ignoring, invalid name');
                 continue;
             }
 
             // if a configuration file, ignore
             if (fileParts.ext === '.conf' || fileParts.ext === '.json') {
-                logger.debug({ dir_entry: file }, 'ignoring, config file');
+                log.debug({ dir_entry: file }, 'ignoring, config file');
                 continue;
             }
 
@@ -908,7 +908,7 @@ function rescan_modules() {
 //   1. Run all scripts
 //   2. Put the output as JSON into the passed result
 function run_scripts(req, res, which) {
-    logger.debug('run_scripts call');
+    log.debug('run_scripts call');
     // this is a per-request counter that lets us know
     // when all scripts have returned and it's safe to
     // stringify out the output.
@@ -1073,14 +1073,14 @@ rescan_modules();
 
 // add our specialized push script that handles incoming POST data from any local data spurters
 try {
-    logger.debug('loading push receiver');
+    log.debug('loading push receiver');
 
     let PushReceiver = null;
 
     try {
         PushReceiver = require('push_receiver');
     } catch (err) {
-        logger.fatal({ err }, 'failed to load push_recever module');
+        log.fatal({ err }, 'failed to load push_recever module');
         process.exit(1);
     }
 
@@ -1090,10 +1090,10 @@ try {
     push_script.running = false;
     push_script.obj = new PushReceiver();
 
-    logger.info('push receiver server started');
+    log.info('push receiver server started');
 
 } catch (err) {
-    logger.fatal({ err }, 'unable to initialize push receiver');
+    log.fatal({ err }, 'unable to initialize push receiver');
     process.exit(1);
 }
 
@@ -1105,13 +1105,13 @@ for (const server of port) {
     const svrAddr = server[1];
     const svrPort = server[0];
 
-    logger.debug({ port: svrPort, address: svrAddr }, 'starting server');
+    log.debug({ port: svrPort, address: svrAddr }, 'starting server');
 
     try {
         http.createServer(handler).listen(svrPort, svrAddr);
-        logger.info({ port: svrPort, address: svrAddr }, 'server started');
+        log.info({ port: svrPort, address: svrAddr }, 'server started');
     } catch (err) {
-        logger.fatal({ port: svrPort, address: svrAddr }, 'failed to start server');
+        log.fatal({ port: svrPort, address: svrAddr }, 'failed to start server');
         process.exit(-1);
     }
 }
@@ -1121,13 +1121,13 @@ for (const server of sslport) {
     const svrAddr = server[1];
     const svrPort = server[0];
 
-    logger.debug({ port: svrPort, address: svrAddr }, 'starting SSL server');
+    log.debug({ port: svrPort, address: svrAddr }, 'starting SSL server');
 
     try {
         https.createServer(creds, handler).listen(svrPort, svrAddr);
-        logger.info({ port: svrPort, address: svrAddr }, 'server started');
+        log.info({ port: svrPort, address: svrAddr }, 'server started');
     } catch (err) {
-        logger.fatal({ port: svrPort, address: svrAddr }, 'failed to start SSL server');
+        log.fatal({ port: svrPort, address: svrAddr }, 'failed to start SSL server');
         process.exit(-1);
     }
 }
