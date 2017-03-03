@@ -2,6 +2,8 @@ DESTDIR?=
 PREFIX?=/opt/circonus
 MAN=$(PREFIX)/man/man8
 SBIN=$(PREFIX)/sbin
+BIN=$(PREFIX)/bin
+LOG=$(PREFIX)/log
 CONF=$(PREFIX)/etc/node-agent.d
 MODULES=$(PREFIX)/lib/node_modules
 RUNSTATE_DIR=$(PREFIX)/var/run/nad
@@ -56,6 +58,12 @@ install-illumos:	install
 
 install-linux:	install
 	/bin/sed -e "s#@@CONF@@#$(CONF)#g" linux-init/defaults > linux-init/defaults.out
+	./mkinstalldirs $(DESTDIR)$(BIN)
+	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@LOG@@#$(LOG)#g" bin/nad-log.sh > bin/nad-log.out
+	./install-sh -c -m 0755 bin/nad-log.out $(DESTDIR)$(BIN)/nad-log
+	./mkinstalldirs $(DESTDIR)$(LOG)
+	/bin/sed -e "s#@@LOG@@#$(LOG)#g" linux-init/logrotate > linux-init/logrotate.out
+	./install-sh -c -m 0755 linux-init/logrotate.out $(DESTDIR)/etc/logrotate.d/nad
 	cd $(DESTDIR)$(CONF)/linux ; $(MAKE)
 	cd $(DESTDIR)$(CONF) ; for f in cpu.sh disk.sh diskstats.sh fs.elf if.sh vm.sh ; do /bin/ln -sf linux/$$f ; done
 ifneq ($(wildcard /sbin/zpool),)
@@ -66,12 +74,12 @@ ifneq ($(wildcard /usr/bin/systemctl),)
 endif
 
 install-ubuntu:	install-linux
-	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" linux-init/ubuntu-init > linux-init/ubuntu-init.out
+	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@LOG@@#$(LOG)#g" linux-init/ubuntu-init > linux-init/ubuntu-init.out
 	./install-sh -c -m 0644 linux-init/defaults.out $(DESTDIR)/etc/default/nad
 	./install-sh -c -m 0755 linux-init/ubuntu-init.out $(DESTDIR)/etc/init.d/nad
 
 install-rhel:	install-linux
-	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" linux-init/rhel-init > linux-init/rhel-init.out
+	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@LOG@@#$(LOG)#g" linux-init/rhel-init > linux-init/rhel-init.out
 	./install-sh -c -m 0644 linux-init/defaults.out $(DESTDIR)/etc/sysconfig/nad
 	./install-sh -c -m 0755 linux-init/rhel-init.out $(DESTDIR)/etc/init.d/nad
 

@@ -17,3 +17,4 @@ smf/nad.xml.out
 # 
 node_modules/
 node-*.tar.xz
+bin/*.out
