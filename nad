@@ -207,12 +207,11 @@ function post_boot() {
         }
         const options = {
             cafile,
-            creds,
             hostname,
             auth_token,
             api_options,
             check_bundle_id,
-            port: port[0][0]
+            server_port: port[0][0]
         };
 
         reverse(options, logger);
