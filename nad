@@ -66,7 +66,7 @@ const settings = {
     api: { // used by self-configure and reverse connection
         key: null,
         app: 'nad',
-        url: 'https://api.circonus.com/v2',
+        url: 'https://api.circonus.com/v2/',
         verbose: false,
         use_apiurl: true, // toggles using the new settings.api.url vs deprecated 'api_options'
         api_options: {
@@ -669,6 +669,9 @@ for (let i = 2; i < process.argv.length; i++) {
         case '--apiurl': {
             // NOTE: using this will override all other --api(host,port,path,protocol) options set
             settings.api.url = process.argv[++i];
+            if (settings.api.url.substr(-1) !== '/') {
+                settings.api.url += '/';
+            }
             break;
         }
 
@@ -1010,7 +1013,8 @@ function rescan_modules() {
 //   1. Run all scripts
 //   2. Put the output as JSON into the passed result
 function run_scripts(req, res, which) {
-    log.info('script run - web access');
+    log.info({ which }, 'running script(s)');
+
     // this is a per-request counter that lets us know
     // when all scripts have returned and it's safe to
     // stringify out the output.
@@ -1110,6 +1114,7 @@ function handler(req, res) {
 
         // request for meta-info about the scripts
         if (/^\/inventory/.test(urlPath)) {
+            log.debug('inventory request');
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.write(JSON.stringify(scripts));
             res.end();
@@ -1118,6 +1123,7 @@ function handler(req, res) {
 
         // request to run all scripts and return results
         if (/^\/(?:run)?$/.test(urlPath)) {
+            log.debug('running all scripts');
             run_scripts(req, res);
             return;
         }
@@ -1125,6 +1131,7 @@ function handler(req, res) {
         // request to run just one script and return results
         matches = (/^\/run\/(.+)$/).exec(path);
         if (matches) {
+            log.debug({ script: matches[1] }, 'running script');
             run_scripts(req, res, matches[1]);
             return;
         }
@@ -1132,11 +1139,13 @@ function handler(req, res) {
         // wmi
         if (settings.is_windows) {
             if ((/^\/wmi\/get-categories$/).test(path)) {
+                log.debug('wmi categories request');
                 circwmi.get_categories(res);
                 return;
             }
             matches = (/^\/wmi\/(.+)$/).exec(path);
             if (matches) {
+                log.debug({ category: metches[1] }, 'wmi counters request');
                 circwmi.get_counters_for_category(res, matches[1], settings.debug_dir, settings.wipe_debug_dir);
                 return;
             }
@@ -1151,6 +1160,7 @@ function handler(req, res) {
                     res.end();
                     return;
                 }
+                log.debug({ name: matches[1] }, 'write request');
                 if (settings.debug_dir !== null) {
                     dutil.write_debug_output(matches[1], [ 'Receiving push_receiver data', body ], settings.debug_dir, settings.wipe_debug_dir);
                 }
@@ -1163,6 +1173,7 @@ function handler(req, res) {
 
         // otherwise... consider it an invalid request
 
+        log.debug({ path }, 'invalid request');
         res.writeHead(404);
         res.end();
     });
