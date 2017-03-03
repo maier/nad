@@ -43,6 +43,8 @@ const log = pino({
     enabled: true
 });
 
+log.info('initializing');
+
 const prefixError = chalk.red('ERROR:');
 // const prefixWarn = chalk.yellow('WARN:');
 
@@ -84,7 +86,10 @@ const settings = {
     listen: [] // server listening address(es)/port(s)
 };
 
-// isolate windows-specific stuff (if this isn't windows, no reason to load module)
+// only load if it's going to be used. (if metric debugging is activated)
+let dutil = null;
+
+// only load if it's going to be used. (if this is windows)
 let circwmi = null;
 
 if (process.platform === 'win32') {
@@ -99,23 +104,6 @@ if (process.platform === 'win32') {
     }
     settings.is_windows = true;
 }
-
-// no need to load this module if it won't be used
-let dutil = null;
-
-if (settings.debug_dir !== null) {
-    try {
-        dutil = require('debug_util');
-    } catch (err) {
-        const msg = 'unable to load debug_util module';
-
-        console.error(prefixError, msg, err);
-        log.fatal({ err }, msg);
-        process.exit(1);
-    }
-}
-
-log.info('initializing');
 
 // "globals" ///////////////////////////////////////////////////////////
 
@@ -752,6 +740,18 @@ if (settings.auth_token !== null) {
     if (!settings.use_reverse_connection) {
         configure_circonus();
         process.exit(0);
+    }
+}
+
+if (settings.debug_dir !== null) {
+    try {
+        dutil = require('debug_util');
+    } catch (err) {
+        const msg = 'unable to load debug_util module';
+
+        console.error(prefixError, msg, err);
+        log.fatal({ err }, msg);
+        process.exit(1);
     }
 }
 
