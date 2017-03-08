@@ -229,6 +229,7 @@ function post_boot() {
         try {
             reverse = require('reverse');
         } catch (err) {
+            console.error(err);
             log.fatal({ err }, 'unable to set up reverse connection');
             process.exit(1);
         }
@@ -242,7 +243,8 @@ function post_boot() {
         const options = {
             cafile: settings.cafile,
             hostname: settings.hostname,
-            auth_token: settings.api.key,
+            apiKey: settings.api.key,
+            apiApp: settings.api.app,
             api_options,
             check_bundle_id: settings.check_bundle_id,
             server_port: settings.listen[0].port
@@ -1145,7 +1147,7 @@ function handler(req, res) {
             }
             matches = (/^\/wmi\/(.+)$/).exec(path);
             if (matches) {
-                log.debug({ category: metches[1] }, 'wmi counters request');
+                log.debug({ category: matches[1] }, 'wmi counters request');
                 circwmi.get_counters_for_category(res, matches[1], settings.debug_dir, settings.wipe_debug_dir);
                 return;
             }
