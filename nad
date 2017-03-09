@@ -83,7 +83,8 @@ const settings = {
         listen: [], // server listening address(es)/port(s)
         creds: {} // ssl credentials
     }, // ssl server options
-    listen: [] // server listening address(es)/port(s)
+    listen: [], // server listening address(es)/port(s)
+    sendNADStats: true // send nad stats (cpu, memory, uptime)
 };
 
 // only load if it's going to be used. (if metric debugging is activated)
@@ -1030,6 +1031,13 @@ function run_scripts(req, res, which) {
     function send_complete() {
         if (req.nad_run_count !== 0) {
             return;
+        }
+        if (settings.sendNADStats) {
+            set.nad = {
+                cpu: process.cpuUsage(),
+                memory: process.memoryUsage(),
+                uptime: process.uptime()
+            };
         }
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.write(JSON.stringify(set));
