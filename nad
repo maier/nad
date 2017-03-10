@@ -166,7 +166,7 @@ function merge_types(typeA, typeB) {
     return 'n';
 }
 
-// runs a single script / native plugin and then fire a callback
+// runs a single script / native plugin and then fires a callback
 //   plugin is the object for the script that's stored in 'scripts'
 //   cb is what we call back when done
 //   req is the request object (passed to native plugins)
@@ -314,7 +314,7 @@ function run_script(plugin, cb, req, args, instance) {
                 try {
                     proc_data.options = JSON.parse(line.substring(1));
                 } catch (err) {
-                    log.error({ err }, 'Error parsing proc otions');
+                    log.error({ err }, 'processing proc options');
                 }
 
                 // set a timeout to stop this run if requested in meta block
@@ -322,17 +322,12 @@ function run_script(plugin, cb, req, args, instance) {
                     proc_data.timeout = setTimeout(kill_func,
                                          proc_data.options.timeout * 1000);
                 }
+            } else if (line.length > 0) {
+                // if line has data, addd to collected lines
+                proc_data.lines.push(line);
             } else {
-                // if this line has data in it, simply shuffle it into
-                // list of lines that will need to be processed
-                if (line.length) { // eslint-disable-line no-lonely-if
-                    proc_data.lines.push(line);
-                } else {
-                    // however if the line doesn't have data in it it's a blank
-                    // line, meaning we should attempt to process everything that
-                    // we've collected so far up until this point
-                    handle_output(plugin, cb, instance);
-                }
+                // if a blank line, process collected lines
+                handle_output(plugin, cb, instance);
             }
 
             // discard this line from the buffer we're using between
@@ -343,14 +338,16 @@ function run_script(plugin, cb, req, args, instance) {
     });
 
     // when the command is done, mark it as no longer running.
-    cmd.on('exit', (code, signal) => { // eslint-disable-line no-unused-vars
+    cmd.on('exit', (code, signal) => {
+        if (code !== 0) {
+            log.warn({ name: instance, cmd: plugin.command, code, signal }, 'plugin exit code non-zero');
+        }
         plugin.running = false;
     });
 
-  // if there's any error running the command, log it and remove
-  // it from the list of scripts we're running
+  // if there's any error running the command, log it and remove it from the list
     cmd.on('error', (err) => {
-        log.error({ err, cmd: plugin.command }, `Error on command, removing from scripts`);
+        log.error({ name: instance, err, cmd: plugin.command }, `command error, removing from plugin list`);
         proc_data.data = '';
         plugin.running = false;
         delete scripts[plugin.name];
@@ -864,7 +861,6 @@ for (const server of settings.listen) {
     }
 }
 
-
 for (const server of settings.ssl.listen) {
     log.debug({ server }, 'starting SSL server');
 
@@ -880,10 +876,4 @@ for (const server of settings.ssl.listen) {
     }
 }
 
-// //////////////////////////////////////////////////////////////////////
-// done
-// //////////////////////////////////////////////////////////////////////
-
-// initial setup is all done now
-// at this point if we've started servers etc the process will keep
-// running even though we "fall off the end" of the code here
+// END
