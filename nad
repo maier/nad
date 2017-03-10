@@ -1,4 +1,6 @@
 #!/usr/bin/env node
+// #!/bin/sh
+// ':' // ; exec "$(command -v node)" --expose-gc --throw-deprecation --trace-warnings "$0" "$@"
 // -*-Javascript-*-
 
 /* eslint-disable no-process-exit */
@@ -30,62 +32,14 @@
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
-const os = require('os');
 const path = require('path');
 const spawn = require('child_process').spawn;
 const url = require('url');
 
-const chalk = require('chalk');
-const pino = require('pino');
-const log = pino({
-    name: 'nad',
-    level: 'info',
-    enabled: true
-});
+const settings = require('settings');
+const log = settings.logger.child({ module: 'main' });
 
 log.info('initializing');
-
-const prefixError = chalk.red('ERROR:');
-// const prefixWarn = chalk.yellow('WARN:');
-
-const defaultServer = { port: 2609, address: null };
-
-const settings = {
-    plugin_dir: '/opt/circonus/etc/node-agent.d', // directory where plugins are located
-    is_windows: false, // is running system windows
-    is_booted: false, // has bootstrap completed
-    drop_uid: 0, // drop privileges to UID, if supported and specified on command line
-    cafile: null, // broker ca certificate file (used to set up reverse connection)
-    check_bundle_id: null, // id of check bundle to use for reverse connection
-    auth_token: null, // circonus api auth token key to use for api calls
-    use_reverse_connection: false, // set up a reverse connection to the broker
-    target: null, // used by self-configure
-    hostname: os.hostname(), // used by self-configure and reverse connection
-    broker_id: null, // used by self-configure
-    configfile: null, // used by self-configure
-    api: { // used by self-configure and reverse connection
-        key: null,
-        app: 'nad',
-        url: 'https://api.circonus.com/v2/',
-        verbose: false,
-        use_apiurl: true, // toggles using the new settings.api.url vs deprecated 'api_options'
-        api_options: {
-            host: null, // deprecated
-            port: null, // deprecated
-            path: null, // deprecated
-            protocol: null // deprecated
-        }
-    },
-    debug_dir: null, // if set, a dir to write debug logs to
-    wipe_debug_dir: false, // if true, wipe debug logs clean before each write
-    ssl: {
-        verify: false, // use ca certificate for verifications
-        listen: [], // server listening address(es)/port(s)
-        creds: {} // ssl credentials
-    }, // ssl server options
-    listen: [], // server listening address(es)/port(s)
-    sendNADStats: true // send nad stats (cpu, memory, uptime)
-};
 
 // only load if it's going to be used. (if metric debugging is activated)
 let dutil = null;
@@ -93,17 +47,16 @@ let dutil = null;
 // only load if it's going to be used. (if this is windows)
 let circwmi = null;
 
-if (process.platform === 'win32') {
+if (settings.is_windows) {
     try {
         circwmi = require('circwmi');
     } catch (err) {
         const msg = 'unable to load circwmi module';
 
-        console.error(prefixError, msg, err);
+        console.error(settings.prefixError, msg, err);
         log.fatal({ err }, msg);
         process.exit(1);
     }
-    settings.is_windows = true;
 }
 
 // "globals" ///////////////////////////////////////////////////////////
@@ -130,86 +83,6 @@ let push_script = null;
 // each time we scan for new scripts on disk.
 let generation = 0;
 
-// //////////////////////////////////////////////////////////////////////
-// autoconfig with circonus
-// //////////////////////////////////////////////////////////////////////
-function configure_circonus() {
-    let nadapi = null;
-    let error = false;
-
-    if (settings.target === null) {
-        console.error('--target is required.');
-        error = true;
-    }
-
-    if (settings.broker_id === null || !(/^\d+$/).test(settings.broker_id)) {
-        console.error('--brokerid is required and should be an integer.');
-        error = true;
-    }
-
-    if (settings.configfile === null) {
-        console.error('--configfile is required.');
-        error = true;
-    }
-
-    if (error) {
-        process.exit(1);
-    }
-
-    try {
-        nadapi = require('nad_circapi');
-    } catch (err) {
-        log.fatal({ err }, 'failed to load nad_circapi module');
-        process.exit(1);
-    }
-
-    let api_options = url.parse(settings.api.url);
-
-    if (!settings.api.use_apiurl) {
-        api_options = settings.api.old_options;
-    }
-
-    nadapi.configure(settings.api.key, settings.target, settings.hostname, settings.broker_id, settings.configfile, api_options);
-    process.exit(0);
-}
-
-
-// //////////////////////////////////////////////////////////////////////
-// help
-// //////////////////////////////////////////////////////////////////////
-function help(errMsg) {
-    console.log(`${process.argv[1]}\n` +
-              `\t-h\t\t\tthis help message\n` +
-              `\t-c <pathspec>\t\tplugin/config dir\n` +
-              `\t-d\t\t\tturn on debugging messages\n` +
-              `\t-p [ip:]<port>\t\tunsecured port\n` +
-              `\t-s [ip:]<secureport>\tsecured port\n` +
-              `\t-v\t\t\tverify secured traffic\n` +
-              `\t-r\t\t\tattempt reverse connection\n` +
-              `\t--authtoken\t\tCirconus API auth token to use, if passed will attempt to configure via the Circonus API then exit. [deprecated, use --apikey]\n` +
-              `\t--target\t\tTarget Circonus will use to contact this host.\n` +
-              `\t--hostname\t\tHostname used in check and graph names (and searching for reverse connection checks), if not passed we will attempt to look it up.\n` +
-              `\t--brokerid\t\tID of the Circonus broker to configure the check on.\n` +
-              `\t--cid\t\tID of the Circonus check bundle which we will use to find the proper broker for reverse connections.\n` +
-              `\t--cafile\t\tpath to CA certificate file to use for the broker during reverse connections.\n` +
-              `\t--configfile\t\tName of the file in the config directory to use for Circonus configuration.\n` +
-              `\t--debugdir\t\tCreate debug files for each script and write them to this directory.\n` +
-              `\t--wipedebugdir\t\tWipe debug files clean before each write.\n` +
-              `\t--apikey\t\tCirconus API auth token key to use, (used by self-config or reverse connection) alternate to --authtoken.\n` +
-              `\t--apiapp\t\tCirconus API auth token app to use, (used by self-config or reverse connection). default: 'nad'\n` +
-              `\t--apiurl\t\tCirconus API URL to use, (used by self-config or reverse connection). alternate to --api(host,port,path,protocol) default: https://api.circonus.com/v2\n` +
-              `\t--apihost\t\tOverride the host for the Circonus API server (default: api.circonus.com) [deprecated, use --apiurl]\n` +
-              `\t--apiport\t\tOverride the port for the Circonus API server (default: 443) [deprecated, use --apiurl]\n` +
-              `\t--apipath\t\tOverride the path for the Circonus API server (default: /v2) [deprecated, use --apiurl]\n` +
-              `\t--apiprotocol\t\tOverride the protocol for the Circonus API server (default: https) [deprecated, use --apiurl]\n` +
-              `\t--apiverbose\t\tOutput API traffic to STDERR\n` +
-              `\t-i\t\t\toffline inventory\n`
-            );
-    if (errMsg) {
-        console.error(prefixError, errMsg);
-        process.exit(-1);
-    }
-}
 
 // //////////////////////////////////////////////////////////////////////
 // setuid
@@ -223,7 +96,7 @@ function post_boot() {
         process.setuid(settings.drop_uid);
     }
 
-    if (settings.use_reverse_connection) {
+    if (settings.reverse.enabled) {
         log.info('setting up reverse connection');
         let reverse = null;
 
@@ -242,17 +115,26 @@ function post_boot() {
         }
 
         const options = {
-            cafile: settings.cafile,
+            cafile: settings.reverse.broker_ca,
             hostname: settings.hostname,
             apiKey: settings.api.key,
             apiApp: settings.api.app,
             api_options,
-            check_bundle_id: settings.check_bundle_id,
+            check_bundle_id: settings.reverse.check_bundle_id,
             server_port: settings.listen[0].port
         };
 
         reverse(options, log);
     }
+
+
+    if (global.gc) {
+        setInterval(() => {
+            log.info('running gc');
+            global.gc();
+        }, 300 * 1000);
+    }
+
 
     log.debug('bootstrap complete');
 }
@@ -509,284 +391,15 @@ function init_script(plugin, req, cb) {
 }
 
 
-// //////////////////////////////////////////////////////////////////////
-// process commmand line arguments
-// //////////////////////////////////////////////////////////////////////
-
-for (let i = 2; i < process.argv.length; i++) {
-    switch (process.argv[i]) {
-        case '-d': {
-            log.level = 'debug';
-            log.debug('debug logging enabled');
-            break;
-        }
-
-        case '-h': {
-            help();
-            process.exit(0);
-            break;
-        }
-
-        // set the config [meaning 'plugin'] dir
-        case '-c': {
-            settings.plugin_dir = fs.realpathSync(process.argv[++i]);
-            break;
-        }
-
-        // offline inventory
-        case '-i': {
-            // if we're just indexing, do that then quit
-            let index = null;
-
-            try {
-                index = require('indexer');
-            } catch (err) {
-                const msg = 'unable to load index module';
-
-                console.error(prefixError, msg, err);
-                log.fatal({ err }, msg);
-                process.exit(1);
-            }
-
-            index(settings.plugin_dir);
-            process.exit(0);
-            break;
-        }
-
-        // switch to this uid after starting
-        // (only if node supports it on the host os)
-        case '-u': {
-            const uid = parseInt(process.argv[++i], 10);
-
-            if (uid <= 0) {
-                log.warn({ uid }, 'invalid drop uid specified');
-                break;
-            }
-
-            if (!process.setuid) {
-                log.warn({ platform: process.platform }, 'dropping permissions not supported');
-                break;
-            }
-
-            settings.drop_uid = uid;
-            break;
-        }
-
-        // specify one or more ports (and, optionally, IP) to listen for
-        // http requests on. either in the form "8080" or "127.0.0.1:8080"
-        case '-p': {
-            const portSpec = process.argv[++i].split(/:/);
-
-            if (portSpec.length === 1) {
-                portSpec.unshift(null);
-            }
-            if (portSpec.length !== 2) {
-                help('-p [ip:]port');
-            }
-            settings.listen.push({ port: parseInt(portSpec[1], 10), address: portSpec[0] });
-            break;
-        }
-
-        // specify one or more ports (and, optionally, IP) to listen for
-        // https requests on either in the form "4443" or "127.0.0.1:4443"
-        case '-s': {
-            const sslPortSpec = process.argv[++i].split(/:/);
-
-            if (sslPortSpec.length === 1) {
-                sslPortSpec.unshift(null);
-            }
-            if (sslPortSpec.length !== 2) {
-                help('-s [ip:]port');
-            }
-            settings.ssl.listen.push({ port: parseInt(sslPortSpec[1], 10), address: sslPortSpec[0] });
-            break;
-        }
-
-        // should we verify using a certificate authority the SSL certificate presented?
-        // applies to listening SSL ports
-        case '-v': {
-            settings.ssl.verify = true;
-            break;
-        }
-
-        // options for reverse connections
-
-        case '-r': {
-            settings.use_reverse_connection = true;
-            break;
-        }
-
-        case '--cid': {
-            settings.check_bundle_id = process.argv[++i];
-            break;
-        }
-
-        case '--cafile': {
-            settings.cafile = process.argv[++i];
-            break;
-        }
-
-        // options for autoconfig with circonus api [self-configure]
-
-        case '--target': {
-            settings.target = process.argv[++i];
-            break;
-        }
-
-        case '--hostname': {
-            // NOTE: used by both self-configure and reverse connection
-            settings.hostname = process.argv[++i];
-            break;
-        }
-
-        case '--brokerid': {
-            settings.broker_id = process.argv[++i];
-            break;
-        }
-
-        case '--configfile': {
-            settings.configfile = fs.realpathSync(process.argv[++i]);
-            break;
-        }
-
-        // api options
-
-        case '--apikey':
-        case '--authtoken': {
-            const api_key = process.argv[++i];
-
-            if (!(/^[0-9a-fA-F]{4}(?:[0-9a-fA-F]{4}-){4}[0-9a-fA-F]{12}$/).test(api_key)) {
-                console.error(prefixError, '(--apikey|--authtoken) should be a UUID.');
-                process.exit(1);
-            }
-            settings.api.key = api_key;
-            break;
-        }
-
-        case '--apiapp': {
-            // override default circonus api token app 'nad'
-            settings.api.app = process.argv[++i];
-            break;
-        }
-
-        case '--apiurl': {
-            // NOTE: using this will override all other --api(host,port,path,protocol) options set
-            settings.api.url = process.argv[++i];
-            if (settings.api.url.substr(-1) !== '/') {
-                settings.api.url += '/';
-            }
-            break;
-        }
-
-        case '--apihost': {
-            // TODO: deprecate
-            log.warn('--apihost is deprecated use --apiurl');
-            settings.api.use_apiurl = false;
-            settings.api.old_options.host = process.argv[++i];
-            break;
-        }
-
-        case '--apiport': {
-            // TODO: deprecate
-            log.warn('--apiport is deprecated use --apiurl');
-            settings.api.use_apiurl = false;
-            settings.api.old_options.port = process.argv[++i];
-            break;
-        }
-
-        case '--apipath': {
-            // TODO: deprecate
-            log.warn('--apipath is deprecated use --apiurl');
-            settings.api.use_apiurl = false;
-            settings.api.old_options.path = process.argv[++i];
-            break;
-        }
-
-        case '--apiprotocol': {
-            // TODO: deprecate
-            log.warn('--apiprotocol is deprecated use --apiurl');
-            settings.api.use_apiurl = false;
-            settings.api.old_options.protocol = process.argv[++i];
-            break;
-        }
-
-        case '--apiverbose': {
-            settings.api.verbose = true;
-            break;
-        }
-
-        // debugging of plugin metrics
-
-        case '--debugdir': {
-            settings.debug_dir = fs.realpathSync(process.argv[++i]);
-            break;
-        }
-
-        case '--wipedebugdir': {
-            settings.wipe_debug_dir = true;
-            ++i;
-            break;
-        }
-
-
-        // unknown option, just display the helptext
-
-        default: {
-            help(`unknown argument: ${process.argv[i]}`);
-        }
-    }
-}
-
-// there are only two purposes for specifying an api auth token key
-// 1. reverse connections
-// 2. an attempt to self-configure
-// if an auth token is supplied but there is no '-r'everse option specified
-// it is implied to be #2. so, attempt a self-configuration.
-if (settings.auth_token !== null) {
-    if (!settings.use_reverse_connection) {
-        configure_circonus();
-        process.exit(0);
-    }
-}
-
 if (settings.debug_dir !== null) {
     try {
         dutil = require('debug_util');
     } catch (err) {
         const msg = 'unable to load debug_util module';
 
-        console.error(prefixError, msg, err);
+        console.error(settings.prefixError, msg, err);
         log.fatal({ err }, msg);
         process.exit(1);
-    }
-}
-
-// setup ports / ssl
-if (settings.listen.length === 0) {
-    settings.listen.push(defaultServer);
-}
-
-if (settings.listen.length === 0 && settings.ssl.listen.length === 0) {
-    help('must specify at least one of -p and -s');
-}
-
-if (settings.ssl.listen.length > 0) {
-    try {
-    // Setup creds
-        settings.ssl.creds.key = fs.readFileSync(path.join(settings.plugin_dir, 'na.key')).toString();
-        settings.ssl.creds.cert = fs.readFileSync(path.join(settings.plugin_dir, 'na.crt')).toString();
-        if (settings.ssl.verify) {
-            settings.ssl.creds.ca = fs.readFileSync(path.join(settings.plugin_dir, 'na.ca')).toString();
-        }
-    } catch (err) {
-        log.error('Make sure:');
-        log.error(`\tyour key is available: ${path.join(settings.plugin_dir, 'na.key')}`);
-        log.error(`\tyour cert is available: ${path.join(settings.plugin_dir, 'na.crt')}`);
-        if (settings.ssl.verify) {
-            log.error(`\tyour ca is available: ${path.join(settings.plugin_dir, 'na.ca')}`);
-        }
-        log.error(`\n${err}`);
-        process.exit(-1);
     }
 }
 
@@ -926,7 +539,7 @@ function rescan_modules() {
                     if (cfgErr.code !== 'MODULE_NOT_FOUND') {
                         const msg = 'error loading config file';
 
-                        console.error(prefixError, msg, cfgErr);
+                        console.error(settings.prefixError, msg, cfgErr);
                         log.fatal({ err: cfgErr, file: cfgFile }, msg);
                         process.exit(1);
                     }
@@ -945,7 +558,7 @@ function rescan_modules() {
                 } catch (perr) {
                     const msg = 'unable to load native plugin';
 
-                    console.error(prefixError, msg, def.command, perr);
+                    console.error(settings.prefixError, msg, def.command, perr);
                     log.fatal({ err: perr, file: def.command }, msg);
                 }
 
@@ -970,7 +583,7 @@ function rescan_modules() {
         if (err) {
             const msg = 'unable to read config directory';
 
-            console.error(prefixError, msg, err);
+            console.error(settings.prefixError, msg, err);
             log.fatal({ err, dir: settings.plugin_dir }, msg);
             process.exit(-1);
         }
@@ -1016,7 +629,7 @@ function rescan_modules() {
 //   1. Run all scripts
 //   2. Put the output as JSON into the passed result
 function run_scripts(req, res, which) {
-    log.info({ which }, 'running script(s)');
+    log.info({ which }, 'running plugin(s)');
 
     // this is a per-request counter that lets us know
     // when all scripts have returned and it's safe to
@@ -1141,7 +754,7 @@ function handler(req, res) {
         // request to run just one script and return results
         matches = (/^\/run\/(.+)$/).exec(path);
         if (matches) {
-            log.debug({ script: matches[1] }, 'running script');
+            log.debug({ script: matches[1] }, 'running plugin');
             run_scripts(req, res, matches[1]);
             return;
         }
@@ -1209,7 +822,7 @@ try {
     } catch (err) {
         const msg = 'failed to load push_recever module';
 
-        console.error(prefixError, msg, err);
+        console.error(settings.prefixError, msg, err);
         log.fatal({ err }, msg);
         process.exit(1);
     }
@@ -1227,7 +840,7 @@ try {
 } catch (err) {
     const msg = 'unable to initialize push receiver';
 
-    console.log(prefixError, msg, err);
+    console.log(settings.prefixError, msg, err);
     log.fatal({ err }, msg);
     process.exit(1);
 }
@@ -1245,7 +858,7 @@ for (const server of settings.listen) {
     } catch (err) {
         const msg = 'failed to start server';
 
-        console.error(prefixError, msg, server, err);
+        console.error(settings.prefixError, msg, server, err);
         log.fatal({ server, err }, msg);
         process.exit(-1);
     }
@@ -1261,7 +874,7 @@ for (const server of settings.ssl.listen) {
     } catch (err) {
         const msg = 'failed to start SSL server';
 
-        console.error(prefixError, msg, server, err);
+        console.error(settings.prefixError, msg, server, err);
         log.fatal({ server, err }, msg);
         process.exit(-1);
     }
