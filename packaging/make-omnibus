@@ -116,7 +116,7 @@ build_nodejs() {
     echo "Building node"
     pushd $BUILDDIR/node-$NODE_VERSION > /dev/null
     make clean || make distclean
-    ./configure --prefix=$PREFIX/embedded
+    ./configure --prefix=$PREFIX
     make -j $MAKE_JOBS
     make DESTDIR=$INSTALLDIR install
     popd > /dev/null
@@ -126,7 +126,7 @@ install_binary_nodejs() {
     local node_binary_arch
     local node_binary_tgz
     local node_binary_url
-    local node_dest_dir="${INSTALLDIR}/${PREFIX}/embedded"
+    local node_dest_dir="${INSTALLDIR}/${PREFIX}"
 
     [[ "$PLATFORM" == "i386" ]] && node_binary_arch="x86"
     [[ "$PLATFORM" == "x86_64" || "$PLATFORM" == "amd64" ]] && node_binary_arch="x64"
