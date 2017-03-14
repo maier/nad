@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-// #!/bin/sh
-// ':' // ; exec "$(command -v node)" --expose-gc --throw-deprecation --trace-warnings "$0" "$@"
 // -*-Javascript-*-
 
 /* eslint-disable no-process-exit */
@@ -16,39 +14,48 @@
 
 'use strict';
 
-//
-// Toss executables (scripts too) in /etc/node-agent.d
-// Each program should produce lines as follows:
-//    <name><whitespace><type>
-// or:
-//    <name><whitespace><type><whitespace><value>
-//
-// The first indicates the value is present and null
-// the second indicates the value is present and specific
-//
+/*
 
-// require //////////////////////////////////////////////////////////////
+Plugins
+
+Executable plugins:
+    Place excutable file in plugin_dir (default: /opt/circonus/etc/node-agent.d)
+
+    Plugin should emit lines in one of the following two formats:
+        <metric_name><whitespace><metric_type>
+    or:
+        <metric_name><whitespace><metric_type><whitespace><value>
+
+    The first indicates the metric_name is present with a null value.
+    The second indicates the metric_name is present with a specific value.
+
+Native plugins:
+    Place file (ending in '.js') into plugin_dir. See example at:
+    https://github.com/circonus-labs/nad/blob/master/plugins/example/native.js
+
+Push receiver
+    Metrics can be 'pushed' to NAD via HTTP PUT|POST 127.0.0.1:2609/write with body as JSON
+
+*/
 
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
 const path = require('path');
-// const spawn = require('child_process').spawn;
 const url = require('url');
 
 const settings = require('settings');
 const Plugins = require('plugins');
 let plugins = null;
-
+let push_receiver = null; // listener, metrics can be 'pushed' to nad
 const log = settings.logger;
+let circwmi = null; // only load if it's going to be used. (iow, if this is windows)
 
 log.info('initializing');
 
-// only load if it's going to be used. (iow, if this is windows)
-let circwmi = null;
-
 if (settings.is_windows) {
     try {
+        log.info('loading WMI module for Windows platform');
         circwmi = require('circwmi');
     } catch (err) {
         const msg = 'unable to load circwmi module';
@@ -59,27 +66,132 @@ if (settings.is_windows) {
     }
 }
 
-// "globals" ///////////////////////////////////////////////////////////
+// handler processes web requests
+function handler(req, res) {
+    const bodyChunks = [];
 
-// listener for metrics - metrics can be 'pushed' to nad as json
-// POST 127.0.0.1:2609/write with body as JSON
-// (see protocol_observer usage in postgres and cassandra plugins)
-let push_receiver = null;
+    req.addListener('data', (chunk) => {
+        bodyChunks.push(chunk);
+    });
 
-// //////////////////////////////////////////////////////////////////////
-// setuid
-// //////////////////////////////////////////////////////////////////////
+    req.addListener('end', () => {
+        let matches = null;
+        const urlPath = url.parse(req.url).pathname;
+        const body = Buffer.concat(bodyChunks).toString();
 
-function post_boot() {
+        if (req.method === 'GET') {
+            // request for meta-info about the loaded plugins
+            if (/^\/inventory/.test(urlPath)) {
+                log.debug('inventory request');
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(plugins.inventory());
+                res.end();
+                return;
+            }
+
+            // request to run all plugins and return results
+            if (/^\/(?:run)?$/.test(urlPath)) {
+                log.debug('running all scripts');
+                plugins.run_scripts(req, res, null);
+                return;
+            }
+
+            // request to run just one plugin and return results
+            matches = (/^\/run\/(.+)$/).exec(path);
+            if (matches) {
+                log.debug({ script: matches[1] }, 'running plugin');
+                plugins.run_scripts(req, res, matches[1]);
+                return;
+            }
+
+            // wmi-specific
+            if (settings.is_windows) {
+                if ((/^\/wmi\/get-categories$/).test(path)) {
+                    log.debug('wmi categories request');
+                    circwmi.get_categories(res);
+                    return;
+                }
+                matches = (/^\/wmi\/(.+)$/).exec(path);
+                if (matches) {
+                    log.debug({ category: matches[1] }, 'wmi counters request');
+                    circwmi.get_counters_for_category(res, matches[1], settings.debug_dir, settings.wipe_debug_dir);
+                    return;
+                }
+            }
+        }
+
+        // push plugin
+        if (push_receiver !== null) {
+            matches = (/^\/write\/(.+)$/).exec(path);
+            if (matches) {
+                if (req.method !== 'PUT' && req.method !== 'POST') {
+                    res.writeHead(405, 'Method Not Allowed', { Allow : 'PUT, POST' });
+                    res.end();
+                    return;
+                }
+                log.debug({ name: matches[1] }, 'write request');
+                log.trace({ name: matches[1], data: body }, 'write metrics');
+                push_receiver.obj.some_data(matches[1], body);
+                res.writeHead(200, 'OK', { 'Content-Type': 'text/plan' });
+                res.end();
+                return;
+            }
+        }
+
+        // otherwise... consider it an invalid request
+
+        log.debug({ method: req.method, path }, 'invalid request');
+        res.writeHead(404);
+        res.end();
+    });
+
+    // if we don't have a data listener the stream starts paused in node 10+
+    req.addListener('data', () => {});
+}
+
+// finish_bootstrap completes the loading process after plugins have been scanned
+function finish_bootstrap() {
     settings.is_booted = true;
 
-    if (!settings.file_watch) {
-        log.info('installing SIGHUP handler to trigger plugin rescan');
-        process.on('SIGHUP', () => {
-            log.info('SIGHUP received, re-scanning plugins');
-            plugins.scan();
-        });
+    // //////////////////////////////////////////////////////////////////////
+    // start webservers
+    // //////////////////////////////////////////////////////////////////////
+
+    for (const server of settings.listen) {
+        log.debug({ server }, 'starting server');
+
+        try {
+            http.createServer(handler).listen(server.port, server.address);
+            log.info({ server }, 'started');
+        } catch (err) {
+            const msg = 'failed to start server';
+
+            console.error(settings.prefixError, msg, server, err);
+            log.fatal({ server, err }, msg);
+            process.exit(-1);
+        }
     }
+
+    for (const server of settings.ssl.listen) {
+        log.debug({ server }, 'starting SSL server');
+
+        try {
+            https.createServer(settings.ssl.creds, handler).listen(server.port, server.address);
+            log.info({ server }, 'started (SSL)');
+        } catch (err) {
+            const msg = 'failed to start SSL server';
+
+            console.error(settings.prefixError, msg, server, err);
+            log.fatal({ server, err }, msg);
+            process.exit(-1);
+        }
+    }
+
+    log.debug('installing SIGHUP handler to trigger plugin rescan');
+    process.on('SIGHUP', () => {
+        log.info('SIGHUP received, re-scanning plugins');
+        plugins.scan();
+    });
 
     if (settings.drop_uid > 0 && process.setuid) {
         log.info({ uid: settings.drop_uid }, 'dropping privileges');
@@ -128,102 +240,8 @@ function post_boot() {
     log.debug('bootstrap complete');
 }
 
-// //////////////////////////////////////////////////////////////////////
-// process web requests
-// //////////////////////////////////////////////////////////////////////
-
-// this is the callback that's called whenever something connects
-// to our webserver (either any of the http or the https servers)
-
-function handler(req, res) {
-    const bodyChunks = [];
-
-    req.addListener('data', (chunk) => {
-        bodyChunks.push(chunk);
-    });
-
-  // wait for the request to be completely formed (by registering
-  // a callback on the 'end' event) and then send back the result
-    req.addListener('end', () => {
-        let matches = null;
-        const urlPath = url.parse(req.url).pathname;
-        const body = Buffer.concat(bodyChunks).toString();
-
-        // request for meta-info about the scripts
-        if (/^\/inventory/.test(urlPath)) {
-            log.debug('inventory request');
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            // res.write(JSON.stringify(scripts));
-            res.write(plugins.inventory());
-            res.end();
-            return;
-        }
-
-        // request to run all scripts and return results
-        if (/^\/(?:run)?$/.test(urlPath)) {
-            log.debug('running all scripts');
-            plugins.run_scripts(req, res, null);
-            return;
-        }
-
-        // request to run just one script and return results
-        matches = (/^\/run\/(.+)$/).exec(path);
-        if (matches) {
-            log.debug({ script: matches[1] }, 'running plugin');
-            plugins.run_scripts(req, res, matches[1]);
-            return;
-        }
-
-        // wmi
-        if (settings.is_windows) {
-            if ((/^\/wmi\/get-categories$/).test(path)) {
-                log.debug('wmi categories request');
-                circwmi.get_categories(res);
-                return;
-            }
-            matches = (/^\/wmi\/(.+)$/).exec(path);
-            if (matches) {
-                log.debug({ category: matches[1] }, 'wmi counters request');
-                circwmi.get_counters_for_category(res, matches[1], settings.debug_dir, settings.wipe_debug_dir);
-                return;
-            }
-        }
-
-        // push plugin
-        if (push_receiver !== null) {
-            matches = (/^\/write\/(.+)$/).exec(path);
-            if (matches) {
-                if (req.method !== 'PUT' && req.method !== 'POST') {
-                    res.writeHead(405, 'Method Not Allowed', { Allow : 'PUT, POST' });
-                    res.end();
-                    return;
-                }
-                log.debug({ name: matches[1] }, 'write request');
-                log.trace({ name: matches[1], data: body }, 'write metrics');
-                // if (settings.debug_dir !== null) {
-                //     dutil.write_debug_output(matches[1], [ 'Receiving push_receiver data', body ], settings.debug_dir, settings.wipe_debug_dir);
-                // }
-                push_receiver.obj.some_data(matches[1], body);
-                res.writeHead(200, 'OK', { 'Content-Type': 'text/plan' });
-                res.end();
-                return;
-            }
-        }
-
-        // otherwise... consider it an invalid request
-
-        log.debug({ path }, 'invalid request');
-        res.writeHead(404);
-        res.end();
-    });
-
-    // if we don't have a data listener the stream starts paused in node 10+
-    req.addListener('data', () => {});
-}
-
-// add our specialized push script that handles incoming POST data from any local data spurters
 try {
-    log.debug('loading push receiver');
+    log.debug('loading push receiver handler');
 
     let PushReceiver = null;
 
@@ -245,7 +263,7 @@ try {
         obj: new PushReceiver()
     };
 
-    log.info('push receiver loaded');
+    log.info('push receiver handler loaded');
 
 } catch (err) {
     const msg = 'unable to initialize push receiver';
@@ -254,6 +272,8 @@ try {
     log.fatal({ err }, msg);
     process.exit(1);
 }
+
+// initialize plugins
 
 plugins = new Plugins({
     plugin_dir: settings.plugin_dir,
@@ -267,52 +287,17 @@ plugins = new Plugins({
     push_receiver
 });
 
-// initialize plugins
+// initial scan for plugins and then finish bootstrapping nad
+plugins.scan(finish_bootstrap);
 
 if (settings.file_watch) {
-    // initialize: look for modules, and register a handler to
-    // rescan the modules every time the directory with the modules
-    // in it changes
+    // register a handler to rescan modules every time plugin_dir changes
+    // gated by file_watch so that it can be managed manually by user with
+    // a HUP signal sent to NAD process
     fs.watchFile(settings.plugin_dir, plugins.onchange(() => {
         log.debug({ file: settings.plugin_dir }, 'changed, triggering scan');
         plugins.scan();
     }));
-}
-plugins.scan(post_boot);
-// rescan_modules();
-
-// //////////////////////////////////////////////////////////////////////
-// start webservers
-// //////////////////////////////////////////////////////////////////////
-
-for (const server of settings.listen) {
-    log.debug({ server }, 'starting server');
-
-    try {
-        http.createServer(handler).listen(server.port, server.address);
-        log.info({ server }, 'started');
-    } catch (err) {
-        const msg = 'failed to start server';
-
-        console.error(settings.prefixError, msg, server, err);
-        log.fatal({ server, err }, msg);
-        process.exit(-1);
-    }
-}
-
-for (const server of settings.ssl.listen) {
-    log.debug({ server }, 'starting SSL server');
-
-    try {
-        https.createServer(settings.ssl.creds, handler).listen(server.port, server.address);
-        log.info({ server }, 'started (SSL)');
-    } catch (err) {
-        const msg = 'failed to start SSL server';
-
-        console.error(settings.prefixError, msg, server, err);
-        log.fatal({ server, err }, msg);
-        process.exit(-1);
-    }
 }
 
 // END
