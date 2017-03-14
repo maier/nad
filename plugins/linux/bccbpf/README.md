@@ -13,4 +13,4 @@ Ensure that [bcc-tools](https://github.com/iovisor/bcc) are installed
 ## Install
 
 1. Verify the plugin works by running it manually first (e.g. `./iolatency.py`).
-1. Link plugin into NAD plugin_dir (e.g. `cd ln -s /opt/circonus/etc/node-agent.d/linux/bccbpf; ln -s iolatency.py ../..`)
+1. Link plugin into NAD plugin_dir (e.g. `cd /opt/circonus/etc/node-agent.d/linux/bccbpf; ln -s iolatency.py ../..`)
