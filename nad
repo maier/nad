@@ -103,9 +103,7 @@ function handler(req, res) {
                     res.end();
                     return;
                 }
-                log.debug({ name: matches[1] }, 'write request');
-                log.trace({ name: matches[1], data: body }, 'write metrics');
-                push_receiver.obj.some_data(matches[1], body);
+                push_receiver.native_obj.store_incoming_data(matches[1], body);
                 res.writeHead(200, 'OK', { 'Content-Type': 'text/plan' });
                 res.end();
                 return;
@@ -222,10 +220,9 @@ try {
     }
 
     // NOTE: this *simulates* a regular plugin
-    push_receiver = Plugins.default_plugin;
-    push_receiver.id = 'push_receiver';
+    push_receiver = Plugins.new_plugin('push_receiver');
     push_receiver.is_native = true;
-    push_receiver.native_obj = new PushReceiver();
+    push_receiver.native_obj = new PushReceiver({ log });
 } catch (err) {
     const msg = 'unable to initialize push receiver';
 
