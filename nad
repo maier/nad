@@ -257,19 +257,10 @@ try {
     }
 
     // NOTE: this *simulates* a regular plugin
-    push_receiver = {
-        name: 'push_receiver',
-        generation: -1,
-        command: null,
-        is_native: true,
-        native_obj: new PushReceiver(),
-        running: false,
-        last_start: null,
-        stat: null,
-        config: null,
-        config_file: null,
-        last_result: {}
-    };
+    push_receiver = Plugins.default_plugin;
+    push_receiver.id = 'push_receiver';
+    push_receiver.is_native = true;
+    push_receiver.native_obj = new PushReceiver();
 
     log.info('push receiver handler loaded');
 
@@ -283,7 +274,7 @@ try {
 
 // initialize plugins
 
-plugins = new Plugins({
+plugins = new Plugins.Manager({
     plugin_dir: settings.plugin_dir,
     is_windows: settings.is_windows,
     pfx_error: settings.pfx_error,
