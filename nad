@@ -74,29 +74,32 @@ function handler(req, res) {
 
     req.addListener('end', () => {
         let matches = null;
-        const urlPath = url.parse(req.url).pathname;
+        const url_parts = url.parse(req.url);
+        const url_path = url_parts.pathname;
         const body = Buffer.concat(bodyChunks).toString();
 
-        log.debug({ method: req.method, path: urlPath, base: req.url }, 'request');
+        log.debug({ method: req.method, path: url_path, base: req.url }, 'request');
         if (req.method === 'GET') {
             // request for meta-info about the loaded plugins
-            if (/^\/inventory$/.test(urlPath)) {
+            if (/^\/inventory$/.test(url_path)) {
+                const full = (/\?full/).test(url_parts.search);
+
                 log.debug('inventory request');
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.write(plugins.inventory());
+                res.write(plugins.inventory(full));
                 res.end();
                 return;
             }
 
             // request to run all plugins and return results
-            if (/^\/(?:run)?$/.test(urlPath)) {
+            if (/^\/(?:run)?$/.test(url_path)) {
                 log.debug('running all scripts');
                 plugins.run(req, res, null);
                 return;
             }
 
             // request to run just one plugin and return results
-            matches = (/^\/run\/(.+)$/).exec(urlPath);
+            matches = (/^\/run\/(.+)$/).exec(url_path);
             if (matches) {
                 log.debug({ script: matches[1] }, 'running plugin');
                 plugins.run(req, res, matches[1]);
@@ -105,12 +108,12 @@ function handler(req, res) {
 
             // wmi-specific
             if (settings.is_windows) {
-                if ((/^\/wmi\/get-categories$/).test(urlPath)) {
+                if ((/^\/wmi\/get-categories$/).test(url_path)) {
                     log.debug('wmi categories request');
                     circwmi.get_categories(res);
                     return;
                 }
-                matches = (/^\/wmi\/(.+)$/).exec(urlPath);
+                matches = (/^\/wmi\/(.+)$/).exec(url_path);
                 if (matches) {
                     log.debug({ category: matches[1] }, 'wmi counters request');
                     circwmi.get_counters_for_category(res, matches[1], settings.debug_dir, settings.wipe_debug_dir);
@@ -121,7 +124,7 @@ function handler(req, res) {
 
         // push plugin
         if (push_receiver !== null) {
-            matches = (/^\/write\/(.+)$/).exec(urlPath);
+            matches = (/^\/write\/(.+)$/).exec(url_path);
             if (matches) {
                 if (req.method !== 'PUT' && req.method !== 'POST') {
                     res.writeHead(405, 'Method Not Allowed', { Allow : 'PUT, POST' });
@@ -139,7 +142,7 @@ function handler(req, res) {
 
         // otherwise... consider it an invalid request
 
-        log.debug({ method: req.method, path: urlPath }, 'invalid request');
+        log.debug({ method: req.method, path: url_path }, 'invalid request');
         res.writeHead(404, 'invalid request');
         res.end();
     });
@@ -262,7 +265,7 @@ try {
         native_obj: new PushReceiver(),
         running: false,
         last_start: null,
-        sb: null,
+        stat: null,
         config: null,
         config_file: null,
         last_result: {}
