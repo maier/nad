@@ -262,9 +262,11 @@ try {
         is_native: true,
         native_obj: new PushReceiver(),
         running: false,
+        last_start: null,
         sb: null,
         config: null,
-        config_file: null
+        config_file: null,
+        last_result: {}
     };
 
     log.info('push receiver handler loaded');
