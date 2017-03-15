@@ -2,52 +2,24 @@
 // -*-Javascript-*-
 
 /* eslint-disable no-process-exit */
-/* eslint-disable no-sync */
-/* eslint-disable no-bitwise */
-/* eslint-disable no-mixed-operators */
 /* eslint-disable global-require */
-/* eslint-disable no-plusplus */
-/* eslint-disable no-param-reassign */
-/* eslint-disable guard-for-in */
-/* eslit-disable no-nested-ternary */
-/* eslint-disable max-params */
 
 'use strict';
 
-/*
-
-Plugins
-
-Executable plugins:
-    Place excutable file in plugin_dir (default: /opt/circonus/etc/node-agent.d)
-
-    Plugin should emit lines in one of the following two formats:
-        <metric_name><whitespace><metric_type>
-    or:
-        <metric_name><whitespace><metric_type><whitespace><value>
-
-    The first indicates the metric_name is present with a null value.
-    The second indicates the metric_name is present with a specific value.
-
-Native plugins:
-    Place file (ending in '.js') into plugin_dir. See example at:
-    https://github.com/circonus-labs/nad/blob/master/plugins/example/native.js
-
-Push receiver
-    Metrics can be 'pushed' to NAD via HTTP PUT|POST 127.0.0.1:2609/write with body as JSON
-
-*/
-
+// core modules
 const http = require('http');
 const https = require('https');
 const url = require('url');
 
+// local modules
 const settings = require('settings');
 const Plugins = require('plugins');
-let plugins = null;
-let push_receiver = null; // listener, metrics can be 'pushed' to nad
+
 const log = settings.logger;
-let circwmi = null; // only load if it's going to be used. (iow, if this is windows)
+
+let plugins = null;         // plugin manager
+let push_receiver = null;   // listener, metrics can be 'pushed' to nad
+let circwmi = null;         // only load if it's going to be used. (iow, if this is windows)
 
 log.info('initializing');
 
@@ -153,12 +125,6 @@ function handler(req, res) {
 
 // finish_bootstrap completes the loading process after plugins have been scanned
 function finish_bootstrap() {
-    settings.is_booted = true;
-
-    // //////////////////////////////////////////////////////////////////////
-    // start webservers
-    // //////////////////////////////////////////////////////////////////////
-
     for (const server of settings.listen) {
         log.debug({ server }, 'starting server');
 
@@ -219,10 +185,10 @@ function finish_bootstrap() {
         }
 
         const options = {
-            cafile: settings.reverse.broker_ca,
+            ca_file: settings.reverse.broker_ca,
             hostname: settings.hostname,
-            apiKey: settings.api.key,
-            apiApp: settings.api.app,
+            api_key: settings.api.key,
+            api_app: settings.api.app,
             api_options,
             check_bundle_id: settings.reverse.check_bundle_id,
             server_port: settings.listen[0].port
@@ -241,9 +207,8 @@ function finish_bootstrap() {
     log.debug('bootstrap complete');
 }
 
+log.debug('loading push receiver handler');
 try {
-    log.debug('loading push receiver handler');
-
     let PushReceiver = null;
 
     try {
@@ -261,9 +226,6 @@ try {
     push_receiver.id = 'push_receiver';
     push_receiver.is_native = true;
     push_receiver.native_obj = new PushReceiver();
-
-    log.info('push receiver handler loaded');
-
 } catch (err) {
     const msg = 'unable to initialize push receiver';
 
@@ -271,9 +233,9 @@ try {
     log.fatal({ err }, msg);
     process.exit(1);
 }
+log.info('push receiver handler loaded');
 
-// initialize plugins
-
+// initialize plugin manager
 plugins = new Plugins.Manager({
     plugin_dir: settings.plugin_dir,
     is_windows: settings.is_windows,
@@ -286,7 +248,7 @@ plugins = new Plugins.Manager({
     push_receiver
 });
 
-// initial scan for plugins and then finish bootstrapping nad
+// initial scan for plugins, then finish bootstrapping NAD
 plugins.scan(finish_bootstrap);
 
 // END
