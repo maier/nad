@@ -38,7 +38,6 @@ Push receiver
 
 */
 
-const fs = require('fs');
 const http = require('http');
 const https = require('https');
 const url = require('url');
@@ -59,7 +58,7 @@ if (settings.is_windows) {
     } catch (err) {
         const msg = 'unable to load circwmi module';
 
-        console.error(settings.prefixError, msg, err);
+        console.error(settings.pfx_error, msg, err);
         log.fatal({ err }, msg);
         process.exit(1);
     }
@@ -166,7 +165,7 @@ function finish_bootstrap() {
         } catch (err) {
             const msg = 'failed to start server';
 
-            console.error(settings.prefixError, msg, server, err);
+            console.error(settings.pfx_error, msg, server, err);
             log.fatal({ server, err }, msg);
             process.exit(-1);
         }
@@ -181,7 +180,7 @@ function finish_bootstrap() {
         } catch (err) {
             const msg = 'failed to start SSL server';
 
-            console.error(settings.prefixError, msg, server, err);
+            console.error(settings.pfx_error, msg, server, err);
             log.fatal({ server, err }, msg);
             process.exit(-1);
         }
@@ -249,7 +248,7 @@ try {
     } catch (err) {
         const msg = 'failed to load push_recever module';
 
-        console.error(settings.prefixError, msg, err);
+        console.error(settings.pfx_error, msg, err);
         log.fatal({ err }, msg);
         process.exit(1);
     }
@@ -274,7 +273,7 @@ try {
 } catch (err) {
     const msg = 'unable to initialize push receiver';
 
-    console.log(settings.prefixError, msg, err);
+    console.log(settings.pfx_error, msg, err);
     log.fatal({ err }, msg);
     process.exit(1);
 }
@@ -284,8 +283,8 @@ try {
 plugins = new Plugins({
     plugin_dir: settings.plugin_dir,
     is_windows: settings.is_windows,
-    prefixError: settings.prefixError,
-    sendNADStats: settings.sendNADStats,
+    pfx_error: settings.pfx_error,
+    send_nad_stats: settings.send_nad_stats,
     debug_dir: settings.debug_dir,
     wipe_debug_dir: settings.wipe_debug_dir,
     file_watch: settings.file_watch,
@@ -295,15 +294,5 @@ plugins = new Plugins({
 
 // initial scan for plugins and then finish bootstrapping nad
 plugins.scan(finish_bootstrap);
-
-if (settings.file_watch) {
-    // register a handler to rescan modules every time plugin_dir changes
-    // gated by file_watch so that it can be managed manually by user with
-    // a HUP signal sent to NAD process
-    fs.watchFile(settings.plugin_dir, plugins.onchange(() => {
-        log.debug({ file: settings.plugin_dir }, 'changed, triggering scan');
-        plugins.scan();
-    }));
-}
 
 // END
