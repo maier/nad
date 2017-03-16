@@ -6,54 +6,54 @@
 
 ## Options
 
-| Option                            | Default                           | Description |
-| --------------------------------- | --------------------------------- | ------------------------------------------------- |
-| **General** ||
-| `--plugin_dir <dir>`              | `/opt/circonus/etc/node-agent.d` | Plugin directory  |
-| `-p, --listen <spec>`             | 2609 | Listening IP address and port, spec can be `ip` or `port` or `ip:port` |
-| **Reverse** ||
-| `-r, --reverse`                   | false | Use reverse connection to broker |
-| `--cid <cid>`                     | | Check bundle ID for reverse connection |
-| `--broker_ca <file>`              | | CA file for broker reverse connection |
-| `--target <target>`               | `os.hostname()` | Target host -- see Target below |
-| **API** ||
-| `--api_key <key>`                 | | Circonus API Token key |
-| `--api_app <app>`                 | nad | Circonus API Token app |
-| `--api_url <url>`                 | `https://api.circonus.com/v2/` | Circonus API URL |
-| `--api_ca <file>`                 | | CA file for API URL |
-| **SSL** ||
-| `-s, --ssl_listen <spec>`         | | SSL listening IP address and port, spec can be `ip` or `port` or `ip:port` |
-| `--ssl_cert <file>`               | `<plugin_dir>/na.crt` | SSL certificate PEM file, required for SSL |
-| `--ssl_key <file>`                | `<plugin_dir>/na.key` | SSL certificate key PEM file, required for SSL |
-| `--ssl_ca <file>`                 | `<plugin_dir>/na.ca` | SSL CA certificate PEM file, required for SSL w/verify |
-| `-v, --ssl_verify`                | false | Verify SSL traffic |
-| **Miscellaneous** ||
-| `-u, --uid <id>`                  | | User id to drop privileges to on start |
-| `--loglevel <level>`              | info | Log level (trace,debug,info,warn,error,fatal) |
-| `-d, --debug`                     | false | Enable debug logging (verbose) |
-| `-t, --trace`                     | false | Enable trace logging (very verbose) |
-| `--no_watch`                      | false | Disable automatic watches of plugin directory, script files, config files. Send SIGHUP to rescan plugins |
-| `-h, --help`                      | | output usage information |
-| `-V, --version`                   | | output the version number |
-| `--debugdir`                      | | Create debug files for each plugin and write to this directory |
-| `--wipedebugdir`                  | false | Wipe debug directory clean before each write |
-| `-i, --inventory`                 | | Offline inventory |
-| **Self-configure** ||
-| `--hostname <host>`               | `os.hostname()` | Hostname self-configure to use in check and graph names |
-| `--brokerid <id>`                 | | Broker ID for self-configure to use for creating check |
-| `--configfile <file>`             | | File in plugin_dir for self-configure |
-| **DEPRECATED** ||
-| `-c <dir>`                        || DEPRECATED use --plugin_dir |
-| `--authtoken <token>`             || DEPRECATED use --api_key |
-| `--apihost <host>`                || DEPRECATED use --api_url |
-| `--apiport <port>`                || DEPRECATED use --api_url |
-| `--apipath <path>`                || DEPRECATED use --api_url |
-| `--apiprotocol <proto>`           || DEPRECATED use --api_url |
-| `--apiverbose`                    || DEPRECATED NOP, see --debug |
-| `--sslcert <file>`                || DEPRECATED use --ssl_cert |
-| `--sslkey <file>`                 || DEPRECATED use --ssl_key |
-| `--sslca <file>`                  || DEPRECATED use --ssl_ca |
-| `--cafile <file>`                 || DEPRECATED use --broker_ca |
+| Option                    | Default                          | Description |
+| ------------------------- | -------------------------------- | ----------- |
+| **General**              ||
+| `--plugin_dir <dir>`      | `/opt/circonus/etc/node-agent.d` | Plugin directory  |
+| `-p, --listen <spec>`     | 2609                             | Listening IP address and port, spec can be `ip` or `port` or `ip:port` |
+| **Reverse**              ||
+| `-r, --reverse`           | false                            | Use reverse connection to broker |
+| `--cid <cid>`             |                                  | Check bundle ID for reverse connection |
+| `--broker_ca <file>`      |                                  | CA file for broker reverse connection |
+| `--target <target>`       | `os.hostname()`                  | Target host -- see Target below |
+| **API**                  ||
+| `--api_key <key>`         |                                  | Circonus API Token key |
+| `--api_app <app>`         | nad                              | Circonus API Token app |
+| `--api_url <url>`         | `https://api.circonus.com/v2/`   | Circonus API URL |
+| `--api_ca <file>`         |                                  | CA file for API URL |
+| **SSL**                  ||
+| `-s, --ssl_listen <spec>` |                                  | SSL listening IP address and port, spec can be `ip` or `port` or `ip:port` |
+| `--ssl_cert <file>`       | `<plugin_dir>/na.crt`            | SSL certificate PEM file, required for SSL |
+| `--ssl_key <file>`        | `<plugin_dir>/na.key`            | SSL certificate key PEM file, required for SSL |
+| `--ssl_ca <file>`         | `<plugin_dir>/na.ca`             | SSL CA certificate PEM file, required for SSL w/verify |
+| `-v, --ssl_verify`        | false                            | Verify SSL traffic |
+| **Miscellaneous**        ||
+| `-u, --uid <id>`          |                                  | User id to drop privileges to on start |
+| `--loglevel <level>`      | info                             | Log level (trace, debug, info, warn, error, fatal) |
+| `-d, --debug`             | false                            | Enable debug logging (verbose) |
+| `-t, --trace`             | false                            | Enable trace logging (very verbose) |
+| `--no_watch`              | false                            | Disable automatic watches of plugin directory, script files, config files. Send SIGHUP to rescan plugins |
+| `-h, --help`              |                                  | output usage information |
+| `-V, --version`           |                                  | output the version number |
+| `--debugdir`              |                                  | Create debug files for each plugin and write to this directory |
+| `--wipedebugdir`          | false                            | Wipe debug directory clean before each write |
+| `-i, --inventory`         |                                  | Offline inventory |
+| **Self-configure**       ||
+| `--hostname <host>`       | `os.hostname()`                  | Hostname self-configure to use in check and graph names |
+| `--brokerid <id>`         |                                  | Broker ID for self-configure to use for creating check |
+| `--configfile <file>`     |                                  | File in plugin_dir for self-configure |
+| **DEPRECATED**           ||
+| `-c <dir>`                |                                  | DEPRECATED use --plugin_dir |
+| `--authtoken <token>`     |                                  | DEPRECATED use --api_key |
+| `--apihost <host>`        |                                  | DEPRECATED use --api_url |
+| `--apiport <port>`        |                                  | DEPRECATED use --api_url |
+| `--apipath <path>`        |                                  | DEPRECATED use --api_url |
+| `--apiprotocol <proto>`   |                                  | DEPRECATED use --api_url |
+| `--apiverbose`            |                                  | DEPRECATED NOP, see --debug |
+| `--sslcert <file>`        |                                  | DEPRECATED use --ssl_cert |
+| `--sslkey <file>`         |                                  | DEPRECATED use --ssl_key |
+| `--sslca <file>`          |                                  | DEPRECATED use --ssl_ca |
+| `--cafile <file>`         |                                  | DEPRECATED use --broker_ca |
 
 ## Target
 
