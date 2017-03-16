@@ -4,6 +4,7 @@ MAN=$(PREFIX)/man/man8
 SBIN=$(PREFIX)/sbin
 BIN=$(PREFIX)/bin
 LOG=$(PREFIX)/log
+ETC=$(PREFIX)/etc/node-agent.d
 CONF=$(PREFIX)/etc/node-agent.d
 MODULES=$(PREFIX)/lib/node_modules
 NAD_LIB=$(MODULES)/nad
@@ -13,6 +14,11 @@ MANIFEST_DIR=/var/svc/manifest/network/circonus
 METHOD_DIR=/var/svc/method
 MAKE?=make
 
+SYSTEMD_BIN=$(wildcard /usr/bin/systemctl)
+SYSTEMD_DIR=$(wildcard /lib/systemd/system)
+UPSTART_BIN=$(wildcard /sbin/initctl)
+UPSTART_DIR=$(wildcard /etc/init)
+
 all:
 
 install:	install-nad install-man install-plugins install-modules
@@ -21,6 +27,7 @@ install-dirs:
 	./mkinstalldirs $(DESTDIR)$(MAN)
 	./mkinstalldirs $(DESTDIR)$(SBIN)
 	./mkinstalldirs $(DESTDIR)$(CONF)
+	./mkinstalldirs $(DESTDIR)$(ETC)
 	./mkinstalldirs $(DESTDIR)$(MODULES)
 	./mkinstalldirs $(DESTDIR)$(NAD_LIB)
 	./mkinstalldirs $(DESTDIR)$(RUNSTATE_DIR)
@@ -75,15 +82,33 @@ ifneq ($(wildcard /usr/bin/systemctl),)
 	cd $(DESTDIR)$(CONF) ; /bin/ln -sf linux/systemd.sh
 endif
 
+# systemd
+install-linux-systemd: install-linux
+	./install-sh -c -m 0644 linux-init/defaults.out $(DESTDIR)$(ETC)/nad.conf
+	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@BIN@@#$(BIN)#g" -e "s#@@ETC@@#$(ETC)#g" linux-init/systemd.service > linux-init/systemd.service.out
+	./install-sh -c -m 0755 linux-init/systemd.service.out $(DESTDIR)/lib/systemd/system/nad.service
+
+# init
 install-ubuntu:	install-linux
-	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@LOG@@#$(LOG)#g" linux-init/ubuntu-init > linux-init/ubuntu-init.out
 	./install-sh -c -m 0644 linux-init/defaults.out $(DESTDIR)/etc/default/nad
+	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@LOG@@#$(LOG)#g" linux-init/ubuntu-init > linux-init/ubuntu-init.out
 	./install-sh -c -m 0755 linux-init/ubuntu-init.out $(DESTDIR)/etc/init.d/nad
 
+# init
 install-rhel:	install-linux
-	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@LOG@@#$(LOG)#g" linux-init/rhel-init > linux-init/rhel-init.out
+ifneq ($(and $(SYSTEMD_BIN), $(SYSTEMD_DIR)),)
+	./install-sh -c -m 0644 linux-init/defaults.out $(DESTDIR)$(ETC)/nad.conf
+	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@BIN@@#$(BIN)#g" -e "s#@@ETC@@#$(ETC)#g" linux-init/systemd.service > linux-init/systemd.service.out
+	./install-sh -c -m 0755 linux-init/systemd.service.out $(DESTDIR)/lib/systemd/system/nad.service
+else ifneq ($(and $(UPSTART_BIN), $(UPSTART_DIR)),)
+	./install-sh -c -m 0644 linux-init/defaults.out $(DESTDIR)$(ETC)/nad.conf
+	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@BIN@@#$(BIN)#g" -e "s#@@ETC@@#$(ETC)#g" linux-init/rhel-upstart > linux-init/rhel-upstart.out
+	./install-sh -c -m 0755 linux-init/rhel-upstart.out $(DESTDIR)/etc/init/nad.conf
+else
 	./install-sh -c -m 0644 linux-init/defaults.out $(DESTDIR)/etc/sysconfig/nad
+	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@LOG@@#$(LOG)#g" linux-init/rhel-init > linux-init/rhel-init.out
 	./install-sh -c -m 0755 linux-init/rhel-init.out $(DESTDIR)/etc/init.d/nad
+endif
 
 install-freebsd:	install
 	for f in plugins/freebsd/*.sh ; do \
@@ -93,7 +118,6 @@ install-freebsd:	install
 			-e "s#@@CONF@@#${CONF}#g" \
 			$${f} > "${DESTDIR}${CONF}/$${filename}"; \
 	done
-
 	/usr/bin/sed \
 		-e "s#@@PREFIX@@#${PREFIX}#g" \
 		-e "s#@@CONF@@#${CONF}#g" \

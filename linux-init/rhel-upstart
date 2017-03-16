@@ -1,0 +1,12 @@
+description "Circonus Node Agent"
+author "circonus <support@circonus.com>"
+
+start on filesystem and started networking
+stop on shutdown
+
+respawn
+
+script
+    source @@ETC@@/nad.conf
+    exec @@BIN@@/node @@SBIN@@/nad $NAD_OPTS
+end script

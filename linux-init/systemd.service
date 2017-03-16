@@ -1,0 +1,14 @@
+[Unit]
+Description=Circonus Node Agent Daemon
+Documentation=http://github.com/circonus-labs/nad
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=@@SBIN@@
+ExecStart=@@BIN@@/node nad
+EnvironmentFile=@@ETC@@/nad.conf
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
