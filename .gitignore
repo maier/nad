@@ -14,7 +14,9 @@ packaging/omnibus-rpm.spec
 smf/circonus-nad.out
 smf/nad.xml.out
 
-# 
+# mgm 
+bin/*.out
 node_modules/
 node-*.tar.xz
-bin/*.out
+.eslintcache
+TODO.md
