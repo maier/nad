@@ -10,10 +10,12 @@
 const http = require('http');
 const https = require('https');
 const url = require('url');
+const path = require('path');
 
 // local modules
-const settings = require('settings');
-const Plugins = require('plugins');
+const nad = require('nad');
+const settings = require(path.join(nad.lib_dir, 'settings'));
+const Plugins = require(path.join(nad.lib_dir, 'plugins'));
 
 const log = settings.logger;
 
@@ -169,24 +171,14 @@ function finish_bootstrap() {
         let reverse = null;
 
         try {
-            reverse = require('reverse');
+            reverse = require(path.join(nad.lib_dir, 'reverse'));
         } catch (err) {
             console.error(err);
             log.fatal({ err }, 'unable to set up reverse connection');
             process.exit(1);
         }
 
-        const options = {
-            ca_file: settings.reverse.broker_ca,
-            hostname: settings.hostname,
-            api_key: settings.api.key,
-            api_app: settings.api.app,
-            api_url: settings.api.url,
-            check_bundle_id: settings.reverse.check_bundle_id,
-            server_port: settings.listen[0].port
-        };
-
-        reverse(options, log);
+        reverse();
     }
 
     if (global.gc) {
@@ -204,7 +196,7 @@ try {
     let PushReceiver = null;
 
     try {
-        PushReceiver = require('push_receiver');
+        PushReceiver = require(path.join(nad.lib_dir, 'push_receiver'));
     } catch (err) {
         const msg = 'failed to load push_recever module';
 
@@ -227,17 +219,7 @@ try {
 log.info('push receiver handler loaded');
 
 // initialize plugin manager
-plugins = new Plugins.Manager({
-    plugin_dir: settings.plugin_dir,
-    is_windows: settings.is_windows,
-    pfx_error: settings.pfx_error,
-    send_nad_stats: settings.send_nad_stats,
-    debug_dir: settings.debug_dir,
-    wipe_debug_dir: settings.wipe_debug_dir,
-    file_watch: settings.file_watch,
-    log,
-    push_receiver
-});
+plugins = new Plugins.Manager(push_receiver);
 
 // initial scan for plugins, then finish bootstrapping NAD
 plugins.scan(finish_bootstrap);
