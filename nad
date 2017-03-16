@@ -22,6 +22,7 @@ const log = settings.logger;
 let plugins = null;         // plugin manager
 let push_receiver = null;   // listener, metrics can be 'pushed' to nad
 let circwmi = null;         // only load if it's going to be used. (iow, if this is windows)
+let statsd = null;          // dynamically load in finish_bootstrap
 
 log.info('initializing');
 
@@ -164,6 +165,27 @@ function finish_bootstrap() {
     if (settings.drop_uid > 0 && process.setuid) {
         log.info({ uid: settings.drop_uid }, 'dropping privileges');
         process.setuid(settings.drop_uid);
+    }
+
+    if (settings.statsd.enabled) {
+        try {
+            statsd = require(path.join(nad.lib_dir, 'statsd'));
+        } catch (err) {
+            console.error(settings.pfx_error, err);
+            log.fatal({ err: err.message }, 'unable to load statsd module');
+            process.exit(1);
+        }
+
+        try {
+            log.info('initializing statsd listener');
+            statsd.start();
+        } catch (err) {
+            const errMsg = `unable to start StatsD listener ${err}`;
+
+            log.fatal({ err: err.message }, errMsg);
+            console.error(settings.pfx_error, errMsg);
+            process.exit(-2);
+        }
     }
 
     if (settings.reverse.enabled) {
