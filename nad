@@ -176,18 +176,12 @@ function finish_bootstrap() {
             process.exit(1);
         }
 
-        let api_options = url.parse(settings.api.url);
-
-        if (!settings.api.use_apiurl) {
-            api_options = settings.api.old_options;
-        }
-
         const options = {
             ca_file: settings.reverse.broker_ca,
             hostname: settings.hostname,
             api_key: settings.api.key,
             api_app: settings.api.app,
-            api_options,
+            api_url: settings.api.url,
             check_bundle_id: settings.reverse.check_bundle_id,
             server_port: settings.listen[0].port
         };
