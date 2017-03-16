@@ -30,7 +30,7 @@ install-nad:	install-dirs
 	./install-sh -c -m 0755 nad $(DESTDIR)$(SBIN)/nad
 
 install-man:	install-dirs
-	./install-sh -c -m 0644 nad.8 $(DESTDIR)$(MAN)/nad.8
+	./install-sh -c -m 0644 man/nad.8 $(DESTDIR)$(MAN)/nad.8
 
 install-plugins:	install-dirs
 	rsync -a plugins/ $(DESTDIR)$(CONF)/

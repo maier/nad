@@ -12,7 +12,8 @@
   },
   "devDependencies": {},
   "scripts": {
-    "lint": "eslint --cache nad lib/*"
+    "lint": "eslint --cache nad lib/*",
+    "md2man": "remark man/nad.md --use man --output man/nad.8"
   },
   "repository": {
     "type": "git",
