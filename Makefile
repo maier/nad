@@ -6,6 +6,7 @@ BIN=$(PREFIX)/bin
 LOG=$(PREFIX)/log
 CONF=$(PREFIX)/etc/node-agent.d
 MODULES=$(PREFIX)/lib/node_modules
+NAD_LIB=$(MODULES)/nad
 RUNSTATE_DIR=$(PREFIX)/var/run/nad
 RUNSTATE_USER?=nobody
 MANIFEST_DIR=/var/svc/manifest/network/circonus
@@ -21,6 +22,7 @@ install-dirs:
 	./mkinstalldirs $(DESTDIR)$(SBIN)
 	./mkinstalldirs $(DESTDIR)$(CONF)
 	./mkinstalldirs $(DESTDIR)$(MODULES)
+	./mkinstalldirs $(DESTDIR)$(NAD_LIB)
 	./mkinstalldirs $(DESTDIR)$(RUNSTATE_DIR)
 	chown $(RUNSTATE_USER) $(DESTDIR)$(RUNSTATE_DIR)
 
@@ -36,7 +38,7 @@ install-plugins:	install-dirs
 install-modules:
 	PATH="$(PATH):$(DESTDIR)$(PREFIX)/bin" npm install --no-progress
 	rsync -a node_modules/ $(DESTDIR)$(MODULES)/
-	rsync -a lib/* $(DESTDIR)$(MODULES)/
+	rsync -a lib/* $(DESTDIR)$(NAD_LIB)/
 
 install-illumos:	install
 	/bin/sed \
