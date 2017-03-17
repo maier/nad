@@ -182,8 +182,8 @@ function finish_bootstrap() {
         } catch (err) {
             const errMsg = `unable to start StatsD listener ${err}`;
 
-            log.fatal({ err: err.message }, errMsg);
             console.error(settings.pfx_error, errMsg);
+            log.fatal({ err: err.message }, errMsg);
             process.exit(-2);
         }
     }
