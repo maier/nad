@@ -17,7 +17,7 @@ const nad = require('nad');
 const settings = require(path.join(nad.lib_dir, 'settings'));
 const Plugins = require(path.join(nad.lib_dir, 'plugins'));
 
-const log = settings.logger;
+const log = settings.logger.child({ module: 'main' });
 
 let plugins = null;         // plugin manager
 let push_receiver = null;   // listener, metrics can be 'pushed' to nad
