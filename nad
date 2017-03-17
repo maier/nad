@@ -21,8 +21,9 @@ const log = settings.logger;
 
 let plugins = null;         // plugin manager
 let push_receiver = null;   // listener, metrics can be 'pushed' to nad
-let circwmi = null;         // only load if it's going to be used. (iow, if this is windows)
-let statsd = null;          // dynamically load in finish_bootstrap
+let circwmi = null;         // dynamically load, if platform is windows
+let statsd = null;          // dynamically load in finish_bootstrap, if enabled
+let reverse = null;         // dynamically load in finish_bootstrap, if enabled
 
 log.info('initializing');
 
@@ -33,8 +34,8 @@ if (settings.is_windows) {
     } catch (err) {
         const msg = 'unable to load circwmi module';
 
-        console.error(settings.pfx_error, msg, err);
         log.fatal({ err }, msg);
+        console.error(settings.pfx_error, msg, err);
         process.exit(1);
     }
 }
@@ -126,6 +127,39 @@ function handler(req, res) {
 
 // finish_bootstrap completes the loading process after plugins have been scanned
 function finish_bootstrap() {
+
+    function start_statsd() {
+        if (settings.statsd.enabled) {
+            log.info('initializing statsd listener');
+            try {
+                statsd = require(path.join(nad.lib_dir, 'statsd'));
+                statsd.start();
+            } catch (err) {
+                const errMsg = `unable to start statsd listener`;
+
+                log.fatal({ err: err.message }, errMsg);
+                console.error(settings.pfx_error, errMsg, err);
+                process.exit(1);
+            }
+        }
+    }
+
+    function start_reverse() {
+        if (settings.reverse.enabled) {
+            log.info('setting up reverse connection');
+            try {
+                reverse = require(path.join(nad.lib_dir, 'reverse'));
+                reverse(start_statsd);
+            } catch (err) {
+                const errMsg = `unable to set up reverse connection`;
+
+                log.fatal({ err: err.message }, errMsg);
+                console.error(settings.pfx_error, errMsg, err);
+                process.exit(1);
+            }
+        }
+    }
+
     for (const server of settings.listen) {
         log.debug({ server }, 'starting server');
 
@@ -135,8 +169,8 @@ function finish_bootstrap() {
         } catch (err) {
             const msg = 'failed to start server';
 
-            console.error(settings.pfx_error, msg, server, err);
             log.fatal({ server, err }, msg);
+            console.error(settings.pfx_error, msg, server, err);
             process.exit(-1);
         }
     }
@@ -150,8 +184,8 @@ function finish_bootstrap() {
         } catch (err) {
             const msg = 'failed to start SSL server';
 
-            console.error(settings.pfx_error, msg, server, err);
             log.fatal({ server, err }, msg);
+            console.error(settings.pfx_error, msg, server, err);
             process.exit(-1);
         }
     }
@@ -167,42 +201,6 @@ function finish_bootstrap() {
         process.setuid(settings.drop_uid);
     }
 
-    if (settings.statsd.enabled) {
-        try {
-            statsd = require(path.join(nad.lib_dir, 'statsd'));
-        } catch (err) {
-            console.error(settings.pfx_error, err);
-            log.fatal({ err: err.message }, 'unable to load statsd module');
-            process.exit(1);
-        }
-
-        try {
-            log.info('initializing statsd listener');
-            statsd.start();
-        } catch (err) {
-            const errMsg = `unable to start StatsD listener ${err}`;
-
-            console.error(settings.pfx_error, errMsg);
-            log.fatal({ err: err.message }, errMsg);
-            process.exit(-2);
-        }
-    }
-
-    if (settings.reverse.enabled) {
-        log.info('setting up reverse connection');
-        let reverse = null;
-
-        try {
-            reverse = require(path.join(nad.lib_dir, 'reverse'));
-        } catch (err) {
-            console.error(err);
-            log.fatal({ err }, 'unable to set up reverse connection');
-            process.exit(1);
-        }
-
-        reverse();
-    }
-
     if (global.gc) {
         setInterval(() => {
             log.info('running gc');
@@ -210,7 +208,13 @@ function finish_bootstrap() {
         }, 300 * 1000);
     }
 
-    log.debug('bootstrap complete');
+    // NOTE: if reverse is enabled, have it call start_statsd
+    //       to ensure that the statsd module has a host_check_id.
+    if (settings.reverse.enabled) {
+        start_reverse();
+    } else {
+        start_statsd();
+    }
 }
 
 log.debug('loading push receiver handler');
@@ -222,8 +226,8 @@ try {
     } catch (err) {
         const msg = 'failed to load push_recever module';
 
-        console.error(settings.pfx_error, msg, err);
         log.fatal({ err }, msg);
+        console.error(settings.pfx_error, msg, err);
         process.exit(1);
     }
 
@@ -234,8 +238,8 @@ try {
 } catch (err) {
     const msg = 'unable to initialize push receiver';
 
-    console.log(settings.pfx_error, msg, err);
     log.fatal({ err }, msg);
+    console.log(settings.pfx_error, msg, err);
     process.exit(1);
 }
 log.info('push receiver handler loaded');
