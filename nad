@@ -149,14 +149,26 @@ function finish_bootstrap() {
             log.info('setting up reverse connection');
             try {
                 reverse = require(path.join(nad.lib_dir, 'reverse'));
-                reverse(start_statsd);
             } catch (err) {
-                const errMsg = `unable to set up reverse connection`;
+                const errMsg = `unable to load reverse connection module`;
 
                 log.fatal({ err: err.message }, errMsg);
                 console.error(settings.pfx_error, errMsg, err);
                 process.exit(1);
             }
+
+            reverse().
+                then(() => {
+                    start_statsd();
+                }).
+                catch((err) => {
+                    const errMsg = `unable to set up reverse connection`;
+
+                    log.fatal({ err: err.message }, errMsg);
+                    console.error(settings.pfx_error, errMsg, err);
+                    process.exit(1);
+
+                });
         }
     }
 
