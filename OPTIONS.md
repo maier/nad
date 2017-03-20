@@ -28,7 +28,8 @@
 | `--ssl_ca <file>`         | `<plugin_dir>/na.ca`             | SSL CA certificate PEM file, required for SSL w/verify |
 | `-v, --ssl_verify`        | false                            | Verify SSL traffic |
 | **Miscellaneous**        ||
-| `-u, --uid <id>`          |                                  | User id to drop privileges to on start |
+| `-u, --uid <id>`          | `nobody`                         | User id to drop privileges to on start (emit warning and ignore on non-POSIX) |
+| `-g, --gid <id>`          | `nobody`                         | Group id to drop privileges to on start (emit warning and ignore on non-POSIX) |
 | `--loglevel <level>`      | info                             | Log level (trace, debug, info, warn, error, fatal) |
 | `-d, --debug`             | false                            | Enable debug logging (verbose) |
 | `-t, --trace`             | false                            | Enable trace logging (very verbose) |

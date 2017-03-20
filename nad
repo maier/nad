@@ -125,29 +125,58 @@ function handler(req, res) {
     req.addListener('data', () => {});
 }
 
-// finish_bootstrap completes the loading process after plugins have been scanned
-function finish_bootstrap() {
+function start_http_servers() {
+    return new Promise((resolve, reject) => {
+        for (const server of settings.listen) {
+            log.debug({ server }, 'starting server');
+            try {
+                http.createServer(handler).listen(server.port, server.address);
+                log.info({ server }, 'started');
+            } catch (err) {
+                log.fatal({ server, err }, 'failed to start server');
+                reject(err);
+            }
+        }
 
-    function start_statsd() {
+        for (const server of settings.ssl.listen) {
+            log.debug({ server }, 'starting SSL server');
+
+            try {
+                https.createServer(settings.ssl.creds, handler).listen(server.port, server.address);
+                log.info({ server }, 'started (SSL)');
+            } catch (err) {
+                log.fatal({ server, err }, 'failed to start SSL server');
+                reject(err);
+            }
+        }
+
+        resolve();
+    });
+}
+
+function start_statsd() {
+    return new Promise((resolve, reject) => {
         if (!settings.statsd.enabled) {
             log.debug('statsd not enabled, skipping');
+            resolve();
             return;
         }
 
         log.info('initializing statsd listener');
         try {
             statsd = require(path.join(nad.lib_dir, 'statsd'));
-            statsd.start();
         } catch (err) {
-            const errMsg = `unable to start statsd listener`;
-
-            log.fatal({ err: err.message }, errMsg);
-            console.error(settings.pfx_error, errMsg, err);
-            process.exit(1);
+            log.fatal({ err: err.message }, 'unable to load statsd listener');
+            reject(err);
         }
-    }
 
-    function start_reverse() {
+        statsd.start();
+        resolve();
+    });
+}
+
+function start_reverse() {
+    return new Promise((resolve, reject) => {
         if (!settings.reverse.enabled) {
             log.debug('reverse not enabled, skipping');
             start_statsd();
@@ -155,7 +184,7 @@ function finish_bootstrap() {
         }
 
         // NOTE: if reverse is enabled, have it call start_statsd
-        //       after it finishes initializing ensure that the
+        //       after it finishes initializing to ensure that the
         //       statsd module has a host_check_id. reverse will
         //       update settings if it has to 'search' for
         //       a check and one is found.
@@ -164,109 +193,111 @@ function finish_bootstrap() {
         try {
             reverse = require(path.join(nad.lib_dir, 'reverse'));
         } catch (err) {
-            const errMsg = `unable to load reverse connection module`;
-
-            log.fatal({ err: err.message }, errMsg);
-            console.error(settings.pfx_error, errMsg, err);
-            process.exit(1);
+            log.fatal({ err: err.message }, 'unable to load reverse connection module');
+            reject(err);
         }
 
         reverse().
             then(() => {
-                start_statsd();
+                resolve();
             }).
             catch((err) => {
-                const errMsg = `unable to set up reverse connection`;
-
-                log.fatal({ err: err.message }, errMsg);
-                console.error(settings.pfx_error, errMsg, err);
-                process.exit(1);
-
+                log.fatal({ err: err.message }, 'unable to set up reverse connection');
+                reject(err);
             });
-    }
-
-    for (const server of settings.listen) {
-        log.debug({ server }, 'starting server');
-
-        try {
-            http.createServer(handler).listen(server.port, server.address);
-            log.info({ server }, 'started');
-        } catch (err) {
-            const msg = 'failed to start server';
-
-            log.fatal({ server, err }, msg);
-            console.error(settings.pfx_error, msg, server, err);
-            process.exit(-1);
-        }
-    }
-
-    for (const server of settings.ssl.listen) {
-        log.debug({ server }, 'starting SSL server');
-
-        try {
-            https.createServer(settings.ssl.creds, handler).listen(server.port, server.address);
-            log.info({ server }, 'started (SSL)');
-        } catch (err) {
-            const msg = 'failed to start SSL server';
-
-            log.fatal({ server, err }, msg);
-            console.error(settings.pfx_error, msg, server, err);
-            process.exit(-1);
-        }
-    }
-
-    log.debug('installing SIGHUP handler to trigger plugin rescan');
-    process.on('SIGHUP', () => {
-        log.info('SIGHUP received, re-scanning plugins');
-        plugins.scan();
     });
-
-    if (settings.drop_uid > 0 && process.setuid) {
-        log.info({ uid: settings.drop_uid }, 'dropping privileges');
-        process.setuid(settings.drop_uid);
-    }
-
-    if (global.gc) {
-        setInterval(() => {
-            log.info('running gc');
-            global.gc();
-        }, 300 * 1000);
-    }
-
-    start_reverse();
 }
 
-log.debug('loading push receiver handler');
-try {
-    let PushReceiver = null;
+function load_push_receiver() {
+    return new Promise((resolve, reject) => {
+        log.debug('loading push receiver handler');
+        try {
+            let PushReceiver = null;
 
-    try {
-        PushReceiver = require(path.join(nad.lib_dir, 'push_receiver'));
-    } catch (err) {
-        const msg = 'failed to load push_recever module';
+            try {
+                PushReceiver = require(path.join(nad.lib_dir, 'push_receiver'));
+            } catch (err) {
+                log.fatal({ err: err.message }, 'failed to load push_recever module');
+                reject(err);
+                return;
+            }
 
-        log.fatal({ err }, msg);
-        console.error(settings.pfx_error, msg, err);
+            // NOTE: this *simulates* a regular plugin
+            push_receiver = Plugins.new_plugin('push_receiver');
+            push_receiver.is_native = true;
+            push_receiver.native_obj = new PushReceiver({ log });
+        } catch (err) {
+            log.fatal({ err: err.message }, 'unable to initialize push receiver');
+            reject(err);
+        }
+        log.info('push receiver handler loaded');
+        resolve();
+    });
+}
+
+function bootstrap() {
+    return new Promise((resolve, reject) => {
+        load_push_receiver().
+            then(() => {
+                plugins = new Plugins.Manager(push_receiver);
+                return plugins.scan();
+            }).
+            then(() => {
+                log.info('installing SIGHUP handler to trigger plugin rescan');
+                process.on('SIGHUP', () => {
+                    log.info('SIGHUP received, re-scanning plugins');
+                    plugins.scan().
+                        catch((err) => {
+                            log.error({ err: err.message }, 'SIGHUP plugin scan, ignoring');
+                        });
+                });
+            }).
+            then(() => {
+                return start_http_servers();
+            }).
+            then(() => {
+                return start_reverse();
+            }).
+            then(() => {
+                return start_statsd();
+            }).
+            then(() => {
+                if (!(/^(root|0)$/i).test(settings.drop_uid)) {
+                    log.info({ uid: settings.drop_uid, gid: settings.drop_gid }, 'dropping privileges');
+                    try {
+                        process.initgroups(settings.drop_uid, settings.drop_gid);
+                        process.setgid(settings.drop_gid);
+                    } catch (err) {
+                        log.warn({ uid: settings.drop_uid, gid: settings.drop_gid, err: err.message }, 'ignoring, dropping user privileges');
+                    }
+                    try {
+                        process.setuid(settings.drop_uid);
+                    } catch (err) {
+                        log.fatal({ uid: settings.drop_uid, gid: settings.drop_gid, err: err.message }, 'failed to drop privileges');
+                        reject(err);
+                    }
+                }
+            }).
+            then(() => {
+                resolve('NAD bootstrap complete');
+            }).
+            catch((err) => {
+                reject(err);
+            });
+    });
+}
+
+
+//
+// get NAD process started
+//
+bootstrap().
+    then((msg) => {
+        log.info(msg);
+    }).
+    catch((err) => {
+        console.error(settings.pfx_error, 'starting NAD process', err);
         process.exit(1);
-    }
-
-    // NOTE: this *simulates* a regular plugin
-    push_receiver = Plugins.new_plugin('push_receiver');
-    push_receiver.is_native = true;
-    push_receiver.native_obj = new PushReceiver({ log });
-} catch (err) {
-    const msg = 'unable to initialize push receiver';
-
-    log.fatal({ err }, msg);
-    console.log(settings.pfx_error, msg, err);
-    process.exit(1);
-}
-log.info('push receiver handler loaded');
-
-// initialize plugin manager
-plugins = new Plugins.Manager(push_receiver);
-
-// initial scan for plugins, then finish bootstrapping NAD
-plugins.scan(finish_bootstrap);
+    });
 
 // END
