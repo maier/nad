@@ -129,47 +129,60 @@ function handler(req, res) {
 function finish_bootstrap() {
 
     function start_statsd() {
-        if (settings.statsd.enabled) {
-            log.info('initializing statsd listener');
-            try {
-                statsd = require(path.join(nad.lib_dir, 'statsd'));
-                statsd.start();
-            } catch (err) {
-                const errMsg = `unable to start statsd listener`;
+        if (!settings.statsd.enabled) {
+            log.debug('statsd not enabled, skipping');
+            return;
+        }
 
-                log.fatal({ err: err.message }, errMsg);
-                console.error(settings.pfx_error, errMsg, err);
-                process.exit(1);
-            }
+        log.info('initializing statsd listener');
+        try {
+            statsd = require(path.join(nad.lib_dir, 'statsd'));
+            statsd.start();
+        } catch (err) {
+            const errMsg = `unable to start statsd listener`;
+
+            log.fatal({ err: err.message }, errMsg);
+            console.error(settings.pfx_error, errMsg, err);
+            process.exit(1);
         }
     }
 
     function start_reverse() {
-        if (settings.reverse.enabled) {
-            log.info('setting up reverse connection');
-            try {
-                reverse = require(path.join(nad.lib_dir, 'reverse'));
-            } catch (err) {
-                const errMsg = `unable to load reverse connection module`;
+        if (!settings.reverse.enabled) {
+            log.debug('reverse not enabled, skipping');
+            start_statsd();
+            return;
+        }
+
+        // NOTE: if reverse is enabled, have it call start_statsd
+        //       after it finishes initializing ensure that the
+        //       statsd module has a host_check_id. reverse will
+        //       update settings if it has to 'search' for
+        //       a check and one is found.
+
+        log.info('setting up reverse connection');
+        try {
+            reverse = require(path.join(nad.lib_dir, 'reverse'));
+        } catch (err) {
+            const errMsg = `unable to load reverse connection module`;
+
+            log.fatal({ err: err.message }, errMsg);
+            console.error(settings.pfx_error, errMsg, err);
+            process.exit(1);
+        }
+
+        reverse().
+            then(() => {
+                start_statsd();
+            }).
+            catch((err) => {
+                const errMsg = `unable to set up reverse connection`;
 
                 log.fatal({ err: err.message }, errMsg);
                 console.error(settings.pfx_error, errMsg, err);
                 process.exit(1);
-            }
 
-            reverse().
-                then(() => {
-                    start_statsd();
-                }).
-                catch((err) => {
-                    const errMsg = `unable to set up reverse connection`;
-
-                    log.fatal({ err: err.message }, errMsg);
-                    console.error(settings.pfx_error, errMsg, err);
-                    process.exit(1);
-
-                });
-        }
+            });
     }
 
     for (const server of settings.listen) {
@@ -220,13 +233,7 @@ function finish_bootstrap() {
         }, 300 * 1000);
     }
 
-    // NOTE: if reverse is enabled, have it call start_statsd
-    //       to ensure that the statsd module has a host_check_id.
-    if (settings.reverse.enabled) {
-        start_reverse();
-    } else {
-        start_statsd();
-    }
+    start_reverse();
 }
 
 log.debug('loading push receiver handler');
