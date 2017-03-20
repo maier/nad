@@ -131,7 +131,7 @@ function start_http_servers() {
             log.debug({ server }, 'starting server');
             try {
                 http.createServer(handler).listen(server.port, server.address);
-                log.info({ server }, 'started');
+                log.info({ server }, 'listening');
             } catch (err) {
                 log.fatal({ server, err }, 'failed to start server');
                 reject(err);
@@ -143,26 +143,25 @@ function start_http_servers() {
 
             try {
                 https.createServer(settings.ssl.creds, handler).listen(server.port, server.address);
-                log.info({ server }, 'started (SSL)');
+                log.info({ server }, 'listening');
             } catch (err) {
                 log.fatal({ server, err }, 'failed to start SSL server');
                 reject(err);
             }
         }
 
-        resolve();
+        resolve('http servers started');
     });
 }
 
 function start_statsd() {
     return new Promise((resolve, reject) => {
         if (!settings.statsd.enabled) {
-            log.debug('statsd not enabled, skipping');
-            resolve();
+            resolve('statsd not enabled, skipping');
             return;
         }
 
-        log.info('initializing statsd listener');
+        log.debug('initializing statsd listener');
         try {
             statsd = require(path.join(nad.lib_dir, 'statsd'));
         } catch (err) {
@@ -171,15 +170,14 @@ function start_statsd() {
         }
 
         statsd.start();
-        resolve();
+        resolve('started statsd listener');
     });
 }
 
 function start_reverse() {
     return new Promise((resolve, reject) => {
         if (!settings.reverse.enabled) {
-            log.debug('reverse not enabled, skipping');
-            start_statsd();
+            resolve('reverse not enabled, skipping');
             return;
         }
 
@@ -189,7 +187,7 @@ function start_reverse() {
         //       update settings if it has to 'search' for
         //       a check and one is found.
 
-        log.info('setting up reverse connection');
+        log.debug('setting up reverse connection');
         try {
             reverse = require(path.join(nad.lib_dir, 'reverse'));
         } catch (err) {
@@ -199,7 +197,7 @@ function start_reverse() {
 
         reverse().
             then(() => {
-                resolve();
+                resolve('started reverse connector');
             }).
             catch((err) => {
                 log.fatal({ err: err.message }, 'unable to set up reverse connection');
@@ -230,15 +228,15 @@ function load_push_receiver() {
             log.fatal({ err: err.message }, 'unable to initialize push receiver');
             reject(err);
         }
-        log.info('push receiver handler loaded');
-        resolve();
+        resolve('push receiver handler loaded');
     });
 }
 
 function bootstrap() {
     return new Promise((resolve, reject) => {
         load_push_receiver().
-            then(() => {
+            then((msg) => {
+                log.info(msg);
                 plugins = new Plugins.Manager(push_receiver);
                 return plugins.scan();
             }).
@@ -255,13 +253,16 @@ function bootstrap() {
             then(() => {
                 return start_http_servers();
             }).
-            then(() => {
+            then((msg) => {
+                log.info(msg);
                 return start_reverse();
             }).
-            then(() => {
+            then((msg) => {
+                log.info(msg);
                 return start_statsd();
             }).
-            then(() => {
+            then((msg) => {
+                log.info(msg);
                 if (!(/^(root|0)$/i).test(settings.drop_uid)) {
                     log.info({ uid: settings.drop_uid, gid: settings.drop_gid }, 'dropping privileges');
                     try {
