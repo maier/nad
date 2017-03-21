@@ -37,7 +37,7 @@ export NODE_PATH="@@PREFIX@@/lib/node_modules"
 nad_start() {
     if start-stop-daemon --start --quiet --background \
         --pidfile $NAD_PID_FILE --make-pidfile \
-        --chuid nobody --exec $DAEMON -- $NAD_OPTS
+        --exec $DAEMON -- $NAD_OPTS
     then
         rc=0
         sleep 1
