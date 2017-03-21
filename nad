@@ -17,6 +17,7 @@ const nad = require('nad');
 const settings = require(path.join(nad.lib_dir, 'settings'));
 const Plugins = require(path.join(nad.lib_dir, 'plugins'));
 
+// globals
 const log = settings.logger.child({ module: 'main' });
 
 let plugins = null;         // plugin manager
@@ -125,6 +126,7 @@ function handler(req, res) {
     req.addListener('data', () => {});
 }
 
+// start_http_servers starts the main nad process http servers
 function start_http_servers() {
     return new Promise((resolve, reject) => {
         for (const server of settings.listen) {
@@ -135,6 +137,7 @@ function start_http_servers() {
             } catch (err) {
                 log.fatal({ server, err }, 'failed to start server');
                 reject(err);
+                return;
             }
         }
 
@@ -147,6 +150,7 @@ function start_http_servers() {
             } catch (err) {
                 log.fatal({ server, err }, 'failed to start SSL server');
                 reject(err);
+                return;
             }
         }
 
@@ -154,6 +158,7 @@ function start_http_servers() {
     });
 }
 
+// start_statsd starts the nad-statsd listener initialization
 function start_statsd() {
     return new Promise((resolve, reject) => {
         if (!settings.statsd.enabled) {
@@ -167,6 +172,7 @@ function start_statsd() {
         } catch (err) {
             log.fatal({ err: err.message }, 'unable to load statsd listener');
             reject(err);
+            return;
         }
 
         statsd.start();
@@ -174,6 +180,7 @@ function start_statsd() {
     });
 }
 
+// start_reverse starts the reverse connection initialization
 function start_reverse() {
     return new Promise((resolve, reject) => {
         if (!settings.reverse.enabled) {
@@ -193,6 +200,7 @@ function start_reverse() {
         } catch (err) {
             log.fatal({ err: err.message }, 'unable to load reverse connection module');
             reject(err);
+            return;
         }
 
         reverse().
@@ -202,10 +210,12 @@ function start_reverse() {
             catch((err) => {
                 log.fatal({ err: err.message }, 'unable to set up reverse connection');
                 reject(err);
+                return;
             });
     });
 }
 
+// load_push_receiver loads and starts the push_receiver module
 function load_push_receiver() {
     return new Promise((resolve, reject) => {
         log.debug('loading push receiver handler');
@@ -227,11 +237,13 @@ function load_push_receiver() {
         } catch (err) {
             log.fatal({ err: err.message }, 'unable to initialize push receiver');
             reject(err);
+            return;
         }
         resolve('push receiver handler loaded');
     });
 }
 
+// bootstrap sequentially starts the various components of the nad process
 function bootstrap() {
     return new Promise((resolve, reject) => {
         load_push_receiver().
@@ -290,7 +302,7 @@ function bootstrap() {
 
 
 //
-// get NAD process started
+// Start the NAD process
 //
 bootstrap().
     then((msg) => {
