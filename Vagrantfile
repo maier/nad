@@ -8,10 +8,6 @@
 #
 
 Vagrant.configure('2') do |config|
-    config.vm.define 'o14', autostart: false do |o14|
-        o14.vm.box = 'maier/omnios-r151014-x86_64'
-    end
-
     config.vm.define 'c7', autostart: false do |c7|
         c7.vm.box = 'maier/centos-7.2.1511-x86_64'
         c7.vm.provision 'shell', inline: <<-SHELL
@@ -41,6 +37,42 @@ Vagrant.configure('2') do |config|
             echo "    helper = cache --timeout=3600" >> /home/ubuntu/.gitconfig
             chown ubuntu:ubuntu /home/ubuntu/.gitconfig
             chmod 600 /home/ubuntu/.gitconfig
+        SHELL
+    end
+
+    config.vm.define 'o14', autostart: false do |o14|
+        o14.vm.box = 'maier/omnios-r151014-x86_64'
+        o14.vm.provision 'shell', inline: <<-SHELL
+            pkg install git
+
+            echo "[credential]" > /home/vagrant/.gitconfig
+            echo "    helper = cache --timeout=3600" >> /home/vagrant/.gitconfig
+            chown vagrant:vagrant /home/vagrant/.gitconfig
+            chmod 600 /home/vagrant/.gitconfig
+        SHELL
+    end
+
+    config.vm.define 'bsd10', autostart: false do |bsd10|
+        bsd10.vm.box = 'freebsd/FreeBSD-10.3-RELEASE'
+        bsd10.vm.provision 'shell', inline: <<-SHELL
+            pkg install git
+
+            echo "[credential]" > /home/vagrant/.gitconfig
+            echo "    helper = cache --timeout=3600" >> /home/vagrant/.gitconfig
+            chown vagrant:vagrant /home/vagrant/.gitconfig
+            chmod 600 /home/vagrant/.gitconfig
+        SHELL
+    end
+
+    config.vm.define 'bsd11', autostart: false do |bsd11|
+        bsd11.vm.box = 'freebsd/FreeBSD-11.0-RELEASE-p1'
+        bsd11.vm.provision 'shell', inline: <<-SHELL
+            pkg install git
+
+            echo "[credential]" > /home/vagrant/.gitconfig
+            echo "    helper = cache --timeout=3600" >> /home/vagrant/.gitconfig
+            chown vagrant:vagrant /home/vagrant/.gitconfig
+            chmod 600 /home/vagrant/.gitconfig
         SHELL
     end
 end
