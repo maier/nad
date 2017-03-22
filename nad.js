@@ -23,8 +23,8 @@ const log = settings.logger.child({ module: 'main' });
 let plugins = null;         // plugin manager
 let push_receiver = null;   // listener, metrics can be 'pushed' to nad
 let circwmi = null;         // dynamically load, if platform is windows
-let statsd = null;          // dynamically load in finish_bootstrap, if enabled
-let reverse = null;         // dynamically load in finish_bootstrap, if enabled
+let statsd = null;          // dynamically load, if enabled
+let reverse = null;         // dynamically load, if enabled
 
 log.info('initializing');
 
@@ -166,7 +166,7 @@ function start_statsd() {
             return;
         }
 
-        log.debug('initializing statsd listener');
+        log.debug('loading statsd listener');
         try {
             statsd = require(path.join(nad.lib_dir, 'statsd'));
         } catch (err) {
@@ -176,7 +176,7 @@ function start_statsd() {
         }
 
         statsd.start();
-        resolve('started statsd listener');
+        resolve('statsd listener loaded');
     });
 }
 
@@ -184,7 +184,7 @@ function start_statsd() {
 function start_reverse() {
     return new Promise((resolve, reject) => {
         if (!settings.reverse.enabled) {
-            resolve('reverse not enabled, skipping');
+            resolve('reverse connector not enabled, skipping');
             return;
         }
 
@@ -194,7 +194,7 @@ function start_reverse() {
         //       update settings if it has to 'search' for
         //       a check and one is found.
 
-        log.debug('setting up reverse connection');
+        log.debug('loading reverse connector');
         try {
             reverse = require(path.join(nad.lib_dir, 'reverse'));
         } catch (err) {
@@ -205,7 +205,7 @@ function start_reverse() {
 
         reverse().
             then(() => {
-                resolve('started reverse connector');
+                resolve('reverse connector loaded');
             }).
             catch((err) => {
                 log.fatal({ err: err.message }, 'unable to set up reverse connection');
