@@ -15,7 +15,7 @@ smf/circonus-nad.out
 smf/nad.xml.out
 
 # mgm 
-bin/*.out
+*.out
 node_modules/
 node-*.tar.xz
 .eslintcache

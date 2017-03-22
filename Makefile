@@ -25,6 +25,7 @@ install:	install-nad install-man install-plugins install-modules
 
 install-dirs:
 	./mkinstalldirs $(DESTDIR)$(MAN)
+	./mkinstalldirs $(DESTDIR)$(BIN)
 	./mkinstalldirs $(DESTDIR)$(SBIN)
 	./mkinstalldirs $(DESTDIR)$(CONF)
 	./mkinstalldirs $(DESTDIR)$(ETC)
@@ -34,7 +35,9 @@ install-dirs:
 	chown $(RUNSTATE_USER) $(DESTDIR)$(RUNSTATE_DIR)
 
 install-nad:	install-dirs
-	./install-sh -c -m 0755 nad $(DESTDIR)$(SBIN)/nad
+	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" nad.sh > nad.sh.out
+	./install-sh -c -m 0644 nad.js $(DESTDIR)$(SBIN)/nad.js
+	./install-sh -c -m 0755 nad.sh.out $(DESTDIR)$(SBIN)/nad
 
 install-man:	install-dirs
 	./install-sh -c -m 0644 man/nad.8 $(DESTDIR)$(MAN)/nad.8
@@ -66,13 +69,13 @@ install-illumos:	install
 	cd $(DESTDIR)$(CONF) ; /bin/ln -sf common/zpool.sh
 
 install-linux:	install
+	./mkinstalldirs $(DESTDIR)$(LOG)
 	/bin/sed -e "s#@@CONF@@#$(CONF)#g" linux-init/defaults > linux-init/defaults.out
-	./mkinstalldirs $(DESTDIR)$(BIN)
+	./install-sh -c -m 0644 linux-init/defaults.out $(DESTDIR)$(ETC)/nad.conf
 	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@LOG@@#$(LOG)#g" bin/nad-log.sh > bin/nad-log.out
 	./install-sh -c -m 0755 bin/nad-log.out $(DESTDIR)$(BIN)/nad-log
-	./mkinstalldirs $(DESTDIR)$(LOG)
 	/bin/sed -e "s#@@LOG@@#$(LOG)#g" linux-init/logrotate > linux-init/logrotate.out
-	./install-sh -c -m 0755 linux-init/logrotate.out $(DESTDIR)/etc/logrotate.d/nad
+	./install-sh -c -m 0644 linux-init/logrotate.out $(DESTDIR)/etc/logrotate.d/nad
 	cd $(DESTDIR)$(CONF)/linux ; $(MAKE)
 	cd $(DESTDIR)$(CONF) ; for f in cpu.sh disk.sh diskstats.sh fs.elf if.sh vm.sh ; do /bin/ln -sf linux/$$f ; done
 ifneq ($(wildcard /sbin/zpool),)
@@ -84,7 +87,6 @@ endif
 
 # systemd
 install-linux-systemd: install-linux
-	./install-sh -c -m 0644 linux-init/defaults.out $(DESTDIR)$(ETC)/nad.conf
 	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@BIN@@#$(BIN)#g" -e "s#@@ETC@@#$(ETC)#g" linux-init/systemd.service > linux-init/systemd.service.out
 	./install-sh -c -m 0755 linux-init/systemd.service.out $(DESTDIR)/lib/systemd/system/nad.service
 

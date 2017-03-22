@@ -5,9 +5,7 @@ After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=@@SBIN@@
-ExecStart=@@BIN@@/node nad
-EnvironmentFile=@@ETC@@/nad.conf
+ExecStart=@@SBIN@@/nad --daemon
 Restart=always
 
 [Install]

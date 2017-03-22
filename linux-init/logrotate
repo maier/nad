@@ -1,5 +1,4 @@
 @@LOG@@/nad.log {
-       su root
        daily
        rotate 7
        delaycompress
