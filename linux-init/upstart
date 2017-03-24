@@ -1,6 +1,7 @@
 description "Circonus Node Agent"
 author "circonus <support@circonus.com>"
 
+start on stopped rc RUNLEVEL=[345]
 start on filesystem and started networking
 stop on shutdown
 
