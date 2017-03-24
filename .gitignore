@@ -17,7 +17,7 @@ smf/nad.xml.out
 # mgm 
 *.out
 node_modules/
-node-*.tar.xz
+node-*.tar.[gx]z
 .eslintcache
 TODO.md
 .vscode/
