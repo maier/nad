@@ -11,6 +11,9 @@ node_ver = '6.10.1'
 Vagrant.configure('2') do |config|
     config.vm.define 'c7', autostart: false do |c7|
         c7.vm.box = 'maier/centos-7.3.1611-x86_64'
+        c7.vm.provider 'virtualbox' do |vb|
+            vb.name = 'c7'
+        end
         c7.vm.provision 'shell', inline: <<-SHELL
             yum -q -e 0 makecache fast
             echo "Installing needed packages"
@@ -30,6 +33,9 @@ Vagrant.configure('2') do |config|
 
     config.vm.define 'c6', autostart: false do |c6|
         c6.vm.box = 'maier/centos-6.8-x86_64'
+        c6.vm.provider 'virtualbox' do |vb|
+            vb.name = 'c6'
+        end
         c6.vm.provision 'shell', inline: <<-SHELL
             yum -q -e 0 makecache fast
             echo "Installing needed packages"
@@ -53,16 +59,19 @@ Vagrant.configure('2') do |config|
         u16.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
         u16.vm.provider 'virtualbox' do |vb|
             vb.name = 'u16'
-            # disable creation of the boot console log in host's directory
-            vb.customize ['modifyvm', :id, '--uartmode1', 'disconnected']
         end
         u16.vm.provision 'shell', inline: <<-SHELL
-            apt-get install -y -q git
-
-            echo "[credential]" > /home/ubuntu/.gitconfig
-            echo "    helper = cache --timeout=3600" >> /home/ubuntu/.gitconfig
-            chown ubuntu:ubuntu /home/ubuntu/.gitconfig
-            chmod 600 /home/ubuntu/.gitconfig
+            apt-get -q install -y gcc
+            node_tgz="node-v#{node_ver}-linux-x64.tar.gz"
+            [[ -f /vagrant/${node_tgz} ]] || {
+                echo "Fetching $node_tgz"
+                curl -sSL "https://nodejs.org/dist/v#{node_ver}/${node_tgz}" -o /vagrant/$node_tgz
+            }
+            [[ -x /opt/circonus/bin/node ]] || {
+                echo "Installing $node_tgz"
+                [[ -d /opt/circonus ]] || mkdir -p /opt/circonus
+                tar --strip-components=1 -zxf /vagrant/$node_tgz -C /opt/circonus
+            }
         SHELL
     end
 
@@ -72,16 +81,18 @@ Vagrant.configure('2') do |config|
         u14.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
         u14.vm.provider 'virtualbox' do |vb|
             vb.name = 'u14'
-            # disable creation of the boot console log in host's directory
-            vb.customize ['modifyvm', :id, '--uartmode1', 'disconnected']
         end
         u14.vm.provision 'shell', inline: <<-SHELL
-            apt-get install -y -q git
-
-            echo "[credential]" > /home/ubuntu/.gitconfig
-            echo "    helper = cache --timeout=3600" >> /home/ubuntu/.gitconfig
-            chown ubuntu:ubuntu /home/ubuntu/.gitconfig
-            chmod 600 /home/ubuntu/.gitconfig
+            node_tgz="node-v#{node_ver}-linux-x64.tar.gz"
+            [[ -f /vagrant/${node_tgz} ]] || {
+                echo "Fetching $node_tgz"
+                curl -sSL "https://nodejs.org/dist/v#{node_ver}/${node_tgz}" -o /vagrant/$node_tgz
+            }
+            [[ -x /opt/circonus/bin/node ]] || {
+                echo "Installing $node_tgz"
+                [[ -d /opt/circonus ]] || mkdir -p /opt/circonus
+                tar --strip-components=1 -zxf /vagrant/$node_tgz -C /opt/circonus
+            }
         SHELL
     end
 
