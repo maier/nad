@@ -1,9 +1,10 @@
 @@LOG@@/nad.log {
-       daily
-       rotate 7
-       delaycompress
-       compress
-       notifempty
-       missingok
-       copytruncate
+    dateext
+    daily
+    rotate 7
+    delaycompress
+    compress
+    notifempty
+    missingok
+    copytruncate
 }
