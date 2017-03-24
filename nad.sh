@@ -57,7 +57,7 @@ NAD_OPTS=""
 [[ -s $nad_conf ]] && source $nad_conf #populate NAD_OPTS
 cmd="${node_bin} ${nad_script} ${NAD_OPTS} ${extra_opts}"
 
-export NODE_MODULES=$lib_dir #ensure node can find nad specific packages
+export NODE_PATH=$lib_dir #ensure node can find nad specific packages
 
 if [[ $daemon -eq 1 ]]; then # start nad in background
     if [[ -n "$log_dir" ]]; then
