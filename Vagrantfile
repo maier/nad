@@ -6,11 +6,25 @@
 # defines VMs for testing builds
 #
 
+node_ver = '6.10.1'
+
 Vagrant.configure('2') do |config|
     config.vm.define 'c7', autostart: false do |c7|
-        c7.vm.box = 'maier/centos-7.2.1511-x86_64'
+        c7.vm.box = 'maier/centos-7.3.1611-x86_64'
         c7.vm.provision 'shell', inline: <<-SHELL
             yum -q -e 0 makecache fast
+            echo "Installing needed packages"
+            yum -q install -y rsync gcc
+            node_tgz="node-v#{node_ver}-linux-x64.tar.gz"
+            [[ -f /vagrant/${node_tgz} ]] || {
+                echo "Fetching $node_tgz"
+                curl -sSL "https://nodejs.org/dist/v#{node_ver}/${node_tgz}" -o /vagrant/$node_tgz
+            }
+            [[ -x /opt/circonus/bin/node ]] || {
+                echo "Installing $node_tgz"
+                [[ -d /opt/circonus ]] || mkdir -p /opt/circonus
+                tar --strip-components=1 -zxf /vagrant/$node_tgz -C /opt/circonus
+            }
         SHELL
     end
 
@@ -18,6 +32,18 @@ Vagrant.configure('2') do |config|
         c6.vm.box = 'maier/centos-6.8-x86_64'
         c6.vm.provision 'shell', inline: <<-SHELL
             yum -q -e 0 makecache fast
+            echo "Installing needed packages"
+            yum -q install -y rsync gcc
+            node_tgz="node-v#{node_ver}-linux-x64.tar.gz"
+            [[ -f /vagrant/${node_tgz} ]] || {
+                echo "Fetching $node_tgz"
+                curl -sSL "https://nodejs.org/dist/v#{node_ver}/${node_tgz}" -o /vagrant/$node_tgz
+            }
+            [[ -x /opt/circonus/bin/node ]] || {
+                echo "Installing $node_tgz"
+                [[ -d /opt/circonus ]] || mkdir -p /opt/circonus
+                tar --strip-components=1 -zxf /vagrant/$node_tgz -C /opt/circonus
+            }
         SHELL
     end
 
