@@ -34,7 +34,7 @@ log_dir=""
 }
 
 extra_opts=""
-pid_file="/var/run/nad.pid"
+pid_file="@@PID_FILE@@"
 daemon=0
 
 while [[ $# -gt 0 ]]; do
