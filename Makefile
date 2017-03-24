@@ -74,7 +74,7 @@ install-linux:	install
 	./install-sh -c -m 0644 linux-init/logrotate.out $(DESTDIR)/etc/logrotate.d/nad
 	/bin/sed -e "s#@@CONF@@#$(CONF)#g" linux-init/defaults > linux-init/defaults.out
 	./install-sh -c -m 0644 linux-init/defaults.out $(DESTDIR)$(ETC)/nad.conf
-	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@LOG@@#$(LOG)#g" bin/nad-log.sh > bin/nad-log.out
+	/bin/sed -e "s#@@BIN@@#$(BIN)#g" -e "s#@@MODULES@@#$(MODULES)#g" -e "s#@@LOG@@#$(LOG)#g" bin/nad-log.sh > bin/nad-log.out
 	./install-sh -c -m 0755 bin/nad-log.out $(DESTDIR)$(BIN)/nad-log
 	cd $(DESTDIR)$(CONF)/linux ; $(MAKE)
 	cd $(DESTDIR)$(CONF) ; for f in cpu.sh disk.sh diskstats.sh fs.elf if.sh vm.sh ; do /bin/ln -sf linux/$$f ; done
@@ -88,10 +88,10 @@ endif
 # init
 install-ubuntu:	install-linux
 ifneq ($(and $(SYSTEMD_BIN), $(SYSTEMD_DIR)),)
-	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@BIN@@#$(BIN)#g" -e "s#@@ETC@@#$(ETC)#g" linux-init/systemd.service > linux-init/systemd.service.out
+	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" linux-init/systemd.service > linux-init/systemd.service.out
 	./install-sh -c -m 0755 linux-init/systemd.service.out $(DESTDIR)/lib/systemd/system/nad.service
 else ifneq ($(and $(UPSTART_BIN), $(UPSTART_DIR)),)
-	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@BIN@@#$(BIN)#g" -e "s#@@ETC@@#$(ETC)#g" linux-init/upstart > linux-init/upstart.out
+	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" linux-init/upstart > linux-init/upstart.out
 	./install-sh -c -m 0755 linux-init/upstart.out $(DESTDIR)/etc/init/nad.conf
 else
 	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@LOG@@#$(LOG)#g" linux-init/ubuntu-init > linux-init/ubuntu-init.out
@@ -101,10 +101,10 @@ endif
 # init
 install-rhel:	install-linux
 ifneq ($(and $(SYSTEMD_BIN), $(SYSTEMD_DIR)),)
-	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@BIN@@#$(BIN)#g" -e "s#@@ETC@@#$(ETC)#g" linux-init/systemd.service > linux-init/systemd.service.out
+	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" linux-init/systemd.service > linux-init/systemd.service.out
 	./install-sh -c -m 0755 linux-init/systemd.service.out $(DESTDIR)/lib/systemd/system/nad.service
 else ifneq ($(and $(UPSTART_BIN), $(UPSTART_DIR)),)
-	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@BIN@@#$(BIN)#g" -e "s#@@ETC@@#$(ETC)#g" linux-init/upstart > linux-init/upstart.out
+	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" linux-init/upstart > linux-init/upstart.out
 	./install-sh -c -m 0755 linux-init/upstart.out $(DESTDIR)/etc/init/nad.conf
 else
 	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@LOG@@#$(LOG)#g" linux-init/rhel-init > linux-init/rhel-init.out
@@ -139,4 +139,4 @@ install-openbsd:	install
 	cd $(DESTDIR)$(CONF) ; /bin/ln -sf pf/pf.pl
 
 clean:
-	rm -f freebsd-init/*.out linux-init/*.out smf/*.out
+	rm -f freebsd-init/*.out linux-init/*.out smf/*.out bin/nad-log.out nad.sh.out 
