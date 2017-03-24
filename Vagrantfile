@@ -61,7 +61,8 @@ Vagrant.configure('2') do |config|
             vb.name = 'u16'
         end
         u16.vm.provision 'shell', inline: <<-SHELL
-            apt-get -q install -y gcc
+            echo "Installing needed packages"
+            apt-get install -qq gcc
             node_tgz="node-v#{node_ver}-linux-x64.tar.gz"
             [[ -f /vagrant/${node_tgz} ]] || {
                 echo "Fetching $node_tgz"
@@ -83,6 +84,8 @@ Vagrant.configure('2') do |config|
             vb.name = 'u14'
         end
         u14.vm.provision 'shell', inline: <<-SHELL
+            echo "Installing needed packages"
+            apt-get install -qq gcc
             node_tgz="node-v#{node_ver}-linux-x64.tar.gz"
             [[ -f /vagrant/${node_tgz} ]] || {
                 echo "Fetching $node_tgz"
@@ -99,36 +102,29 @@ Vagrant.configure('2') do |config|
     config.vm.define 'o14', autostart: false do |o14|
         o14.vm.box = 'maier/omnios-r151014-x86_64'
         o14.vm.provision 'shell', inline: <<-SHELL
-            pkg install git
-
-            echo "[credential]" > /home/vagrant/.gitconfig
-            echo "    helper = cache --timeout=3600" >> /home/vagrant/.gitconfig
-            chown vagrant:vagrant /home/vagrant/.gitconfig
-            chmod 600 /home/vagrant/.gitconfig
+            echo "Installing needed packages"
+            pkg set-publisher -g http://updates.circonus.net/omnios/r151014/ circonus
+            pkg install -q platform/runtime/nodejs network/rsync developer/gcc48
+            [[ $(grep -c "PATH" /root/.bashrc) -eq 0  ]] && {
+                echo '[[ -f ~/.bashrc ]] && source ~/.bashrc' >> /root/.profile
+                echo 'export PATH="$PATH:$(ls -d /opt/gcc*)/bin"' >> /root/.bashrc
+            }
         SHELL
     end
 
     config.vm.define 'bsd11', autostart: false do |bsd11|
         bsd11.vm.box = 'freebsd/FreeBSD-11.0-RELEASE-p1'
         bsd11.vm.provision 'shell', inline: <<-SHELL
-            pkg install git
-
-            echo "[credential]" > /home/vagrant/.gitconfig
-            echo "    helper = cache --timeout=3600" >> /home/vagrant/.gitconfig
-            chown vagrant:vagrant /home/vagrant/.gitconfig
-            chmod 600 /home/vagrant/.gitconfig
+            echo "Installing needed packages"
+            echo 'NONE'
         SHELL
     end
 
     config.vm.define 'bsd10', autostart: false do |bsd10|
         bsd10.vm.box = 'freebsd/FreeBSD-10.3-RELEASE'
         bsd10.vm.provision 'shell', inline: <<-SHELL
-            pkg install git
-
-            echo "[credential]" > /home/vagrant/.gitconfig
-            echo "    helper = cache --timeout=3600" >> /home/vagrant/.gitconfig
-            chown vagrant:vagrant /home/vagrant/.gitconfig
-            chmod 600 /home/vagrant/.gitconfig
+            echo "Installing needed packages"
+            echo 'NONE'
         SHELL
     end
 end

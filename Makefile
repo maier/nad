@@ -19,8 +19,10 @@ MANIFEST_DIR=/var/svc/manifest/network/circonus
 METHOD_DIR=/var/svc/method
 MAKE?=make
 
+# centos7 and ubuntu16
 SYSTEMD_BIN=$(wildcard /bin/systemctl)
 SYSTEMD_DIR=$(wildcard /lib/systemd/system)
+# centos6 and ubuntu14
 UPSTART_BIN=$(wildcard /sbin/initctl)
 UPSTART_DIR=$(wildcard /etc/init)
 
@@ -61,11 +63,10 @@ install-illumos:	install
 	/bin/sed \
 		-e "s#@@PREFIX@@#$(PREFIX)#g" \
 		-e "s#@@METHOD_DIR@@#$(METHOD_DIR)#g" \
-		-e "s#@@CONF@@#$(CONF)#g" \
 		smf/nad.xml > smf/nad.xml.out
 	/bin/sed \
-		-e "s#@@PREFIX@@#$(PREFIX)#g" \
-		-e "s#@@CONF@@#$(CONF)#g" \
+		-e "s#@@SBIN@@#$(SBIN)#g" \
+		-e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" \
 		smf/circonus-nad > smf/circonus-nad.out
 	mkdir -p $(DESTDIR)$(MANIFEST_DIR)
 	mkdir -p $(DESTDIR)$(METHOD_DIR)
