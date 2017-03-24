@@ -4,8 +4,9 @@ Documentation=http://github.com/circonus-labs/nad
 After=network.target
 
 [Service]
-Type=simple
-ExecStart=@@SBIN@@/nad --daemon
+Type=forking
+PIDFile=/var/run/nad.pid
+ExecStart=@@SBIN@@/nad --daemon --pid_file /var/run/nad.pid
 Restart=always
 
 [Install]
