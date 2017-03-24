@@ -5,8 +5,8 @@ After=network.target
 
 [Service]
 Type=forking
-PIDFile=/var/run/nad.pid
-ExecStart=@@SBIN@@/nad --daemon --pid_file /var/run/nad.pid
+PIDFile=@@PID_FILE@@
+ExecStart=@@SBIN@@/nad --daemon --pid_file @@PID_FILE@@
 Restart=always
 
 [Install]

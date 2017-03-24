@@ -8,5 +8,5 @@ respawn
 expect daemon
 
 script
-    exec @@SBIN@@/nad --daemon
+    exec @@SBIN@@/nad --daemon --pid_file @@PID_FILE@@
 end script

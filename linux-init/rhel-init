@@ -25,8 +25,8 @@
 . /etc/rc.d/init.d/functions
 
 prog="Circonus Node Agent Daemon"
-NAD="@@PREFIX@@/sbin/nad"
-NAD_PIDFILE=/var/run/nad.pid
+NAD="@@SBIN@@/nad"
+NAD_PIDFILE="@@PID_FILE@@"
 
 run_app() {
     $NAD --daemon --pid_file $NAD_PIDFILE
