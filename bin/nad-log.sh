@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
+export PATH="$PATH:@@BIN@@"
 LOG="@@LOG@@/nad.log"
-PINO="@@PREFIX@@/lib/node_modules/.bin/pino"
+PINO="@@MODULES@@/.bin/pino"
 
 [[ -f $LOG ]] || {
     echo "Unable to find NAD log ($LOG)"
