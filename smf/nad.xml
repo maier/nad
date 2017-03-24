@@ -18,11 +18,18 @@
         <envvar name='HOME' value='@@PREFIX@@'/>
       </method_environment>
     </method_context>
-    <exec_method name='start' type='method' exec='@@METHOD_DIR@@/circonus-nad' timeout_seconds='60'>
-    </exec_method>
-    <exec_method name='stop' type='method' exec=':kill' timeout_seconds='60'/>
+    <exec_method
+        name='start'
+        type='method'
+        exec='@@METHOD_DIR@@/circonus-nad start'
+        timeout_seconds='60'/>
+    <exec_method
+        name='stop'
+        type='method'
+        exec='@@METHOD_DIR@@/circonus-nad stop'
+        timeout_seconds='60'/>
     <property_group name='startd' type='framework'>
-      <propval name='duration' type='astring' value='child'/>
+      <propval name='duration' type='astring' value='transient'/>
     </property_group>
     <stability value='Unstable'/>
     <template>
