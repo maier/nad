@@ -70,12 +70,12 @@ install-illumos:	install
 
 install-linux:	install
 	./mkinstalldirs $(DESTDIR)$(LOG)
+	/bin/sed -e "s#@@LOG@@#$(LOG)#g" linux-init/logrotate > linux-init/logrotate.out
+	./install-sh -c -m 0644 linux-init/logrotate.out $(DESTDIR)/etc/logrotate.d/nad
 	/bin/sed -e "s#@@CONF@@#$(CONF)#g" linux-init/defaults > linux-init/defaults.out
 	./install-sh -c -m 0644 linux-init/defaults.out $(DESTDIR)$(ETC)/nad.conf
 	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@LOG@@#$(LOG)#g" bin/nad-log.sh > bin/nad-log.out
 	./install-sh -c -m 0755 bin/nad-log.out $(DESTDIR)$(BIN)/nad-log
-	/bin/sed -e "s#@@LOG@@#$(LOG)#g" linux-init/logrotate > linux-init/logrotate.out
-	./install-sh -c -m 0644 linux-init/logrotate.out $(DESTDIR)/etc/logrotate.d/nad
 	cd $(DESTDIR)$(CONF)/linux ; $(MAKE)
 	cd $(DESTDIR)$(CONF) ; for f in cpu.sh disk.sh diskstats.sh fs.elf if.sh vm.sh ; do /bin/ln -sf linux/$$f ; done
 ifneq ($(wildcard /sbin/zpool),)
@@ -85,29 +85,28 @@ ifneq ($(wildcard /usr/bin/systemctl),)
 	cd $(DESTDIR)$(CONF) ; /bin/ln -sf linux/systemd.sh
 endif
 
-# systemd
-install-linux-systemd: install-linux
-	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@BIN@@#$(BIN)#g" -e "s#@@ETC@@#$(ETC)#g" linux-init/systemd.service > linux-init/systemd.service.out
-	./install-sh -c -m 0755 linux-init/systemd.service.out $(DESTDIR)/lib/systemd/system/nad.service
-
 # init
 install-ubuntu:	install-linux
-	./install-sh -c -m 0644 linux-init/defaults.out $(DESTDIR)/etc/default/nad
+ifneq ($(and $(SYSTEMD_BIN), $(SYSTEMD_DIR)),)
+	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@BIN@@#$(BIN)#g" -e "s#@@ETC@@#$(ETC)#g" linux-init/systemd.service > linux-init/systemd.service.out
+	./install-sh -c -m 0755 linux-init/systemd.service.out $(DESTDIR)/lib/systemd/system/nad.service
+else ifneq ($(and $(UPSTART_BIN), $(UPSTART_DIR)),)
+	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@BIN@@#$(BIN)#g" -e "s#@@ETC@@#$(ETC)#g" linux-init/upstart > linux-init/upstart.out
+	./install-sh -c -m 0755 linux-init/upstart.out $(DESTDIR)/etc/init/nad.conf
+else
 	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@LOG@@#$(LOG)#g" linux-init/ubuntu-init > linux-init/ubuntu-init.out
 	./install-sh -c -m 0755 linux-init/ubuntu-init.out $(DESTDIR)/etc/init.d/nad
+endif
 
 # init
 install-rhel:	install-linux
 ifneq ($(and $(SYSTEMD_BIN), $(SYSTEMD_DIR)),)
-	./install-sh -c -m 0644 linux-init/defaults.out $(DESTDIR)$(ETC)/nad.conf
 	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@BIN@@#$(BIN)#g" -e "s#@@ETC@@#$(ETC)#g" linux-init/systemd.service > linux-init/systemd.service.out
 	./install-sh -c -m 0755 linux-init/systemd.service.out $(DESTDIR)/lib/systemd/system/nad.service
 else ifneq ($(and $(UPSTART_BIN), $(UPSTART_DIR)),)
-	./install-sh -c -m 0644 linux-init/defaults.out $(DESTDIR)$(ETC)/nad.conf
-	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@BIN@@#$(BIN)#g" -e "s#@@ETC@@#$(ETC)#g" linux-init/rhel-upstart > linux-init/rhel-upstart.out
-	./install-sh -c -m 0755 linux-init/rhel-upstart.out $(DESTDIR)/etc/init/nad.conf
+	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@BIN@@#$(BIN)#g" -e "s#@@ETC@@#$(ETC)#g" linux-init/upstart > linux-init/upstart.out
+	./install-sh -c -m 0755 linux-init/upstart.out $(DESTDIR)/etc/init/nad.conf
 else
-	./install-sh -c -m 0644 linux-init/defaults.out $(DESTDIR)/etc/sysconfig/nad
 	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@LOG@@#$(LOG)#g" linux-init/rhel-init > linux-init/rhel-init.out
 	./install-sh -c -m 0755 linux-init/rhel-init.out $(DESTDIR)/etc/init.d/nad
 endif
