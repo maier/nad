@@ -1,13 +1,12 @@
 description "Circonus Node Agent"
 author "circonus <support@circonus.com>"
 
-start on stopped rc RUNLEVEL=[345]
-start on filesystem and started networking
+start on runlevel [345]
 stop on shutdown
 
 respawn
+expect daemon
 
 script
-    source @@ETC@@/nad.conf
-    exec @@BIN@@/node @@SBIN@@/nad $NAD_OPTS
+    exec @@SBIN@@/nad --daemon
 end script
