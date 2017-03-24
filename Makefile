@@ -8,13 +8,8 @@ ETC=$(PREFIX)/etc
 CONF=$(PREFIX)/etc/node-agent.d
 MODULES=$(PREFIX)/lib/node_modules
 NAD_LIB=$(MODULES)/nad
-ifeq ($(wildcard /var/run),/var/run)
 RUNSTATE_DIR=/var/run
-else
-RUNSTATE_DIR=$(PREFIX)/var/run
-endif
 RUNSTATE_FILE=$(RUNSTATE_DIR)/nad.pid
-RUNSTATE_USER?=nobody
 MANIFEST_DIR=/var/svc/manifest/network/circonus
 METHOD_DIR=/var/svc/method
 MAKE?=make
@@ -38,13 +33,10 @@ install-dirs:
 	./mkinstalldirs $(DESTDIR)$(MODULES)
 	./mkinstalldirs $(DESTDIR)$(NAD_LIB)
 	./mkinstalldirs $(DESTDIR)$(MAN)
-ifneq ($(RUNSTATE_DIR),/var/run)
 	./mkinstalldirs $(DESTDIR)$(RUNSTATE_DIR)
-	chown $(RUNSTATE_USER) $(DESTDIR)$(RUNSTATE_DIR)
-endif
 
 install-nad:	install-dirs
-	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" nad.sh > nad.sh.out
+	sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" nad.sh > nad.sh.out
 	./install-sh -c -m 0644 nad.js $(DESTDIR)$(SBIN)/nad.js
 	./install-sh -c -m 0755 nad.sh.out $(DESTDIR)$(SBIN)/nad
 
@@ -127,12 +119,17 @@ install-freebsd:	install
 			-e "s#@@CONF@@#${CONF}#g" \
 			$${f} > "${DESTDIR}${CONF}/$${filename}"; \
 	done
-	/usr/bin/sed \
-		-e "s#@@PREFIX@@#${PREFIX}#g" \
-		-e "s#@@CONF@@#${CONF}#g" \
-		freebsd-init/nad > freebsd-init/nad.out
-	./install-sh -d -m 0755 $(DESTDIR)$(PREFIX)/etc/init.d
-	./install-sh -c -m 0755 freebsd-init/nad.out $(DESTDIR)$(PREFIX)/etc/rc.d/nad
+	@# detect if logrotate is installed, preference it over piping to syslog
+	@# it is up to the user to ensure logrotate is cron'd correctly
+ifeq ($(wildcard /usr/local/etc/logrotate.d),/usr/local/etc/logrotate.d)
+	./mkinstalldirs $(DESTDIR)$(LOG)
+	/usr/bin/sed -e "s#@@LOG@@#$(LOG)#g" linux-init/logrotate > linux-init/logrotate.out
+	./install-sh -c -m 0644 linux-init/logrotate.out $(DESTDIR)/usr/local/etc/logrotate.d/nad
+	/usr/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" -e "s#@@SYSLOG@@##g" freebsd-init/nad > freebsd-init/nad.out
+else
+	/usr/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" -e "s#@@SYSLOG@@#--syslog#g" freebsd-init/nad > freebsd-init/nad.out
+endif
+	./install-sh -c -m 0755 freebsd-init/nad.out $(DESTDIR)/etc/rc.d/nad
 	cd $(DESTDIR)$(CONF)/freebsd ; $(MAKE)
 	cd $(DESTDIR)$(CONF) ; for f in cpu.sh disk.elf fs.elf if.sh vm.sh  ; do /bin/ln -sf freebsd/$$f ; done
 	A=$(shell /sbin/sysctl kstat.zfs > /dev/null 2>&1 ; echo $$?)

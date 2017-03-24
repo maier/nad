@@ -113,10 +113,29 @@ Vagrant.configure('2') do |config|
     end
 
     config.vm.define 'bsd11', autostart: false do |bsd11|
+        bsd11.vm.guest = :freebsd
         bsd11.vm.box = 'freebsd/FreeBSD-11.0-RELEASE-p1'
+        bsd11.vm.synced_folder '.', '/vagrant', id: 'vagrant-root', disabled: true
+        bsd11.vm.network 'private_network', ip: '192.168.200.10'
+        bsd11.vm.synced_folder '.', '/vagrant', type: 'nfs'
+        bsd11.vm.base_mac = '406c8fb979ef'
+        bsd11.ssh.shell = 'sh'
+        bsd11.vm.provider 'virtualbox' do |vb|
+            vb.name = 'bsd11'
+            vb.customize ['modifyvm', :id, '--memory', '2048']
+            vb.customize ['modifyvm', :id, '--cpus', '2']
+            vb.customize ['modifyvm', :id, '--hwvirtex', 'on']
+            vb.customize ['modifyvm', :id, '--audio', 'none']
+            vb.customize ['modifyvm', :id, '--nictype1', 'virtio']
+            vb.customize ['modifyvm', :id, '--nictype2', 'virtio']
+        end
         bsd11.vm.provision 'shell', inline: <<-SHELL
             echo "Installing needed packages"
-            echo 'NONE'
+            pkg install -y -q gcc node npm gmake bash logrotate
+            if [ $(grep -c fdescfs /etc/fstab) -eq 0 ]; then
+                mount -t fdescfs fdescfs /dev/fd
+                echo 'fdescfs	/dev/fd		fdescfs		rw,late	0	0' >> /etc/fstab
+            fi
         SHELL
     end
 

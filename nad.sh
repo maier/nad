@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-set -u
-set -e
+set -o nounset
+set -o errexit
+set -o pipefail
 
 nad_dir="@@PREFIX@@"
 
@@ -28,7 +29,9 @@ log_dir=""
     exit 1
 }
 
-[[ -f /etc/logrotate.d/nad ]] && {
+# set log_dir if nad logrotate config detected
+#     linux                       freebsd
+[[ -f /etc/logrotate.d/nad || -f /usr/local/etc/logrotate.d/nad ]] && {
     log_dir="${nad_dir}/log"
     [[ -d $log_dir ]] || mkdir -p $log_dir
 }
@@ -36,12 +39,16 @@ log_dir=""
 extra_opts=""
 pid_file="@@PID_FILE@@"
 daemon=0
+syslog=0
 
 while [[ $# -gt 0 ]]; do
 	case $1 in
 	--daemon)
 		daemon=1
 		;;
+    --syslog)
+        syslog=1
+        ;;
 	--pid_file)
 		pid_file="$2"
 		shift
@@ -61,12 +68,23 @@ export NODE_PATH=$lib_dir #ensure node can find nad specific packages
 
 if [[ $daemon -eq 1 ]]; then # start nad in background
     if [[ -n "$log_dir" ]]; then
+        # Linux - sends to /opt/circonus/log/nad.log, rotates with logrotate
         $cmd > ${log_dir}/nad.log 2>&1 &
+        pid=$!
+        ret=$?
+    elif [[ $syslog -eq 1 ]]; then
+        # FreeBSD - sends to /var/log/messages (newsyslog can't copytruncate) by default
+        # Makefile and this script will detect if logrotate is installed and preference it
+        $cmd | logger -t 'nad' 2>&1 &
+        ret=${PIPESTATUS[0]}
+        pid=$(pgrep -f -n sbin/nad)
     else
+        # OmniOS (illumos) - send to svcs -L nad
         $cmd &
+        pid=$!
+        ret=$?
     fi
-    ret=$?
-    echo $! > $pid_file
+    echo $pid > $pid_file
     exit $ret
 fi
 
