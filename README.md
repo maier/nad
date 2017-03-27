@@ -1,62 +1,61 @@
-# nad
+# NAD - Node Agent Daemon
 
-nad is a portable, extensible, lightweight metric collection
-agent. It is the recommended way to collect system metrics
-for the [Circonus](Circonus.com) monitoring platform.
+* [Installation](#installation)
+  * [Automated](#automated-install) recommended
+  * [Manual](#manual-install)
+  * [Source](#source-install)
+* [NAD Options](OPTIONS.md)
+* [Development](DEVELOPMENT.md)
 
-nad comes with a [rich set of plugins](https://github.com/circonus-labs/nad/tree/master/plugins) which collect:
+## Overview
+
+NAD is a portable, extensible, lightweight metric collection agent. It is the recommended way to collect system metrics for the [Circonus](Circonus.com) monitoring platform.
+
+NAD comes with a [rich set of plugins](https://github.com/circonus-labs/nad/tree/master/plugins) which collect:
 - System metrics on Linux, Solaris, FreeBSD and OpenBSD
 - Application metrics for [MySQL](https://www.mysql.com), [PostgreSQL](https://www.postgresql.org/), [HAProxy](http://www.haproxy.org), [Cassandra](http://cassandra.apache.org/) and more
 
-Further applications can be easily added using a simple but powerful
-plugin system. We welcome further contributions by the
-community. Just submit a pull request against this repository.
+Further, applications can be easily added using a simple but powerful plugin system. We welcome further contributions by the community. Just submit a pull request against this repository.
 
-### Unique Features
+### Features
 
-- Full support for [histogram metrics](https://www.circonus.com/understanding-data-with-histograms/).
+* Full support for [histogram metrics](https://www.circonus.com/understanding-data-with-histograms/).
+* Support for Circonus real-time (1s) dashboards and graphing.
+* Multiple data submission paradigms:
+  * [reverse](https://www.circonus.com/pully-mcpushface/) - nad initiates a TCP connection to Circonus. Circonus uses that connection to request data as needed. This allows nad to operate behind a NAT.
+  * pull - nad exposes an HTTP endpoint (default: listen on TCP port 2609, e.g. http://localhost:2609) serving metrics in JSON format, Circonus collects metrics from there.
+* [Self-configure](self-config/README.md) with Circonus via the command line with a user-provided JSON configuration file.
 
-- Support for Circonus real-time (1s) dashboards and graphing.
+# Installation
 
-- Multiple data submission paradigms:
+## Automated Install
 
-  - pull - nad exposes and JSON/HTTP endpoint (default:http://localhost:2609),
-    and Circonus collects metrics from there.
+The easiest, and recommended, method to install nad is via the Circonus one-step Installer (COSI). See the [COSI documentation](https://github.com/circonus-labs/circonus-one-step-install) for details.
 
-  - [reverse pull](https://www.circonus.com/pully-mcpushface/) - nad
-    initiates a TCP connection with Circonus. Circonus uses that
-    connection to request data as needed. This allows nad to operate
-    behind a NAT.
+**COSI Features**
 
-- nad can automatically configure itself with Circonus via a few command line options.
+* one command install (fully automated, install nad, create checks, graphs, worksheets and dashboards)
+* or download the install script and customize to your needs
+* customizable templates for checks, graphs, dashboards and worksheets
+* supports automation via orchestration systems (e.g. ansible, puppet, shell scripts, etc.)
+* cosi-site can be installed and run locally for complete control
 
-## Installation
+## Manual Install
 
-### COSI
+For convenience and flexibility, we provide pre-built nad packages for selected platforms at [updates.circonus.net](http://updates.circonus.net/node-agent/packages/) these are self-contained "omnibus" packages built for the target OS. They contain the correct version of NodeJS and binaries for certain nad plugins. These packages will install nad in `/opt/circonus` and will configure and start nad as a service.
 
-The easiest way to install nad is via the Circonus one-step-installer (COSI).
-This will allow you to install and configure nad with a shell one-liner.
-See <https://github.com/circonus-labs/circonus-one-step-install> for details.
-
-### Packages
-
-For convenience, we provide nad packages for selected platforms under
-[omnibus packages](http://updates.circonus.net/node-agent/packages/ "nad omnibus packages").
 At the time of this writing, these are:
 
-* Ubuntu: 12.04, 14.04, 16.04
-* RedHat: EL5, EL6, EL7
+* deb packages - Ubuntu: 14.04, 16.04
+* rpm packages - CentOS: EL6, EL7
 
-These are self-contained packages that come with a private copy of Node.js
-and will automatically install and start the nad service.
+## Source Install
 
-### Manual Installation
+### Requirements
 
-Node.js v4.0.0 or later must be installed and available as `node` on
-the PATH.
-
-You will need a basic development environment (compiler, GNU make,
-etc.) in order to build the default plugins.
+* NodeJS v4.4.5+ must be installed and available as `node` on the PATH.
+* A basic development environment (compiler, GNU make, etc.) in order to build certain plugins.
+* For OmniOS/FreeBSD/etc. you must install and use `gmake`.
 
 ```
 git clone https://github.com/circonus-labs/nad.git
@@ -64,68 +63,31 @@ cd nad
 sudo make install
 ```
 
-This will build a default set of plugins and install nad related files
-under `/opt/circonus`. You can then execute nad with:
+This will build a default set of plugins and install nad in `/opt/circonus`. You may then run nad with: `/opt/circonus/sbin/nad`.
 
-```
-NODE_PATH=/opt/circonus/lib/node_modules /opt/circonus/sbin/nad
-```
 
-There are daemon install targets for some operating systems, which enable
-all the default checks and install init scripts and default configuration
-helper files. For more details, see below.
+### OS Specific Installation
 
-### OS Specific Installation Notes
+These OS-specific install targets enable default plugins and install init scripts. For more details, see below. Note this does not *enable* or *start* nad as a service.
 
-* On Ubuntu 13.10 and later, the node binary has been renamed, so you
-  will also need the `nodejs-legacy` package.  See [these notes](https://github.com/joyent/node/wiki/Installing-Node.js-via-package-manager#ubuntu-mint-elementary-os
-"Ubuntu notes").
+* Ubuntu/Debian `make install-ubuntu`
+  * Ubuntu 14.04 -upstart- `initctl start nad`
+  * Ubuntu 16.04 -systemd- `systemctl start nad`
+* RHEL/CentOS `make install-rhel`
+  * CentOS 6.8 -upstart- `initctl start nad`
+  * CentOS 7.3 -systemd- `systemctl start nad`
+* Illumos (SmartOS, OmniOS, OpenIndiana, etc.) `gmake install-illumos`
+  * `svcadm enable nad`
+* FreeBSD `PREFIX=/usr/local gmake install-freebsd`
+  * Add `nad_enable="YES"` to `/etc/rc.conf`
+  * `service start nad`
+* OpenBSD `PREFIX=/usr/local gmake install-openbsd`
+  * Add `nad_enable="YES"` to `/etc/rc.conf`
+  * `service start nad`
 
-  Optionally, to build the default plugins and install an init script:
-  ```
-  make install-ubuntu
-  ```
+## Configuration
 
-* On RHEL/CentOS, optionally, to build the default plugins and install an
-  init script:
-  ```
-  make install-rhel
-  ```
-
-* On illumos (SmartOS, OmniOS, OpenIndiana, etc.), use `gmake` to build:
-  ```
-  gmake install
-  ```
-  Optionally, to build the default plugins and create an SMF manifest:
-  ```
-  gmake install-illumos
-  ```
-
-* On FreeBSD use:
-  ```
-  PREFIX=/usr/local gmake install
-  ```
-  Optionally, to build the default plugins and install an init script:
-  ```
-  PREFIX=/usr/local gmake install-freebsd
-  ```
-
-  The init script defaults to nad being enabled. If you wish to disable
-  nad, add `nad_enable="NO"` to `/etc/rc.conf`. Starting with FreeBSD 9.2,
-  you may instead use `sysrc nad_enable=NO` to disable the service.
-
-  Additionally, if you wish to override the default options, you may add
-  them to rc.conf as `nad_flags`. Starting with FreeBSD 9.2, you may
-  instead use `sysrc nad_flags="<flags>"` to set additional options.
-
-* On OpenBSD use:
-  ```
-  PREFIX=/usr/local gmake install
-  ```
-  Optionally, to build the default plugins:
-  ```
-  PREFIX=/usr/local gmake install-openbsd
-  ```
+The nad configuration is contained in `/opt/circonus/etc/nad.conf`, see [OPTIONS](OPTIONS.md) for details on the various command line options which can be used to customize nad.
 
 ## Plugins
 
@@ -279,4 +241,3 @@ groff -mmandoc -Tascii nad.8 | less
 ```
 
 A copy is also available on the [wiki](https://github.com/circonus-labs/nad/wiki/manpage).
-
