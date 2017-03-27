@@ -37,28 +37,28 @@ The nad configuration is contained in `/opt/circonus/etc/nad.conf`, see [OPTIONS
 | `--loglevel <level>`      | Log level (trace, debug, info, warn, error, fatal). Default: info |
 | `-d, --debug`             | Enable debug logging (verbose). Default: false |
 | `-t, --trace`             | Enable trace logging (very verbose). Default: false |
-| `--no_watch`              | Disable automatic watches plugin_dir and files.. SIGHUP to rescan manually. Default: false |
+| `--no_watch`              | Disable automatic watches plugin_dir and files. SIGHUP to force rescan. Default: false |
 | `-h, --help`              | Output usage information and exit. |
 | `-V, --version`           | Output the version number and exit. |
 | `--debugdir`              | Create debug files for each plugin and write to this directory. No default |
 | `--wipedebugdir`          | Wipe debug directory clean before each write. Default: false |
 | `-i, --inventory`         | Offline inventory and exit. |
 | **Self-configure**       ||
-| `--hostname <host>`       | `os.hostname()`                  | Hostname self-configure to use in check and graph names |
-| `--brokerid <id>`         |                                  | Broker ID for self-configure to use for creating check |
-| `--configfile <file>`     |                                  | File in plugin_dir for self-configure |
+| `--hostname <host>`       | Hostname self-configure to use in check and graph names. Default: `os.hostname()` |
+| `--brokerid <id>`         | Broker ID for self-configure to use for creating check. No default |
+| `--configfile <file>`     | File in plugin_dir for self-configure. No default |
 | **DEPRECATED**           ||
-| `-c <dir>`                |                                  | DEPRECATED use --plugin_dir |
-| `--authtoken <token>`     |                                  | DEPRECATED use --api_key |
-| `--apihost <host>`        |                                  | DEPRECATED use --api_url |
-| `--apiport <port>`        |                                  | DEPRECATED use --api_url |
-| `--apipath <path>`        |                                  | DEPRECATED use --api_url |
-| `--apiprotocol <proto>`   |                                  | DEPRECATED use --api_url |
-| `--apiverbose`            |                                  | DEPRECATED NOP, see --debug |
-| `--sslcert <file>`        |                                  | DEPRECATED use --ssl_cert |
-| `--sslkey <file>`         |                                  | DEPRECATED use --ssl_key |
-| `--sslca <file>`          |                                  | DEPRECATED use --ssl_ca |
-| `--cafile <file>`         |                                  | DEPRECATED use --broker_ca |
+| `-c <dir>`                | DEPRECATED use --plugin_dir |
+| `--authtoken <token>`     | DEPRECATED use --api_key |
+| `--apihost <host>`        | DEPRECATED use --api_url |
+| `--apiport <port>`        | DEPRECATED use --api_url |
+| `--apipath <path>`        | DEPRECATED use --api_url |
+| `--apiprotocol <proto>`   | DEPRECATED use --api_url |
+| `--apiverbose`            | DEPRECATED NOP, see --debug |
+| `--sslcert <file>`        | DEPRECATED use --ssl_cert |
+| `--sslkey <file>`         | DEPRECATED use --ssl_key |
+| `--sslca <file>`          | DEPRECATED use --ssl_ca |
+| `--cafile <file>`         | DEPRECATED use --broker_ca |
 
 ## Target
 
