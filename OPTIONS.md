@@ -9,7 +9,7 @@
 The nad configuration is contained in `/opt/circonus/etc/nad.conf`, see [OPTIONS](OPTIONS.md) for details on the various command line options which can be used to customize nad.
 
 | Option                        | Description |
-| ----------------------------- | ----------- |
+| ---                           | ---         |
 | **General** ||
 | `--plugin_dir <dir>`          | Plugin directory. Default: `/opt/circonus/etc/node-agent.d` |
 | `-p, --listen <spec>`         | Listening IP address and port, spec can be an `ip` or a `port` or an `ip:port` specification. Default: 2609 |
