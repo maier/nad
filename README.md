@@ -96,33 +96,19 @@ In addition to the basic `install` target, there are OS-specific installation ta
 
 ### OS service configurations
 
-* Ubuntu 16.04
-  * Type: systemd
+* Systemd based systems - CentOS 7.x and Ubuntu 16.04
   * Configuration: `/lib/systemd/system/nad.service`
   * Enable: `systemctl enable nad`
   * Start: `systemctl start nad`
-* Ubuntu 14.04
-  * Type: upstart
+* Upstart based systems - CentOS 6.x and Ubuntu 14.04
   * Configuration: `/etc/init/nad.conf`
   * Enable: presence of configuration
   * Start: `initctl start nad`
-* CentOS 7.x
-  * Type: systemd
-  * Configuration: `/lib/systemd/system/nad.service`
-  * Enable: `systemctl enable nad`
-  * Start: `systemctl start nad`
-* CentOS 6.x
-  * Type: upstart
-  * Configuration: `/etc/init/nad.conf`
-  * Enable: presence of configuration
-  * Start: `initctl start nad`
-* Illumos
-  * Type: SMF
+* SMF based systems - OmniOS/Illumos/etc.
   * Configuration: `/var/svc/manifest/network/circonus/nad.xml`
   * Enable: `svccfg import /var/svc/manifest/network/circonus/nad.xml`
   * Start: `svcadm enable nad`
 * FreeBSD
-  * Type: rc
   * Configuration: `/etc/rc.d/nad`
   * Enable: add `nad_enable="YES"` to `/etc/rc.conf`
   * Start: `service start nad`
