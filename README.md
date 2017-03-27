@@ -262,6 +262,10 @@ To enable a plugin from one of the sub-directories in the top-level plugin direc
 
 Removing the symlink from the top-level plugin directory will disable the plugin. If file watches are disabled, send a `SIGHUP` to force a rescan.
 
+## Verify
+
+The output from a plugin can be verified/inspected at any time by making a request for that specific plugin: `curl http://localhost:2609/run/name` where `name` is the name of the plugin without the extension.
+
 ## Custom
 
 For information on creating custom plugins see the Plugin section of [DEVELOPMENT.md](DEVELOPMENT.md#plugins).
