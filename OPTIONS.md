@@ -20,12 +20,11 @@ The nad configuration is contained in `/opt/circonus/etc/nad.conf`, see [OPTIONS
 | `--cid <cid>`             | Check bundle ID for reverse connection. No default |
 | `--broker_ca <file>`      | CA file for broker reverse connection. No default |
 | `--target <target>`       | Target host -- see Target below. Default: `os.hostname()` |
-
 | **API**                  ||
-| `--api_key <key>`         |                                  | Circonus API Token key |
-| `--api_app <app>`         | nad                              | Circonus API Token app |
-| `--api_url <url>`         | `https://api.circonus.com/v2/`   | Circonus API URL |
-| `--api_ca <file>`         |                                  | CA file for API URL |
+| `--api_key <key>`         | Circonus API Token key. No default |
+| `--api_app <app>`         | Circonus API Token app. Default: nad |
+| `--api_url <url>`         | Circonus API URL. Default: `https://api.circonus.com/v2/` |
+| `--api_ca <file>`         | CA file for API URL. No default |
 | **SSL**                  ||
 | `-s, --ssl_listen <spec>` |                                  | SSL listening IP address and port, spec can be `ip` or `port` or `ip:port` |
 | `--ssl_cert <file>`       | `<plugin_dir>/na.crt`            | SSL certificate PEM file, required for SSL |
