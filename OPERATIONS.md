@@ -1,6 +1,6 @@
 # NAD - Operating and Running
 
-## Locations
+## Locations and Files
 
 | path                                         | description                                        |
 | -------------------------------------------- | -------------------------------------------------- |
