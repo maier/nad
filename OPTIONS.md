@@ -17,6 +17,10 @@ The nad configuration is contained in `/opt/circonus/etc/nad.conf`, see [OPTIONS
 | `-p, --listen <spec>`     | 2609                             | Listening IP address and port, spec can be `ip` or `port` or `ip:port` |
 | `--no-statsd`             |                                  | Disable built-in StatsD interface |
 | `--statsd_config <file>`  |                                  | Configuration file for StatsD interface |
+
+
+| Option                    | Default                          | Description                                              |
+| ------------------------- | -------------------------------- | -------------------------------------------------------- |
 | **Reverse**              ||
 | `-r, --reverse`           | false                            | Use reverse connection to broker |
 | `--cid <cid>`             |                                  | Check bundle ID for reverse connection |
