@@ -264,7 +264,19 @@ Removing the symlink from the top-level plugin directory will disable the plugin
 
 ## Verify
 
-The output from a plugin can be verified/inspected at any time by making a request for that specific plugin: `curl http://localhost:2609/run/name` where `name` is the name of the plugin without the extension.
+The output from a plugin can be verified/inspected at any time by making a request for that specific plugin:
+
+`curl http://localhost:2609/run/name`
+
+where `name` is the name of the plugin without the extension. NAD will respond with the metrics from that plugin in JSON format.
+
+## Inventory
+
+The currently loaded plugin inventory can be seen by making a request to the `inventory` endpoint.
+
+`curl http://localhost:2609/inventory`
+
+NAD will respond with a list of the currently loaded plugins. The `inventory` endpoint supports one argument, `?full`, which includes additional details on each plugin.
 
 ## Custom
 
