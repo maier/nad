@@ -11,8 +11,9 @@
 * [Configuration options](#options)
   * [General](#opt_general)
   * [Reverse](#opt_reverse)
-  * [SSL](#opt_ssl)
   * [API](#opt_api)
+  * [SSL](#opt_ssl)
+  * [StatsD](#statsd)
   * [Miscellaneous](#opt_misc)
 * [Plugin management and development](PLUGINS.md)
 * [NAD Development](DEVELOPMENT.md)
@@ -255,4 +256,12 @@ NAD plugins are located in the plugin directory (default: `/opt/circonus/etc/nod
 
 When NAD starts it scans the top-level plugin directory (default: `/opt/circonus/etc/node-agent.d`) for plugins to enable. Rudimentary filters are used to determine what is a plugin and what is not. e.g. entry is not a directory, entry has a name in the format `name.ext`, entry is executable, etc. Additionally, any directory entries ending in `.json` or `.conf` are deemed to be configuration files and ignored when scanning for plugins.
 
-To enable a plugin from one of the sub-directories in the top-level plugin directory, simply create a symlink (soft) from the plugin script into the main plugin directory. e.g. `cd /opt/circonus/etc/node-agent.d && ln -s linux/vm.sh .`
+To enable a plugin from one of the sub-directories in the top-level plugin directory, simply create a symlink (soft) from the plugin script into the main plugin directory. (e.g. `cd /opt/circonus/etc/node-agent.d && ln -s linux/vm.sh .`) The plugin will be automatically found and loaded if file watching is enabled (the default). If file watches are disabled, send a `SIGHUP` to force a rescan.
+
+## Disabling
+
+Removing the symlink from the top-level plugin directory will disable the plugin. If file watches are disabled, send a `SIGHUP` to force a rescan.
+
+## Custom
+
+For information on creating custom plugins see the Plugin section of [DEVELOPMENT.md](DEVELOPMENT.md#plugins).
