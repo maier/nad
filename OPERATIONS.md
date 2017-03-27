@@ -2,36 +2,29 @@
 
 ## Locations
 
-| path                             | description                       |
-| -------------------------------- | --------------------------------- |
-| `/opt/circonus`                  | default installation location     |
-| `/opt/circonus/bin`              | nad utilities, if applicable      |
-| `/opt/circonus/etc`              | configurations                    |
-| `/opt/circonus/etc/node-agent.d` | plugin directory                  |
-| `/opt/circonus/lib/node_agent`   | nad library packages              |
-| `/opt/circonus/log`              | nad log directory (if applicable) |
-| `/opt/circonus/man`              | nad man page                      |
-| `/opt/circonus/sbin`             | nad daemon                        |
-
-## Files
-
-| path                         | description                                        |
-| ---------------------------- | -------------------------------------------------- |
-| `/opt/circonus/etc/nad.conf` | main nad configuration (see [Options](OPTIONS.md)) |
-| `/opt/circonus/sbin/nad`     | nad startup script                                 |
-
-## Miscellaneous files
-
-| path                                         | description                                  |
-| -------------------------------------------- | -------------------------------------------- |
-| `/opt/circonus/bin/nad-log`                  | nad log viewer script, if applicable         |
-| `/opt/circonus/log/nad.log`                  | nad log, if applicable                       |
-| `/var/run/nad.pid`                           | running nad pid file, if applicable          |
-| `/lib/systemd/system/nad.service`            | systemd service configuration, if applicable |
-| `/etc/init/nad.conf`                         | upstart service configuration, if applicable |
-| `/var/svc/manifest/network/circonus/nad.xml` | smf service configuration, if applicable     |
-| `/var/svc/method/circonus-nad`               | smf method script, if applicable             |
-| `/etc/rc.d/nad`                              | FreeBSD service configuration, if applicable |
+| path                                         | description                                        |
+| -------------------------------------------- | -------------------------------------------------- |
+| **Core Directories** ||
+| `/opt/circonus`                              | default installation location                      |
+| `/opt/circonus/bin`                          | nad utilities, if applicable                       |
+| `/opt/circonus/etc`                          | configurations                                     |
+| `/opt/circonus/etc/node-agent.d`             | plugin directory                                   |
+| `/opt/circonus/lib/node_agent`               | nad library packages                               |
+| `/opt/circonus/log`                          | nad log directory (if applicable)                  |
+| `/opt/circonus/man`                          | nad man page                                       |
+| `/opt/circonus/sbin`                         | nad daemon                                         |
+| **Core Files** ||
+| `/opt/circonus/etc/nad.conf`                 | main nad configuration (see [Options](OPTIONS.md)) |
+| `/opt/circonus/sbin/nad`                     | nad startup script                                 |
+| **Miscellaneous Files** ||
+| `/opt/circonus/bin/nad-log`                  | nad log viewer script, if applicable               |
+| `/opt/circonus/log/nad.log`                  | nad log, if applicable                             |
+| `/var/run/nad.pid`                           | running nad pid file, if applicable                |
+| `/lib/systemd/system/nad.service`            | systemd service configuration, if applicable       |
+| `/etc/init/nad.conf`                         | upstart service configuration, if applicable       |
+| `/var/svc/manifest/network/circonus/nad.xml` | smf service configuration, if applicable           |
+| `/var/svc/method/circonus-nad`               | smf method script, if applicable                   |
+| `/etc/rc.d/nad`                              | FreeBSD service configuration, if applicable       |
 
 
 ## Run in foreground
