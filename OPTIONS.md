@@ -32,12 +32,12 @@ The nad configuration is contained in `/opt/circonus/etc/nad.conf`, see [OPTIONS
 | `--ssl_ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `<plugin_dir>/na.ca` |
 | `-v, --ssl_verify`        | Verify SSL traffic. Default: false |
 | **Miscellaneous**        ||
-| `-u, --uid <id>`          | User id to drop privileges to on start. Default: `nobody` (emit warning and ignore on non-POSIX) |
-| `-g, --gid <id>`          | Group id to drop privileges to on start. Default: `nobody` (emit warning and ignore on non-POSIX) |
+| `-u, --uid <id>`          | User id to drop privileges to on start. Default: `nobody` |
+| `-g, --gid <id>`          | Group id to drop privileges to on start. Default: `nobody` |
 | `--loglevel <level>`      | Log level (trace, debug, info, warn, error, fatal). Default: info |
 | `-d, --debug`             | Enable debug logging (verbose). Default: false |
 | `-t, --trace`             | Enable trace logging (very verbose). Default: false |
-| `--no_watch`              | Disable automatic watches of plugin directory, script files, config files. Send SIGHUP to rescan plugins manually. Default: false |
+| `--no_watch`              | Disable automatic watches plugin_dir and files.. SIGHUP to rescan manually. Default: false |
 | `-h, --help`              | Output usage information and exit. |
 | `-V, --version`           | Output the version number and exit. |
 | `--debugdir`              | Create debug files for each plugin and write to this directory. No default |
