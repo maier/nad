@@ -8,16 +8,13 @@
 
 The nad configuration is contained in `/opt/circonus/etc/nad.conf`, see [OPTIONS](OPTIONS.md) for details on the various command line options which can be used to customize nad.
 
-## General
-
-* `--plugin_dir <dir>`, default: `/opt/circonus/etc/node-agent.d`
-  * Plugin directory
-* `-p, --listen <spec>`, default: 2609
-  * Listening IP address and port, spec can be an `ip` or a `port` or an `ip:port` specification
-* `--no-statsd`, default is enabled
-  * Disable built-in StatsD interface
-* `--statsd_config <file>`, no default
-  * Configuration file for StatsD interface
+| Option                    | Description                                              |
+| ------------------------- | -------------------------------------------------------- |
+| **General** ||
+| `--plugin_dir <dir>`      | Plugin directory. Default: `/opt/circonus/etc/node-agent.d` |
+| `-p, --listen <spec>`     | Listening IP address and port, spec can be an `ip` or a `port` or an `ip:port` specification. Default: 2609 |
+| `--no-statsd`             | Disable built-in StatsD interface. Default is enabled |
+| `--statsd_config <file>`  | Configuration file for StatsD interface. No default |
 
 
 | Option                    | Default                          | Description                                              |
