@@ -4,7 +4,9 @@
   * [Automated](#automated-install) recommended
   * [Manual](#manual-install)
   * [Source](#source-install)
-* [NAD Options](OPTIONS.md)
+* [Plugins](PLUGINS.md)
+* [Operations](OPERATIONS.md)
+  * [NAD Options](OPTIONS.md)
 * [Development](DEVELOPMENT.md)
 
 ## Overview
