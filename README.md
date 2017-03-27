@@ -6,6 +6,8 @@
   * [Manual](#manual-install)
   * [Source](#source-install)
 * [Running NAD](#running)
+  * [Command line](#command-line)
+  * [Service](#as-a-service)
 * [Configuration options](#options)
 * [Plugin management and development](PLUGINS.md)
 * [NAD Development](DEVELOPMENT.md)
@@ -121,7 +123,7 @@ In addition to the basic `install` target, there are OS-specific installation ta
 
 # Running
 
-## Run from command line
+## Command line
 
 `/opt/circonus/sbin/nad [options]`
 
