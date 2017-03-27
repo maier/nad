@@ -275,20 +275,31 @@ function bootstrap() {
             }).
             then((msg) => {
                 log.info(msg);
-                if (!(/^(root|0)$/i).test(settings.drop_uid)) {
-                    log.info({ uid: settings.drop_uid, gid: settings.drop_gid }, 'dropping privileges');
-                    try {
-                        process.initgroups(settings.drop_uid, settings.drop_gid);
-                        process.setgid(settings.drop_gid);
-                    } catch (err) {
-                        log.warn({ uid: settings.drop_uid, gid: settings.drop_gid, err: err.message }, 'ignoring, dropping user privileges');
-                    }
-                    try {
-                        process.setuid(settings.drop_uid);
-                    } catch (err) {
-                        log.fatal({ uid: settings.drop_uid, gid: settings.drop_gid, err: err.message }, 'failed to drop privileges');
-                        reject(err);
-                    }
+
+                // if not running as root, don't drop privileges
+                if (process.getuid() !== 0) {
+                    return;
+                }
+
+                // if user to drop to is root, ignore...
+                if ((/^(root|0)$/i).test(settings.drop_uid)) {
+                    return;
+                }
+
+                log.info({ uid: settings.drop_uid, gid: settings.drop_gid }, 'dropping privileges');
+
+                try {
+                    process.initgroups(settings.drop_uid, settings.drop_gid);
+                    process.setgid(settings.drop_gid);
+                } catch (err) {
+                    log.warn({ uid: settings.drop_uid, gid: settings.drop_gid, err: err.message }, 'ignoring, setting group privileges');
+                }
+
+                try {
+                    process.setuid(settings.drop_uid);
+                } catch (err) {
+                    log.fatal({ uid: settings.drop_uid, gid: settings.drop_gid, err: err.message }, 'failed to drop privileges');
+                    reject(err);
                 }
             }).
             then(() => {
