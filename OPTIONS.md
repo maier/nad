@@ -32,17 +32,17 @@ The nad configuration is contained in `/opt/circonus/etc/nad.conf`, see [OPTIONS
 | `--ssl_ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `<plugin_dir>/na.ca` |
 | `-v, --ssl_verify`        | Verify SSL traffic. Default: false |
 | **Miscellaneous**        ||
-| `-u, --uid <id>`          | `nobody`                         | User id to drop privileges to on start (emit warning and ignore on non-POSIX) |
-| `-g, --gid <id>`          | `nobody`                         | Group id to drop privileges to on start (emit warning and ignore on non-POSIX) |
-| `--loglevel <level>`      | info                             | Log level (trace, debug, info, warn, error, fatal) |
-| `-d, --debug`             | false                            | Enable debug logging (verbose) |
-| `-t, --trace`             | false                            | Enable trace logging (very verbose) |
-| `--no_watch`              | false                            | Disable automatic watches of plugin directory, script files, config files. Send SIGHUP to rescan plugins |
-| `-h, --help`              |                                  | output usage information |
-| `-V, --version`           |                                  | output the version number |
-| `--debugdir`              |                                  | Create debug files for each plugin and write to this directory |
-| `--wipedebugdir`          | false                            | Wipe debug directory clean before each write |
-| `-i, --inventory`         |                                  | Offline inventory |
+| `-u, --uid <id>`          | User id to drop privileges to on start. Default: `nobody` (emit warning and ignore on non-POSIX) |
+| `-g, --gid <id>`          | Group id to drop privileges to on start. Default: `nobody` (emit warning and ignore on non-POSIX) |
+| `--loglevel <level>`      | Log level (trace, debug, info, warn, error, fatal). Default: info |
+| `-d, --debug`             | Enable debug logging (verbose). Default: false |
+| `-t, --trace`             | Enable trace logging (very verbose). Default: false |
+| `--no_watch`              | Disable automatic watches of plugin directory, script files, config files. Send SIGHUP to rescan plugins manually. Default: false |
+| `-h, --help`              | Output usage information and exit. |
+| `-V, --version`           | Output the version number and exit. |
+| `--debugdir`              | Create debug files for each plugin and write to this directory. No default |
+| `--wipedebugdir`          | Wipe debug directory clean before each write. Default: false |
+| `-i, --inventory`         | Offline inventory and exit. |
 | **Self-configure**       ||
 | `--hostname <host>`       | `os.hostname()`                  | Hostname self-configure to use in check and graph names |
 | `--brokerid <id>`         |                                  | Broker ID for self-configure to use for creating check |
