@@ -24,7 +24,7 @@ Further, applications can be easily added using a simple but powerful plugin sys
 * Multiple data submission paradigms:
   * [reverse](https://www.circonus.com/pully-mcpushface/) - nad initiates a TCP connection to Circonus. Circonus uses that connection to request data as needed. This allows nad to operate behind a NAT.
   * pull - nad exposes an HTTP endpoint (default: listen on TCP port 2609, e.g. http://localhost:2609) serving metrics in JSON format, Circonus collects metrics from there.
-* [Self-configure](self-config/README.md) with Circonus via the command line with a user-provided JSON configuration file.
+* [Self-configure](self-config/) with Circonus via the command line with a user-provided JSON configuration file.
 
 # Installation
 
