@@ -276,7 +276,7 @@ The currently loaded plugin inventory can be seen by making a request to the `in
 
 `curl http://localhost:2609/inventory`
 
-NAD will respond with a list of the currently loaded plugins. The `inventory` endpoint supports one argument, `?full`, which includes additional details on each plugin.
+NAD will respond with a list of the currently loaded plugins. The `inventory` endpoint supports one argument, `?full`, which includes additional details on each plugin. The output of the inventory endpoint is JSON, enabling it to be used by orchestration and monitoring tooling.
 
 ## Custom
 
