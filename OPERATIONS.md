@@ -1,3 +1,5 @@
+# NAD Operations
+
 ## Operations
 
 First, there are no config files for nad. You just run it and it works.
@@ -84,4 +86,3 @@ groff -mmandoc -Tascii nad.8 | less
 ```
 
 A copy is also available on the [wiki](https://github.com/circonus-labs/nad/wiki/manpage).
-

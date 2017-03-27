@@ -1,3 +1,5 @@
+# NAD Plugins
+
 ## Plugins
 
 nad will run scripts from the config directory, only from that
@@ -14,4 +16,3 @@ There are makefiles from which to pick and choose.
 (_DEPRECATED_)
 If you write a set of scripts/programs, you can describe them in a
 `.index.json` file and they will be reported on when you run `nad -i`.
-

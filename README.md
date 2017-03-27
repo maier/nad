@@ -4,9 +4,9 @@
   * [Automated](#automated-install) recommended
   * [Manual](#manual-install)
   * [Source](#source-install)
-* [Plugins](PLUGINS.md)
-* [Operations](OPERATIONS.md)
-  * [NAD Options](OPTIONS.md)
+* [Plugin](PLUGINS.md) management and development
+* [Operating](OPERATIONS.md) and running NAD
+  * [Options](OPTIONS.md) for configuring NAD
 * [Development](DEVELOPMENT.md)
 
 ## Overview
@@ -53,20 +53,28 @@ At the time of this writing, these are:
 
 ## Source Install
 
-### Requirements
+An install from source will build a default set of plugins and install nad in `/opt/circonus`. You may then run nad with: `/opt/circonus/sbin/nad`.
+
+### Build requirements
 
 * NodeJS v4.4.5+ must be installed and available as `node` on the PATH.
 * A basic development environment (compiler, GNU make, etc.) in order to build certain plugins.
 * For OmniOS/FreeBSD/etc. you must install and use `gmake`.
 
+
 ```
 git clone https://github.com/circonus-labs/nad.git
 cd nad
 sudo make install
+
+# or
+
+sudo gmake install
+
+# to run nad
+
+sudo /opt/circonus/sbin/nad
 ```
-
-This will build a default set of plugins and install nad in `/opt/circonus`. You may then run nad with: `/opt/circonus/sbin/nad`.
-
 
 ### OS Specific Installation
 
