@@ -26,11 +26,11 @@ The nad configuration is contained in `/opt/circonus/etc/nad.conf`, see [OPTIONS
 | `--api_url <url>`         | Circonus API URL. Default: `https://api.circonus.com/v2/` |
 | `--api_ca <file>`         | CA file for API URL. No default |
 | **SSL**                  ||
-| `-s, --ssl_listen <spec>` |                                  | SSL listening IP address and port, spec can be `ip` or `port` or `ip:port` |
-| `--ssl_cert <file>`       | `<plugin_dir>/na.crt`            | SSL certificate PEM file, required for SSL |
-| `--ssl_key <file>`        | `<plugin_dir>/na.key`            | SSL certificate key PEM file, required for SSL |
-| `--ssl_ca <file>`         | `<plugin_dir>/na.ca`             | SSL CA certificate PEM file, required for SSL w/verify |
-| `-v, --ssl_verify`        | false                            | Verify SSL traffic |
+| `-s, --ssl_listen <spec>` | SSL listening IP address and port. (`ip`\|`port`\|`ip:port`) No default |
+| `--ssl_cert <file>`       | SSL certificate PEM file, required for SSL. Default: `<plugin_dir>/na.crt`|
+| `--ssl_key <file>`        | SSL certificate key PEM file, required for SSL. Default: `<plugin_dir>/na.key` |
+| `--ssl_ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `<plugin_dir>/na.ca` |
+| `-v, --ssl_verify`        | Verify SSL traffic. Default: false |
 | **Miscellaneous**        ||
 | `-u, --uid <id>`          | `nobody`                         | User id to drop privileges to on start (emit warning and ignore on non-POSIX) |
 | `-g, --gid <id>`          | `nobody`                         | Group id to drop privileges to on start (emit warning and ignore on non-POSIX) |
