@@ -8,9 +8,6 @@
 
 node_ver = '6.10.1'
 
-# freebsd - set to mac (no separators) of primary interface
-base_mac_addr = ''
-
 Vagrant.configure('2') do |config|
     config.vm.define 'c7', autostart: false do |c7|
         c7.vm.box = 'maier/centos-7.3.1611-x86_64'
@@ -121,7 +118,8 @@ Vagrant.configure('2') do |config|
         bsd11.vm.synced_folder '.', '/vagrant', id: 'vagrant-root', disabled: true
         bsd11.vm.network 'private_network', ip: '192.168.200.11'
         bsd11.vm.synced_folder '.', '/vagrant', type: 'nfs'
-        bsd11.vm.base_mac = base_mac_addr
+        # mac not set in base box, just needs to be set to something to avoid vagrant errors
+        bsd11.vm.base_mac = ''
         bsd11.ssh.shell = 'sh'
         bsd11.vm.provider 'virtualbox' do |vb|
             vb.name = 'bsd11'
@@ -148,7 +146,8 @@ Vagrant.configure('2') do |config|
         bsd10.vm.synced_folder '.', '/vagrant', id: 'vagrant-root', disabled: true
         bsd10.vm.network 'private_network', ip: '192.168.200.10'
         bsd10.vm.synced_folder '.', '/vagrant', type: 'nfs'
-        bsd10.vm.base_mac = base_mac_addr
+        # mac not set in base box, just needs to be set to something to avoid vagrant errors
+        bsd10.vm.base_mac = ''
         bsd10.ssh.shell = 'sh'
         bsd10.vm.provider 'virtualbox' do |vb|
             vb.name = 'bsd10'
