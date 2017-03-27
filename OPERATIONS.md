@@ -27,7 +27,7 @@
 | `/etc/rc.d/nad`                              | FreeBSD service configuration, if applicable       |
 
 
-## Run in foreground
+## Run from command line
 
 `/opt/circonus/sbin/nad`
 
@@ -105,17 +105,16 @@ The install will compile and link any plugins that need compiling and linking.
 
 #### What about SSL?
 
-
-nad supports SSL. Refer to the man page for more information.
+nad supports SSL, see [Options](OPTIONS.md) for more information.
 
 
 ## Man
 
-Further documentation can be found in the nad manpage: `man nad`.
+Further documentation can be found in the nad manpage: `man -M /opt/circonus/man nad`.
 
 If nad is not installed, you can render the manpage locally with:
 ```
 groff -mmandoc -Tascii nad.8 | less
 ```
 
-A copy is also available on the [wiki](https://github.com/circonus-labs/nad/wiki/manpage).
+A copy is also available in this [repository](man/nad.md).
