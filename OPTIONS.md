@@ -4,6 +4,10 @@
 
 `nad [options]`
 
+## Configuration
+
+The nad configuration is contained in `/opt/circonus/etc/nad.conf`, see [OPTIONS](OPTIONS.md) for details on the various command line options which can be used to customize nad.
+
 ## Options
 
 | Option                    | Default                          | Description |
