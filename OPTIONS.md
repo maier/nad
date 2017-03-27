@@ -1,13 +1,5 @@
 # NAD Options
 
-## Usage
-
-`nad [options]`
-
-## Configuration
-
-The nad configuration is contained in `/opt/circonus/etc/nad.conf`, see [OPTIONS](OPTIONS.md) for details on the various command line options which can be used to customize nad.
-
 | Option                    | Description |
 | ---                       | ---         |
 | **General** ||
@@ -19,7 +11,7 @@ The nad configuration is contained in `/opt/circonus/etc/nad.conf`, see [OPTIONS
 | `-r, --reverse`           | Use reverse connection to broker. Default: false |
 | `--cid <cid>`             | Check bundle ID for reverse connection. No default |
 | `--broker_ca <file>`      | CA file for broker reverse connection. No default |
-| `--target <target>`       | Target host -- see Target below. Default: `os.hostname()` |
+| `--target <target>`       | Target host -- see [Target](#target) below. Default: `os.hostname()` |
 | **API**                  ||
 | `--api_key <key>`         | Circonus API Token key. No default |
 | `--api_app <app>`         | Circonus API Token app. Default: nad |
@@ -63,8 +55,8 @@ The nad configuration is contained in `/opt/circonus/etc/nad.conf`, see [OPTIONS
 ## Target
 
 Is used by both Reverse and Self-configure.
-1. Reverse will use it to search for a check if a cid is not provided.
-1. Self-configure will use it to configure the check on the broker - it is the host the broker will connect to in order to pull metrics.
+1. Reverse will use it to search for a check if a cid is not provided and cosi was not used to setup the host.
+1. Self-configure will use it to configure the check on the broker - it is the host (IP or FQDN) the broker will connect to in order to pull metrics.
 
 ## Reverse mode
 
@@ -74,7 +66,7 @@ Is used by both Reverse and Self-configure.
 
 ### Optional:
 
-* `--api_key` - will pull from cosi if available or fail if not provided.
+* `--api_key` - if not provided, will pull from cosi if available or fail.
 * `--target` - to enable searching for a check (e.g. on a host not registered by cosi).
 * `--cid` - will pull from cosi if available (and `--target` not specified).
 
