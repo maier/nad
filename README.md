@@ -9,6 +9,11 @@
   * [Command line](#command-line)
   * [Service](#as-a-service)
 * [Configuration options](#options)
+  * [General](#opt_general)
+  * [Reverse](#opt_reverse)
+  * [SSL](#opt_ssl)
+  * [API](#opt_api)
+  * [Miscellaneous](#opt_misc)
 * [Plugin management and development](PLUGINS.md)
 * [NAD Development](DEVELOPMENT.md)
 
@@ -153,28 +158,28 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 
 | Option                    | Description |
 | ---                       | ---         |
-| **General** ||
+| **<a name="opt_general">General</a>** ||
 | `--plugin_dir <dir>`      | Plugin directory. Default: `/opt/circonus/etc/node-agent.d` |
 | `-p, --listen <spec>`     | Listening IP address and port. (`ip`\|`port`\|`ip:port`) Default: 2609 |
 | `--no-statsd`             | Disable built-in StatsD interface. Default is enabled |
 | `--statsd_config <file>`  | Configuration file for StatsD interface. No default |
-| **Reverse**              ||
+| **<a name="opt_reverse">Reverse</a>**              ||
 | `-r, --reverse`           | Use reverse connection to broker. Default: false |
 | `--cid <cid>`             | Check bundle ID for reverse connection. No default |
 | `--broker_ca <file>`      | CA file for broker reverse connection. No default |
 | `--target <target>`       | Target host -- see [Target](#target) below. Default: `os.hostname()` |
-| **API**                  ||
+| **<a name="opt_api">API</a>**                  ||
 | `--api_key <key>`         | Circonus API Token key. No default |
 | `--api_app <app>`         | Circonus API Token app. Default: nad |
 | `--api_url <url>`         | Circonus API URL. Default: `https://api.circonus.com/v2/` |
 | `--api_ca <file>`         | CA file for API URL. No default |
-| **SSL**                  ||
+| **<a name="opt_ssl">SSL</a>**                  ||
 | `-s, --ssl_listen <spec>` | SSL listening IP address and port. (`ip`\|`port`\|`ip:port`) No default |
 | `--ssl_cert <file>`       | SSL certificate PEM file, required for SSL. Default: `<plugin_dir>/na.crt`|
 | `--ssl_key <file>`        | SSL certificate key PEM file, required for SSL. Default: `<plugin_dir>/na.key` |
 | `--ssl_ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `<plugin_dir>/na.ca` |
 | `-v, --ssl_verify`        | Verify SSL traffic. Default: false |
-| **Miscellaneous**        ||
+| **<a name="opt_misc">Miscellaneous</a>**        ||
 | `-u, --uid <id>`          | User id to drop privileges to on start. Default: `nobody` |
 | `-g, --gid <id>`          | Group id to drop privileges to on start. Default: `nobody` |
 | `--loglevel <level>`      | Log level (trace, debug, info, warn, error, fatal). Default: info |
@@ -241,3 +246,13 @@ Providing an API token key without the reverse flag will initiate a self-configu
 ### Optional:
 
 * `--hostname`
+
+# Plugins
+
+NAD plugins are located in the plugin directory (default: `/opt/circonus/etc/node-agent.d`). If the automated or manual install were used the plugins specific to the current OS are already built. If the source installation method was used - change to the appropriate directory for the current OS and run `make` or `gmake` to build the plugins.
+
+## Enabling
+
+When NAD starts it scans the top-level plugin directory (default: `/opt/circonus/etc/node-agent.d`) for plugins to enable. Rudimentary filters are used to determine what is a plugin and what is not. e.g. entry is not a directory, entry has a name in the format `name.ext`, entry is executable, etc. Additionally, any directory entries ending in `.json` or `.conf` are deemed to be configuration files and ignored when scanning for plugins.
+
+To enable a plugin from one of the sub-directories in the top-level plugin directory, simply create a symlink (soft) from the plugin script into the main plugin directory. e.g. `cd /opt/circonus/etc/node-agent.d && ln -s linux/vm.sh .`
