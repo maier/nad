@@ -229,12 +229,12 @@ Is used by both Reverse and Self-configure.
 ### Required:
 
 * `--reverse` flag signals nad to setup a reverse connection to the broker.
+* `--api-key` - optional if cosi configuration exists on host, otherwise, api key is required.
 
 ### Optional:
 
-* `--api-key` - if not provided, will pull from cosi if available or fail.
+* `--cid` - will pull from cosi configuration, if available.
 * `--target` - to enable searching for a check (e.g. on a host not registered by cosi).
-* `--cid` - will pull from cosi if available (and `--target` not specified).
 
 ## StatsD
 
