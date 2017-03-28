@@ -181,7 +181,7 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | `--api_url <url>`         | Circonus API URL. Default: `https://api.circonus.com/v2/` |
 | `--api_ca <file>`         | CA file for API URL. No default |
 | **<a name="opt_ssl">SSL</a>**                  ||
-| `-s, --ssl_listen <spec>` | SSL listening IP address and port. (`ip`\|`port`\|`ip:port`) No default |
+| `--ssl_listen <spec>`     | SSL listening IP address and port. (`ip`\|`port`\|`ip:port`) No default |
 | `--ssl_cert <file>`       | SSL certificate PEM file, required for SSL. Default: `<plugin_dir>/na.crt`|
 | `--ssl_key <file>`        | SSL certificate key PEM file, required for SSL. Default: `<plugin_dir>/na.key` |
 | `--ssl_ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `<plugin_dir>/na.ca` |
@@ -205,6 +205,7 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | **DEPRECATED**            | Obsolescence 1/2018 |
 | `-c <dir>`                | DEPRECATED use --plugin_dir |
 | `-p <spec>`               | DEPRECATED use --listen |
+| `-s <spec>`               | DEPRECATED use --ssl_listen |
 | `-v`                      | DEPRECATED use --ssl_verify |
 | `--authtoken <token>`     | DEPRECATED use --api_key |
 | `--apihost <host>`        | DEPRECATED use --api_url |
