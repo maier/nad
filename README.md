@@ -166,30 +166,30 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | Option                    | Description |
 | ---                       | ---         |
 | **<a name="opt_general">General</a>** ||
-| `--plugin_dir <dir>`      | Plugin directory. Default: `/opt/circonus/etc/node-agent.d` |
+| `--plugin-dir <dir>`      | Plugin directory. Default: `/opt/circonus/etc/node-agent.d` |
 | `--listen <spec>`         | Listening IP address and port. (`ip`\|`port`\|`ip:port`) Default: 2609 |
-| `--no-statsd`             | Disable built-in StatsD interface. Default is enabled |
-| `--statsd_config <file>`  | Configuration file for StatsD interface. No default |
+| `--no-statsd`             | Disable built-in StatsD interface. |
+| `--statsd-config <file>`  | Configuration file for StatsD interface. No default |
 | **<a name="opt_reverse">Reverse</a>**              ||
 | `-r, --reverse`           | Use reverse connection to broker. Default: false |
 | `--cid <cid>`             | Check bundle ID for reverse connection. No default |
-| `--broker_ca <file>`      | CA file for broker reverse connection. No default |
+| `--broker-ca <file>`      | CA file for broker reverse connection. No default |
 | `--target <target>`       | Target host -- see [Target](#target) below. Default: `os.hostname()` |
 | **<a name="opt_api">API</a>**                  ||
-| `--api_key <key>`         | Circonus API Token key. No default |
-| `--api_app <app>`         | Circonus API Token app. Default: nad |
-| `--api_url <url>`         | Circonus API URL. Default: `https://api.circonus.com/v2/` |
-| `--api_ca <file>`         | CA file for API URL. No default |
+| `--api-key <key>`         | Circonus API Token key. No default |
+| `--api-app <app>`         | Circonus API Token app. Default: nad |
+| `--api-url <url>`         | Circonus API URL. Default: `https://api.circonus.com/v2/` |
+| `--api-ca <file>`         | CA file for API URL. No default |
 | **<a name="opt_ssl">SSL</a>**                  ||
-| `--ssl_listen <spec>`     | SSL listening IP address and port. (`ip`\|`port`\|`ip:port`) No default |
-| `--ssl_cert <file>`       | SSL certificate PEM file, required for SSL. Default: `<plugin_dir>/na.crt`|
-| `--ssl_key <file>`        | SSL certificate key PEM file, required for SSL. Default: `<plugin_dir>/na.key` |
-| `--ssl_ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `<plugin_dir>/na.ca` |
-| `--ssl_verify`            | Verify SSL traffic. Default: false |
+| `--ssl-listen <spec>`     | SSL listening IP address and port. (`ip`\|`port`\|`ip:port`) No default |
+| `--ssl-cert <file>`       | SSL certificate PEM file, required for SSL. Default: `<plugin_dir>/na.crt`|
+| `--ssl-key <file>`        | SSL certificate key PEM file, required for SSL. Default: `<plugin_dir>/na.key` |
+| `--ssl-ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `<plugin_dir>/na.ca` |
+| `--ssl-verify`            | Enable SSL verification. Default: false |
 | **<a name="opt_misc">Miscellaneous</a>**        ||
 | `-u, --uid <id>`          | User id to drop privileges to on start. Default: `nobody` |
 | `-g, --gid <id>`          | Group id to drop privileges to on start. Default: `nobody` |
-| `--loglevel <level>`      | Log level (trace, debug, info, warn, error, fatal). Default: info |
+| `--log-level <level>`     | Log level (trace, debug, info, warn, error, fatal). Default: info |
 | `-d, --debug`             | Enable debug logging (verbose). Default: false |
 | `-t, --trace`             | Enable trace logging (very verbose). Default: false |
 | `--no-watch`              | Disable automatic plugin_dir rescan on changes. Send `SIGHUP` to force rescan. |
@@ -203,20 +203,20 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | `--brokerid <id>`         | Broker ID for self-configure to use for creating check. No default |
 | `--configfile <file>`     | File in plugin_dir for self-configure. No default |
 | **DEPRECATED**            | Obsolescence 1/2018 |
-| `-c <dir>`                | DEPRECATED use --plugin_dir |
+| `-c <dir>`                | DEPRECATED use --plugin-dir |
 | `-p <spec>`               | DEPRECATED use --listen |
-| `-s <spec>`               | DEPRECATED use --ssl_listen |
-| `-v`                      | DEPRECATED use --ssl_verify |
-| `--authtoken <token>`     | DEPRECATED use --api_key |
-| `--apihost <host>`        | DEPRECATED use --api_url |
-| `--apiport <port>`        | DEPRECATED use --api_url |
-| `--apipath <path>`        | DEPRECATED use --api_url |
-| `--apiprotocol <proto>`   | DEPRECATED use --api_url |
+| `-s <spec>`               | DEPRECATED use --ssl-listen |
+| `-v`                      | DEPRECATED use --ssl-verify |
+| `--authtoken <token>`     | DEPRECATED use --api-key |
+| `--apihost <host>`        | DEPRECATED use --api-url |
+| `--apiport <port>`        | DEPRECATED use --api-url |
+| `--apipath <path>`        | DEPRECATED use --api-url |
+| `--apiprotocol <proto>`   | DEPRECATED use --api-url |
 | `--apiverbose`            | DEPRECATED NOP, see --debug |
-| `--sslcert <file>`        | DEPRECATED use --ssl_cert |
-| `--sslkey <file>`         | DEPRECATED use --ssl_key |
-| `--sslca <file>`          | DEPRECATED use --ssl_ca |
-| `--cafile <file>`         | DEPRECATED use --broker_ca |
+| `--sslcert <file>`        | DEPRECATED use --ssl-cert |
+| `--sslkey <file>`         | DEPRECATED use --ssl-key |
+| `--sslca <file>`          | DEPRECATED use --ssl-ca |
+| `--cafile <file>`         | DEPRECATED use --broker-ca |
 
 ## Target
 
