@@ -48,7 +48,7 @@ Further, applications can be easily added using a simple but powerful plugin sys
 
 The easiest, and recommended, method to install NAD is via the Circonus one-step Installer (COSI). See the [COSI documentation](https://github.com/circonus-labs/circonus-one-step-install) for details.
 
-**Advantages**
+Benefits of using COSI:
 
 * one command install (fully automated, install NAD, create checks, graphs, worksheets and dashboards)
 * or download the install script and customize to your needs
