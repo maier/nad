@@ -237,11 +237,11 @@ Is used by both Reverse and Self-configure.
 
 ## StatsD
 
-See [StatsD module documentation](https://github.com/circonus-labs/nad/lib/statsd/README.md) for details on configuring the module. Note that StatsD uses a *push* method of metric transport, as such, it is not fully compatible with real-time graphing (graphs will update as metrics are received rather than at the higher cadence 1s interval).
+See [StatsD module documentation](https://github.com/circonus-labs/nad/lib/statsd/README.md) for details on configuring options specific to StatsD. Note that StatsD uses a *push* method of metric transport, as such, it is not fully compatible with real-time graphing (graphs will update as metrics are received rather than at the higher cadence 1s interval).
 
 ## Self-configure
 
-**DEPRECATED** -- use of [COSI]((https://github.com/circonus-labs/circonus-one-step-install) is recommended.
+**DEPRECATED** -- use of [COSI](https://github.com/circonus-labs/circonus-one-step-install) is recommended.
 
 Providing an API token key without the reverse flag will initiate a self-configuration attempt.
 
