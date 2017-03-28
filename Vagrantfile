@@ -42,11 +42,12 @@ Vagrant.configure('2') do |config|
         end
         c6.vm.provision 'shell', inline: <<-SHELL
             yum -q -e 0 makecache fast
-            echo "Installing needed packages"
-            # for `make install` and `make install-ubuntu`
+            echo "Installing needed packages for 'make install' and 'make install-rhel'"
             yum -q install -y rsync gcc
-            # for `packaging/make-omnibus`
+            echo "Installing needed packages for 'packaging/make-omnibus'"
             yum -q install -y git wget rpm-build redhat-rpm-config
+            mkdir -p /mnt/node-agent/packages
+            chown -R vagrant:vagrant /mnt/node-agent
             node_tgz="node-v#{node_ver}-linux-x64.tar.gz"
             [[ -f /vagrant/${node_tgz} ]] || {
                 echo "Fetching $node_tgz"
@@ -68,12 +69,13 @@ Vagrant.configure('2') do |config|
             vb.name = 'u16'
         end
         u16.vm.provision 'shell', inline: <<-SHELL
-            echo "Installing needed packages"
-            # for `make install` and `make install-ubuntu`
+            echo "Installing needed packages for 'make install' and 'make install-ubuntu'"
             apt-get install -qq gcc
-            # for packaging/make-omnibus
+            echo "Installing needed packages for 'packaging/make-omnibus'"
             apt-get install -qq git build-essential checkinstall python ruby ruby-dev
             gem install fpm
+            mkdir -p /mnt/node-agent/packages
+            chown -R vagrant:vagrant /mnt/node-agent
             node_tgz="node-v#{node_ver}-linux-x64.tar.gz"
             [[ -f /vagrant/${node_tgz} ]] || {
                 echo "Fetching $node_tgz"
@@ -95,12 +97,13 @@ Vagrant.configure('2') do |config|
             vb.name = 'u14'
         end
         u14.vm.provision 'shell', inline: <<-SHELL
-            echo "Installing needed packages"
-            # for `make install` and `make install-ubuntu`
+            echo "Installing needed packages for 'make install' and 'make install-ubuntu'"
             apt-get install -qq gcc
-            # for packaging/make-omnibus
+            echo "Installing needed packages for 'packaging/make-omnibus'"
             apt-get install -qq git build-essential checkinstall python ruby ruby-dev
             gem install fpm
+            mkdir -p /mnt/node-agent/packages
+            chown -R vagrant:vagrant /mnt/node-agent
             node_tgz="node-v#{node_ver}-linux-x64.tar.gz"
             [[ -f /vagrant/${node_tgz} ]] || {
                 echo "Fetching $node_tgz"
@@ -117,7 +120,7 @@ Vagrant.configure('2') do |config|
     config.vm.define 'o14', autostart: false do |o14|
         o14.vm.box = 'maier/omnios-r151014-x86_64'
         o14.vm.provision 'shell', inline: <<-SHELL
-            echo "Installing needed packages"
+            echo "Installing needed packages for 'make install' and 'make install-illumos'"
             pkg set-publisher -g http://updates.circonus.net/omnios/r151014/ circonus
             pkg install -q platform/runtime/nodejs network/rsync developer/gcc48
             [[ $(grep -c "PATH" /root/.bashrc) -eq 0  ]] && {
@@ -146,7 +149,7 @@ Vagrant.configure('2') do |config|
             vb.customize ['modifyvm', :id, '--nictype2', 'virtio']
         end
         bsd11.vm.provision 'shell', inline: <<-SHELL
-            echo "Installing needed packages"
+            echo "Installing needed packages for 'make install' and 'make install-freebsd'"
             pkg install -y -q gcc node npm gmake bash logrotate curl
             if [ $(grep -c fdescfs /etc/fstab) -eq 0 ]; then
                 mount -t fdescfs fdescfs /dev/fd
@@ -174,7 +177,7 @@ Vagrant.configure('2') do |config|
             vb.customize ['modifyvm', :id, '--nictype2', 'virtio']
         end
         bsd10.vm.provision 'shell', inline: <<-SHELL
-            echo "Installing needed packages"
+            echo "Installing needed packages for 'make install' and 'make install-freebsd'"
             pkg install -y -q gcc node npm gmake bash logrotate curl
             if [ $(grep -c fdescfs /etc/fstab) -eq 0 ]; then
                 mount -t fdescfs fdescfs /dev/fd
