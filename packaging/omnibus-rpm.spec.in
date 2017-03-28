@@ -32,8 +32,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 if [ -f /lib/systemd/system/nad.service ]; then
-    /sbin/systemctl enable nad
-    /sbin/systemctl start nad >/dev/null 2>&1
+    /bin/systemctl enable nad
+    /bin/systemctl start nad >/dev/null 2>&1
 elif [ -f /etc/init/nad.conf ]; then
     /sbin/initctl start nad
 elif [ -f /etc/init.d/nad ]; then
@@ -44,8 +44,8 @@ fi
 %preun
 if [ $1 = 0 ]; then
     if [ -f /lib/systemd/system/nad.service ]; then
-        /sbin/systemctl disable nad
-        /sbin/systemctl stop nad >/dev/null 2>&1
+        /bin/systemctl disable nad
+        /bin/systemctl stop nad >/dev/null 2>&1
     elif [ -f /etc/init/nad.conf ]; then
         /sbin/initctl stop nad
     elif [ -f /etc/init.d/nad ]; then
