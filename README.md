@@ -157,15 +157,15 @@ In addition to the basic `install` target, there are OS-specific installation ta
     * Configuration: `/etc/rc.d/nad`
     * Enable: add `nad_enable="YES"` to `/etc/rc.conf`
     * Start: `service start nad`
-* OpenBSD - manual service configuration/installation required by user
-    > For example: add the following to your `/etc/rc.local`:
+* OpenBSD - manual service configuration/installation required
+    > For example, add the following to your `/etc/rc.local`:
     >```sh
     >if [ -x /opt/circonus/sbin/nad ]; then
     >    echo -n ' nad'
     >    /opt/circonus/sbin/nad --daemon --syslog
     >fi
     >```
-    > Will start NAD and redirect logging to syslog via the `logger` command. If you would rather redirect logging to a file or elsewhere, replace the `--syslog` option with your redirection.
+    > Will start NAD and redirect logging to syslog via the `logger` command. To redirect logging to a file or elsewhere, replace the `--syslog` option with redirection e.g. `> /tmp/my.log 2>&1`.
 
 
 # Options
