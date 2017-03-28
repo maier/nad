@@ -278,11 +278,20 @@ cd /opt/circonus/etc/node-agent.d  # change to plugin directory
 ln -s linux/vm.sh .                # create symlink
 ```
 
-The plugin will be automatically found and loaded if file watching is enabled (the default). If file watching is disabled (`--no-watch`), send a `SIGHUP` to trigger scanning for plugins.
+The plugin will be automatically found and loaded if file watching is enabled (the default). If file watching is disabled (`--no-watch`), send a `SIGHUP` to the NAD process to trigger scanning for plugins.
 
 ## Disabling
 
 Removing the symlink from the top-level plugin directory will disable the plugin. If file watches are disabled, send a `SIGHUP` to force a rescan.
+
+To disable a plugin, delete the symlink in the plugin directory. For example:
+
+```sh
+cd /opt/circonus/etc/node-agent.d  # change to plugin directory
+rm vm.sh                           # delete symlink
+```
+
+The plugin will automatically be purged from the loaded plugins if file watching is enabled (the default). If file watching is disabled (`--no-watch`), send a `SIGHUP` to the NAD process to trigger scanning for plugins.
 
 ## Verify
 
