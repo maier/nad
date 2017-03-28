@@ -1,20 +1,21 @@
 # NAD - Node Agent Daemon
+
 * [Overview](#overview)
-  * [Features](#features)
+    * [Features](#features)
 * [Installation](#installation)
-  * [Automated](#automated-install) *recommended*
-  * [Manual](#manual-install)
-  * [Source](#source-install)
+    * [Automated](#automated-install) *recommended*
+    * [Manual](#manual-install)
+    * [Source](#source-install)
 * [Running NAD](#running)
-  * [Command line](#command-line)
-  * [Service](#as-a-service)
+    * [Command line](#command-line)
+    * [Service](#as-a-service)
 * [Configuration options](#options)
-  * [General](#opt_general)
-  * [Reverse](#opt_reverse)
-  * [API](#opt_api)
-  * [SSL](#opt_ssl)
-  * [StatsD](#statsd)
-  * [Miscellaneous](#opt_misc)
+    * [General](#opt_general)
+    * [Reverse](#opt_reverse)
+    * [API](#opt_api)
+    * [SSL](#opt_ssl)
+    * [StatsD](#statsd)
+    * [Miscellaneous](#opt_misc)
 * [Plugin management and development](PLUGINS.md)
 * [NAD Development](DEVELOPMENT.md)
 
@@ -25,8 +26,9 @@
 NAD is a portable, extensible, lightweight metric collection agent. It is the recommended way to collect system metrics for the [Circonus](Circonus.com) monitoring platform.
 
 NAD comes with a [rich set of plugins](https://github.com/circonus-labs/nad/tree/master/plugins) which collect:
-- System metrics on Linux, Solaris, FreeBSD and OpenBSD
-- Application metrics for [MySQL](https://www.mysql.com), [PostgreSQL](https://www.postgresql.org/), [HAProxy](http://www.haproxy.org), [Cassandra](http://cassandra.apache.org/) and more
+
+    * System metrics on Linux, Solaris, FreeBSD and OpenBSD
+    * Application metrics for [MySQL](https://www.mysql.com), [PostgreSQL](https://www.postgresql.org/), [HAProxy](http://www.haproxy.org), [Cassandra](http://cassandra.apache.org/) and more
 
 Further, applications can be easily added using a simple but powerful plugin system. We welcome further contributions by the community. Just submit a pull request against this repository.
 
@@ -34,20 +36,21 @@ Further, applications can be easily added using a simple but powerful plugin sys
 
 * Full support for [histogram metrics](https://www.circonus.com/understanding-data-with-histograms/).
 * Support for Circonus real-time (1s) dashboards and graphing.
+* StatsD interface for collecting metrics.
 * Multiple data submission paradigms:
-  * [reverse](https://www.circonus.com/pully-mcpushface/) - nad initiates a TCP connection to Circonus. Circonus uses that connection to request data as needed. This allows nad to operate behind a NAT.
-  * pull - nad exposes an HTTP endpoint (default: listen on TCP port 2609, e.g. http://localhost:2609) serving metrics in JSON format, Circonus collects metrics from there.
+    * pull - NAD exposes an HTTP endpoint serving metrics in JSON format, Circonus collects metrics from this endpoint.
+    * [reverse](https://www.circonus.com/pully-mcpushface/) - NAD initiates a TCP connection to Circonus. Circonus uses that connection to request data as needed. This allows NAD to operate behind a NAT.
 * [Self-configure](self-config/) with Circonus via the command line with a user-provided JSON configuration file.
 
 # Installation
 
 ## Automated Install
 
-The easiest, and recommended, method to install nad is via the Circonus one-step Installer (COSI). See the [COSI documentation](https://github.com/circonus-labs/circonus-one-step-install) for details.
+The easiest, and recommended, method to install NAD is via the Circonus one-step Installer (COSI). See the [COSI documentation](https://github.com/circonus-labs/circonus-one-step-install) for details.
 
-**COSI Features**
+**Advantages**
 
-* one command install (fully automated, install nad, create checks, graphs, worksheets and dashboards)
+* one command install (fully automated, install NAD, create checks, graphs, worksheets and dashboards)
 * or download the install script and customize to your needs
 * customizable templates for checks, graphs, dashboards and worksheets
 * supports automation via orchestration systems (e.g. ansible, puppet, shell scripts, etc.)
@@ -55,7 +58,7 @@ The easiest, and recommended, method to install nad is via the Circonus one-step
 
 ## Manual Install
 
-For convenience and flexibility, pre-built nad packages are available for selected platforms from [updates.circonus.net](http://updates.circonus.net/node-agent/packages/). These are self-contained *omnibus* packages built for the target OS. Packages contain the correct version of NodeJS, binaries for certain nad plugins, and applicable service configuration. These packages will install nad in `/opt/circonus` and configure and start nad as a service.
+For convenience and flexibility, pre-built packages are available for selected platforms from [updates.circonus.net](http://updates.circonus.net/node-agent/packages/). These are self-contained *omnibus* packages built for the target OS. Packages contain the correct version of NodeJS, binaries for certain nad plugins, and applicable service configuration. These packages will install nad in `/opt/circonus` and configure and start NAD as a service.
 
 At the time of this writing, these are:
 
@@ -73,7 +76,7 @@ An up-to-date list of currently supported platforms is available from [COSI](htt
 
 ### Basic `install` target
 
-A basic install from source will install nad in `/opt/circonus`.
+A basic install from source will install NAD in `/opt/circonus`.
 
 #### For CentOS/Ubuntu:
 
