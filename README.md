@@ -169,39 +169,39 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | `--plugin-dir <dir>`      | Plugin directory. Default: `/opt/circonus/etc/node-agent.d` |
 | `--listen <spec>`         | Listening IP address and port. (`ip`\|`port`\|`ip:port`) Default: 2609 |
 | `--no-statsd`             | Disable built-in StatsD interface. |
-| `--statsd-config <file>`  | Configuration file for StatsD interface. No default |
+| `--statsd-config <file>`  | Configuration file for StatsD interface. Default: none |
 | **<a name="opt_reverse">Reverse</a>**              ||
 | `-r, --reverse`           | Use reverse connection to broker. Default: false |
 | `--cid <cid>`             | Check bundle ID for reverse connection. Default: from cosi |
 | `--broker-ca <file>`      | CA file for broker reverse connection. Default: fetch from API |
 | `--target <target>`       | Target host -- see [Target](#target) below. Default: `os.hostname()` |
 | **<a name="opt_api">API</a>**                  ||
-| `--api-key <key>`         | Circonus API Token key. No default |
+| `--api-key <key>`         | Circonus API Token key. Default: none |
 | `--api-app <app>`         | Circonus API Token app. Default: nad |
 | `--api-url <url>`         | Circonus API URL. Default: `https://api.circonus.com/v2/` |
-| `--api-ca <file>`         | CA file for API URL. No default |
+| `--api-ca <file>`         | CA file for API URL. Default: none |
 | **<a name="opt_ssl">SSL</a>**                  ||
-| `--ssl-listen <spec>`     | SSL listening IP address and port. (`ip`\|`port`\|`ip:port`) No default |
+| `--ssl-listen <spec>`     | SSL listening IP address and port. (`ip`\|`port`\|`ip:port`) Default: none |
 | `--ssl-cert <file>`       | SSL certificate PEM file, required for SSL. Default: `<plugin-dir>/na.crt`|
 | `--ssl-key <file>`        | SSL certificate key PEM file, required for SSL. Default: `<plugin-dir>/na.key` |
 | `--ssl-ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `<plugin-dir>/na.ca` |
 | `--ssl-verify`            | Enable SSL verification. Default: false |
 | **<a name="opt_misc">Miscellaneous</a>**        ||
-| `-u, --uid <id>`          | User id to drop privileges to on start. Default: `nobody` |
-| `-g, --gid <id>`          | Group id to drop privileges to on start. Default: `nobody` |
+| `-u, --uid <id>`          | User id to drop privileges to on start. Default: nobody |
+| `-g, --gid <id>`          | Group id to drop privileges to on start. Default: nobody |
 | `--log-level <level>`     | Log level (trace, debug, info, warn, error, fatal). Default: info |
 | `-d, --debug`             | Enable debug logging (verbose). Default: false |
 | `-t, --trace`             | Enable trace logging (very verbose). Default: false |
 | `--no-watch`              | Disable automatic plugin-dir rescan on changes. Send `SIGHUP` to force rescan. |
 | `-h, --help`              | Output usage information and exit. |
 | `-V, --version`           | Output the version number and exit. |
-| `--debugdir`              | Create debug files for each plugin and write to this directory. No default |
+| `--debugdir`              | Create debug files for each plugin and write to this directory. Default: none |
 | `--wipedebugdir`          | Wipe debug directory clean before each write. Default: false |
 | `-i, --inventory`         | Offline inventory and exit. |
 | **Self-configure**       ||
 | `--hostname <host>`       | Hostname self-configure to use in check and graph names. Default: `os.hostname()` |
-| `--brokerid <id>`         | Broker ID for self-configure to use for creating check. No default |
-| `--configfile <file>`     | File in plugin-dir for self-configure. No default |
+| `--brokerid <id>`         | Broker ID for self-configure to use for creating check. Default: **required** |
+| `--configfile <file>`     | File in plugin-dir for self-configure. Default: **required** |
 | **DEPRECATED**            | Obsolescence 1/2018 |
 | `-c <dir>`                | DEPRECATED use --plugin-dir |
 | `-p <spec>`               | DEPRECATED use --listen |
