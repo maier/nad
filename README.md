@@ -182,9 +182,9 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | `--api-ca <file>`         | CA file for API URL. No default |
 | **<a name="opt_ssl">SSL</a>**                  ||
 | `--ssl-listen <spec>`     | SSL listening IP address and port. (`ip`\|`port`\|`ip:port`) No default |
-| `--ssl-cert <file>`       | SSL certificate PEM file, required for SSL. Default: `<plugin_dir>/na.crt`|
-| `--ssl-key <file>`        | SSL certificate key PEM file, required for SSL. Default: `<plugin_dir>/na.key` |
-| `--ssl-ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `<plugin_dir>/na.ca` |
+| `--ssl-cert <file>`       | SSL certificate PEM file, required for SSL. Default: `<plugin-dir>/na.crt`|
+| `--ssl-key <file>`        | SSL certificate key PEM file, required for SSL. Default: `<plugin-dir>/na.key` |
+| `--ssl-ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `<plugin-dir>/na.ca` |
 | `--ssl-verify`            | Enable SSL verification. Default: false |
 | **<a name="opt_misc">Miscellaneous</a>**        ||
 | `-u, --uid <id>`          | User id to drop privileges to on start. Default: `nobody` |
@@ -192,7 +192,7 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | `--log-level <level>`     | Log level (trace, debug, info, warn, error, fatal). Default: info |
 | `-d, --debug`             | Enable debug logging (verbose). Default: false |
 | `-t, --trace`             | Enable trace logging (very verbose). Default: false |
-| `--no-watch`              | Disable automatic plugin_dir rescan on changes. Send `SIGHUP` to force rescan. |
+| `--no-watch`              | Disable automatic plugin-dir rescan on changes. Send `SIGHUP` to force rescan. |
 | `-h, --help`              | Output usage information and exit. |
 | `-V, --version`           | Output the version number and exit. |
 | `--debugdir`              | Create debug files for each plugin and write to this directory. No default |
@@ -201,7 +201,7 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | **Self-configure**       ||
 | `--hostname <host>`       | Hostname self-configure to use in check and graph names. Default: `os.hostname()` |
 | `--brokerid <id>`         | Broker ID for self-configure to use for creating check. No default |
-| `--configfile <file>`     | File in plugin_dir for self-configure. No default |
+| `--configfile <file>`     | File in plugin-dir for self-configure. No default |
 | **DEPRECATED**            | Obsolescence 1/2018 |
 | `-c <dir>`                | DEPRECATED use --plugin-dir |
 | `-p <spec>`               | DEPRECATED use --listen |
@@ -232,7 +232,7 @@ Is used by both Reverse and Self-configure.
 
 ### Optional:
 
-* `--api_key` - if not provided, will pull from cosi if available or fail.
+* `--api-key` - if not provided, will pull from cosi if available or fail.
 * `--target` - to enable searching for a check (e.g. on a host not registered by cosi).
 * `--cid` - will pull from cosi if available (and `--target` not specified).
 
@@ -248,7 +248,7 @@ Providing an API token key without the reverse flag will initiate a self-configu
 
 ### Required:
 
-* `--api_key`
+* `--api-key`
 * `--target`
 * `--brokerid`
 * `--configfile`
@@ -259,7 +259,7 @@ Providing an API token key without the reverse flag will initiate a self-configu
 
 # Plugins
 
-NAD plugins are located in the plugin directory (default: `/opt/circonus/etc/node-agent.d`, configurable with `--plugin_dir` option). If the automated or manual install were used, platform specific plugins for the current OS are already built. If the source installation method was used - change to the appropriate directory for the current OS and run `make` or `gmake` to build the platform specific plugins for the OS. (e.g. `cd /opt/circonus/etc/node-agent.d/linux && make`)
+NAD plugins are located in the plugin directory (default: `/opt/circonus/etc/node-agent.d`, configurable with `--plugin-dir` option). If the automated or manual install were used, platform specific plugins for the current OS are already built. If the source installation method was used - change to the appropriate directory for the current OS and run `make` or `gmake` to build the platform specific plugins for the OS. (e.g. `cd /opt/circonus/etc/node-agent.d/linux && make`)
 
 ## Enabling
 
