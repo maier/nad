@@ -142,8 +142,6 @@ install_binary_nodejs() {
     echo "--- extracting binary archive"
     mkdir -pv $node_dest_dir
     tar -zxf $node_binary_tgz -C $node_dest_dir --strip-components=1
-    mkdir ${node_dest_dir}/nodejs
-    tar --remove-files -zcf ${node_dest_dir}/nodejs/errata.tgz ${node_dest_dir}/CHANGELOG.md ${node_dest_dir}/README.md ${node_dest_dir}/LICENSE ${node_dest_dir}/include ${node_dest_dir}/share
     popd > /dev/null
 }
 
@@ -211,6 +209,8 @@ nad_src() {
 }
 
 build_nad() {
+    local node_dest_dir="${INSTALLDIR}/${PREFIX}"
+
     echo "Building nad"
     pushd $BUILDDIR/nad > /dev/null
     make DESTDIR=$INSTALLDIR PREFIX=$PREFIX RUNSTATE_USER=`id -u` $INSTALL_TARGET
@@ -227,6 +227,14 @@ build_nad() {
         }
     done
     popd > /dev/null
+
+    # tar/compress the unused nodejs parts -- deliver in package
+    # docs, include files (for binary npm modules), share (man, systemtap), npm (for installing additional modules)
+    mkdir ${node_dest_dir}/nodejs
+    tar --remove-files -zcf ${node_dest_dir}/nodejs/docs.tgz ${node_dest_dir}/CHANGELOG.md ${node_dest_dir}/README.md ${node_dest_dir}/LICENSE
+    tar --remove-files -zcf ${node_dest_dir}/nodejs/include.tgz ${node_dest_dir}/include
+    tar --remove-files -zcf ${node_dest_dir}/nodejs/share.tgz ${node_dest_dir}/share
+    tar --remove-files -zcf ${node_dest_dir}/nodejs/npm.tgz ${node_dest_dir}/bin/npm ${node_dest_dir}/lib/node_modules/npm
 }
 
 make_package() {

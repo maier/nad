@@ -2,7 +2,7 @@
 %define		rrelease	1
 %define		_prefix		/opt/circonus
 
-# perl is optional* not required
+# perl is *optional* not required
 # rpmbuild autoreq will include it by default because of scripts with perl shebang
 %define __requires_exclude perl
 
@@ -67,9 +67,8 @@ fi
 %{_prefix}/etc/nad.conf
 %{_prefix}/etc/node-agent.d
 %{_prefix}/bin/node
-%{_prefix}/bin/npm
 %{_prefix}/bin/nad-log
 %{_prefix}/sbin/nad
 %{_prefix}/sbin/nad.js
 %{_prefix}/lib/node_modules
-%{_prefix}/nodejs/errata.tgz
+%{_prefix}/nodejs
