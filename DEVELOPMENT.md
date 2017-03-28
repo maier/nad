@@ -12,7 +12,7 @@ A [Vagrantfile](Vagrantfile) is provided with current OS targets.
 * `vagrant up bsd11` FreeBSD 11.0-RELEASE-p1
 * `vagrant up bsd10` FreeBSD 10.3-RELEASE
 
-At the time of this writing, development host environment:
+Development host environment (at the time of this writing):
 
 ```sh
 $  echo $(system_profiler SPSoftwareDataType | grep 'System Version' | cut -d ':' -f 2) ; vagrant -v ; vboxmanage --version
@@ -24,7 +24,7 @@ Vagrant 1.9.2
 # Core
 
 1. Fork [NAD repository on github](https://github.com/circonus-labs/nad)
-1. Clone your fork on development host
+1. Clone fork on development host
 1. `vagrant up <os>` where `<os>` is the type of OS to target from above
 1. `vagrant ssh <os>`
 1. `cd /vagrant && make install`
@@ -33,25 +33,18 @@ Vagrant 1.9.2
 
 ## Building custom omnibus packages
 
-1. Clone your fork
-1. Update `packaging/make-omnibus`, change `NAD_REPO` to point to the fork URL
-1. `vagrant up` the target os
-1. `vagrant ssh` into the target os vm
+1. Clone fork
+1. Ensure `NAD_REPO` in `packaging/make-omnibus` points to clone URL
+1. `vagrant up <target_os>`
+1. `vagrant ssh <target_os>`
 1. `cd /vagrant/packaging && ./make-omnibus`
-
-## Working on a custom NAD fork
-
-1. Clone your fork
-1. When you're done developing on your target host commit and push to your fork
-1. `vagrant up` the target os
-1. `vagrant ssh` into the target os vm
-1. `cd /vagrant/packaging && ./make-omnibus`
+1. The result should be an installable omnibus package in `/mnt/node-agent/packages`
 
 ## If a specific branch is needed
 
 The target os build vm will need to be primed with the specific branch.
 
-For example, after `vagrant ssh <os>`:
+For example, after `vagrant ssh <target_os>`:
 
 ```sh
 mkdir -p /tmp/nad-omnibus-build
@@ -64,4 +57,29 @@ cd /vagrant/packaging
 ./make-omnibus
 ```
 
+## Testing
+
+* Live testing can be performed by developing on host and running `make install` in guest VM.
+* Run NAD in the foreground with debug. `/opt/circonus/sbin/nad --debug`
+* Leverage `curl` to simulate requests. `curl 'http://127.0.0.1:2609/'`
+
 # Plugins
+
+1. Create a directory for plugin. `mkdir /opt/circonus/etc/node-agent.d/my_plugin && cd /opt/circonus/etc/node-agent.d/my_plugin`
+1. Write plugin script, running from command line during development
+1. When ready to test plugin create symlink in parent directory `ln -s my_plugin.sh ..`
+
+NAD supports two primary types of plugins - executables and native. An executable can be a shell script, perl/python/ruby script, a compiled binary, etc. A native plugin is a nodejs module which will be loaded into NAD. A native plugin must adhere to a few basics.
+
+1. Written as a nodejs module
+1. Expose a `run()` method which will be passed five arguments.
+    1. The plugin definition object
+    1. A callback function
+    1. The incoming request which fired the plugin
+    1. The plugin arguments (as an object), if there are any
+    1. The plugin instance ID
+1. The `run()` method is responsible for calling the callback with three arguments
+    1. The plugin definition object (which was passed to the `run()` method)
+    1. The metrics (as an object)
+    1. The instance ID (which was passed to the `run()` method)
+1. Additionally, the `run()` method should set its plugin definition object property `running` to false when done. (`def.running = false;`)
