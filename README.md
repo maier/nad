@@ -269,9 +269,16 @@ NAD plugins are located in the plugin directory (default: `/opt/circonus/etc/nod
 
 ## Enabling
 
-When NAD starts it scans the plugin directory for plugins to enable. Rudimentary filters are used to determine what is a plugin and what is not. e.g. entry is not a directory, entry has a name in the format `name.ext`, entry is executable, entry is not a configuration file (ext of `.json` or `.conf`), etc.
+When NAD starts it scans the plugin directory for plugins to enable. Rudimentary filters are used to determine what is a plugin and what is not. e.g. entry is not a directory, entry has a name in the format `name.ext`, entry is executable, entry is not a configuration file (extension of `.json` or `.conf`), etc.
 
-To enable a plugin from one of the sub-directories within the plugin directory, simply create a symlink (soft) from the plugin script into the main plugin directory. (e.g. `cd /opt/circonus/etc/node-agent.d && ln -s linux/vm.sh .`) The plugin will be automatically found and loaded if file watching is enabled (the default). If file watching is disabled (`--no-watch`) g, send a `SIGHUP` to force a rescan.
+To enable a plugin, create a symlink (soft) from the plugin file into the main plugin directory. For example:
+
+```sh
+cd /opt/circonus/etc/node-agent.d
+ln -s linux/vm.sh .
+```
+
+The plugin will be automatically found and loaded if file watching is enabled (the default). If file watching is disabled (`--no-watch`), send a `SIGHUP` to trigger scanning for plugins.
 
 ## Disabling
 
