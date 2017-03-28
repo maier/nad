@@ -34,12 +34,15 @@ Further, applications can be easily added using a simple but powerful plugin sys
 
 ### Features
 
+* Simple HTTP interface for metric collection.
+* Metrics exposed in easy to parse JSON format.
+* Supports SSL for securing HTTP interface.
 * Full support for [histogram metrics](https://www.circonus.com/understanding-data-with-histograms/).
 * Support for Circonus real-time (1s) dashboards and graphing.
-* StatsD interface for collecting metrics.
+* Provides local StatsD interface for application metric submission.
 * Multiple data submission paradigms:
-    * pull - NAD exposes an HTTP endpoint serving metrics in JSON format, Circonus collects metrics from this endpoint.
-    * [reverse](https://www.circonus.com/pully-mcpushface/) - NAD initiates a TCP connection to Circonus. Circonus uses that connection to request data as needed. This allows NAD to operate behind a NAT.
+    * pull - Circonus collects metrics using HTTP interface.
+    * [reverse](https://www.circonus.com/pully-mcpushface/) - Function behind NAT. NAD initiates secure TCP connection, Circonus uses connection to collect metrics.
 * [Self-configure](self-config/) with Circonus via the command line with a user-provided JSON configuration file.
 
 # Installation
