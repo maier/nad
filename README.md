@@ -282,8 +282,6 @@ The plugin will be automatically found and loaded if file watching is enabled (t
 
 ## Disabling
 
-Removing the symlink from the top-level plugin directory will disable the plugin. If file watches are disabled, send a `SIGHUP` to force a rescan.
-
 To disable a plugin, delete the symlink in the plugin directory. For example:
 
 ```sh
