@@ -192,7 +192,7 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | `--loglevel <level>`      | Log level (trace, debug, info, warn, error, fatal). Default: info |
 | `-d, --debug`             | Enable debug logging (verbose). Default: false |
 | `-t, --trace`             | Enable trace logging (very verbose). Default: false |
-| `--no_watch`              | Disable automatic watches plugin_dir and files. SIGHUP to force rescan. Default: false |
+| `--no-watch`              | Disable automatic plugin_dir rescan on changes. SIGHUP to force rescan. |
 | `-h, --help`              | Output usage information and exit. |
 | `-V, --version`           | Output the version number and exit. |
 | `--debugdir`              | Create debug files for each plugin and write to this directory. No default |
@@ -258,13 +258,13 @@ Providing an API token key without the reverse flag will initiate a self-configu
 
 # Plugins
 
-NAD plugins are located in the plugin directory (default: `/opt/circonus/etc/node-agent.d`). If the automated or manual install were used the plugins specific to the current OS are already built. If the source installation method was used - change to the appropriate directory for the current OS and run `make` or `gmake` to build the plugins.
+NAD plugins are located in the plugin directory (default: `/opt/circonus/etc/node-agent.d`, configurable with `--plugin_dir` option). If the automated or manual install were used, platform specific plugins for the current OS are already built. If the source installation method was used - change to the appropriate directory for the current OS and run `make` or `gmake` to build the platform specific plugins for the OS. (e.g. `cd /opt/circonus/etc/node-agent.d/linux && make`)
 
 ## Enabling
 
-When NAD starts it scans the top-level plugin directory (default: `/opt/circonus/etc/node-agent.d`) for plugins to enable. Rudimentary filters are used to determine what is a plugin and what is not. e.g. entry is not a directory, entry has a name in the format `name.ext`, entry is executable, etc. Additionally, any directory entries ending in `.json` or `.conf` are deemed to be configuration files and ignored when scanning for plugins.
+When NAD starts it scans the plugin directory for plugins to enable. Rudimentary filters are used to determine what is a plugin and what is not. e.g. entry is not a directory, entry has a name in the format `name.ext`, entry is executable, entry is not a configuration file (ext of `.json` or `.conf`), etc.
 
-To enable a plugin from one of the sub-directories in the top-level plugin directory, simply create a symlink (soft) from the plugin script into the main plugin directory. (e.g. `cd /opt/circonus/etc/node-agent.d && ln -s linux/vm.sh .`) The plugin will be automatically found and loaded if file watching is enabled (the default). If file watches are disabled, send a `SIGHUP` to force a rescan.
+To enable a plugin from one of the sub-directories within the plugin directory, simply create a symlink (soft) from the plugin script into the main plugin directory. (e.g. `cd /opt/circonus/etc/node-agent.d && ln -s linux/vm.sh .`) The plugin will be automatically found and loaded if file watching is enabled (the default). If file watching is disabled (`--no-watch`) g, send a `SIGHUP` to force a rescan.
 
 ## Disabling
 
