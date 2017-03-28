@@ -165,7 +165,7 @@ In addition to the basic `install` target, there are OS-specific installation ta
   >    /opt/circonus/sbin/nad --daemon --syslog
   >fi
   >```
-  > Will start NAD and redirect logging to syslog. If you would rather redirect logging to a file replace `--syslog`.
+  > Will start NAD and redirect logging to syslog. If you would rather redirect logging to a file replace the `--syslog` option with your redirection.
 
 
 # Options
