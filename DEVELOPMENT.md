@@ -65,11 +65,60 @@ cd /vagrant/packaging
 
 # Plugins
 
+NAD supports two primary types of plugins - executables and native. An executable can be a shell script, perl/python/ruby/etc. script, a compiled binary, etc. A native plugin is a nodejs module which will be loaded into NAD.
+
+## Script output
+
+Executables must produce metrics to standard output. They may produce JSON output.  Alternatively, the may produce simple tab-separated metric output that adheres to the following format.
+
+* `<metric_name>\t<metric_type>` - Indicating the the metric specified has a null value.
+* `<metric_name>\t<metric_type>\t<value>` - Indicating the the metric specified has a value.
+
+### The `<metric_type>`
+
+* `i` - a signed 32bit integer value,
+* `I` - an unsigned 32bit integer value,
+* `l` - a signed 64bit integer value,
+* `L` - an unsigned 64bit integer value,
+* `n` - a value to be represented as a double, or
+* `s` - the the value is a string.
+
+### Control Information
+
+You may provide control information in a line starting with a `#` character and followed by a JSON block.  Currently, `timeout` is the only  parameter accepted and the argument is interpreted as seconds.  For example, to indicate that the script should be aborted if a set of output metrics cannot be completed in 1.12 seconds:
+
+`# { "timeout": 1.12 }`
+
+### Continuous Output
+
+Continuous output is supported by long-running scripts.  After a set of metrics is emitted to standard output, emit a single empty line. NAD  will accept the previous metrics into a result set and return them on the next request for data.  The program can then pause for some ad-hoc amount of time and produce another set of metrics followed by a blank line.
+
+This mode can be useful for collection information such as `mpstat` or `vmstat` information.
+
+Note, that in most cases if you can get raw accumulated counters (instead of averages over some amount of time), that the output can be more useful to monitoring applications as a derivative can be applied after the fact without the risk of data loss.
+
+###   JSON format
+
+If you elect to product JSON formatted output in your programs, you must provide a JSON object whose keys have values that look so:
+
+```json
+{ "<metric_name>": { "_type": "<metric_type>", "_value": <value> } }
+```
+
+Example:
+
+```json
+{ "my_metric": { "_type": "i", "_value": 10 } }
+```
+
+## Creating a new plugin
+
 1. Create a directory for plugin. `mkdir /opt/circonus/etc/node-agent.d/my_plugin && cd /opt/circonus/etc/node-agent.d/my_plugin`
 1. Write plugin script, running from command line during development
 1. When ready to test plugin create symlink in parent directory `ln -s my_plugin.sh ..`
 
-NAD supports two primary types of plugins - executables and native. An executable can be a shell script, perl/python/ruby script, a compiled binary, etc. A native plugin is a nodejs module which will be loaded into NAD. A native plugin must adhere to a few basics.
+
+## Native plugins
 
 1. Written as a nodejs module
 1. Expose a `run()` method which will be passed five arguments.
@@ -83,3 +132,25 @@ NAD supports two primary types of plugins - executables and native. An executabl
     1. The metrics (as an object)
     1. The instance ID (which was passed to the `run()` method)
 1. Additionally, the `run()` method should set its plugin definition object property `running` to false when done. (`def.running = false;`)
+
+### Native plugin metric object
+
+```js
+{
+    <metric_name>: {
+        _type: "<metric_type>",
+        _value: <metric_value>
+    }
+}
+```
+
+Example:
+
+```js
+{
+    my_metric: {
+        _type: "i",
+        _value: 10
+    }
+}
+```
