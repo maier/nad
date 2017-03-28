@@ -13,7 +13,7 @@ NAD_REPO="https://github.com/circonus-labs/nad.git"
 BUILDDIR="/tmp/nad-omnibus-build"
 INSTALLDIR="/tmp/nad-omnibus-install"
 PUBLISHDIR="/mnt/node-agent"
-NODE_VERSION="6.10.0"
+NODE_VERSION="6.10.1"
 # CentOS 5/6 wget is unable to verify nodejs cert
 # ERROR: certificate common name `*.nodejs.org' doesn't match requested host name `nodejs.org'.
 # To connect to nodejs.org insecurely, use `--no-check-certificate'.
@@ -141,7 +141,9 @@ install_binary_nodejs() {
     fi
     echo "--- extracting binary archive"
     mkdir -pv $node_dest_dir
-    tar zxf $node_binary_tgz -C $node_dest_dir --strip-components=1
+    tar -zxf $node_binary_tgz -C $node_dest_dir --strip-components=1
+    mkdir ${node_dest_dir}/nodejs
+    tar --remove-files -zcf ${node_dest_dir}/nodejs/errata.tgz ${node_dest_dir}/CHANGELOG.md ${node_dest_dir}/README.md ${node_dest_dir}/LICENSE ${node_dest_dir}/include ${node_dest_dir}/share
     popd > /dev/null
 }
 
@@ -186,11 +188,14 @@ nad_src() {
     pushd $BUILDDIR/nad > /dev/null
 
     # # Looks like: 2013-07-23 11:23:43 -0700
-    # NAD_VERSION=$(git log -1  --format=format:%ad --date=iso)
+    NAD_VERSION=$(git log -1  --format=format:%ad --date=iso)
     # # Normalize to UTC
     # # This requires GNU date-- maybe there's a better way
-    # TSTAMP=$(date -d "$NAD_VERSION" -u +%Y%m%dT%H%M%SZ)
+    TSTAMP=$(date -d "$NAD_VERSION" -u +%Y%m%dT%H%M%SZ)
 
+    # possibly a better way, but, requires a modern version of git like 2.7 (released 1/2016...)
+    # probably not until 2030 when centos/ubuntu start packaging git 2.7.0...
+    #
     # Set TZ to UTC, tell git to format the date using
     # 'local' timezone with specified format string
     # e.g.
@@ -200,7 +205,7 @@ nad_src() {
     # output is:
     #   TZ=UTC git log -1 --format=format:%ad --date=format-local:%Y%m%dT%H%M%SZ
     #   20170224T192505Z
-    TSTAMP=$(TZ=UTC git log -1 --format=format:%ad --date=format-local:%Y%m%dT%H%M%SZ)
+    #TSTAMP=$(TZ=UTC git log -1 --format=format:%ad --date=format-local:%Y%m%dT%H%M%SZ)
 
     popd > /dev/null
 }

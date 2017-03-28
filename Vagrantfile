@@ -16,8 +16,12 @@ Vagrant.configure('2') do |config|
         end
         c7.vm.provision 'shell', inline: <<-SHELL
             yum -q -e 0 makecache fast
-            echo "Installing needed packages"
+            echo "Installing needed packages for 'make install' and 'make install-rhel'"
             yum -q install -y rsync gcc
+            echo "Installing needed packages for 'packaging/make-omnibus'"
+            yum -q install -y git wget rpm-build redhat-rpm-config
+            mkdir -p /mnt/node-agent/packages
+            chown -R vagrant:vagrant /mnt/node-agent
             node_tgz="node-v#{node_ver}-linux-x64.tar.gz"
             [[ -f /vagrant/${node_tgz} ]] || {
                 echo "Fetching $node_tgz"
@@ -39,7 +43,10 @@ Vagrant.configure('2') do |config|
         c6.vm.provision 'shell', inline: <<-SHELL
             yum -q -e 0 makecache fast
             echo "Installing needed packages"
+            # for `make install` and `make install-ubuntu`
             yum -q install -y rsync gcc
+            # for `packaging/make-omnibus`
+            yum -q install -y git wget rpm-build redhat-rpm-config
             node_tgz="node-v#{node_ver}-linux-x64.tar.gz"
             [[ -f /vagrant/${node_tgz} ]] || {
                 echo "Fetching $node_tgz"
@@ -62,7 +69,11 @@ Vagrant.configure('2') do |config|
         end
         u16.vm.provision 'shell', inline: <<-SHELL
             echo "Installing needed packages"
+            # for `make install` and `make install-ubuntu`
             apt-get install -qq gcc
+            # for packaging/make-omnibus
+            apt-get install -qq git build-essential checkinstall python ruby ruby-dev
+            gem install fpm
             node_tgz="node-v#{node_ver}-linux-x64.tar.gz"
             [[ -f /vagrant/${node_tgz} ]] || {
                 echo "Fetching $node_tgz"
@@ -85,7 +96,11 @@ Vagrant.configure('2') do |config|
         end
         u14.vm.provision 'shell', inline: <<-SHELL
             echo "Installing needed packages"
+            # for `make install` and `make install-ubuntu`
             apt-get install -qq gcc
+            # for packaging/make-omnibus
+            apt-get install -qq git build-essential checkinstall python ruby ruby-dev
+            gem install fpm
             node_tgz="node-v#{node_ver}-linux-x64.tar.gz"
             [[ -f /vagrant/${node_tgz} ]] || {
                 echo "Fetching $node_tgz"
