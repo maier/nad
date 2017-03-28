@@ -67,12 +67,30 @@ cd /vagrant/packaging
 
 NAD supports two primary types of plugins - executables and native. An executable can be a shell script, perl/python/ruby/etc. script, a compiled binary, etc. A native plugin is a nodejs module which will be loaded into NAD.
 
-## Script output
+## Executable plugin output
 
-Executables must produce metrics to standard output. They may produce JSON output.  Alternatively, the may produce simple tab-separated metric output that adheres to the following format.
+See [script example](examples/plugins/script)
 
-* `<metric_name>\t<metric_type>` - Indicating the the metric specified has a null value.
-* `<metric_name>\t<metric_type>\t<value>` - Indicating the the metric specified has a value.
+Executables must produce metrics to standard output. They may produce JSON or tab-delimited output.  
+
+### Tab-delimited format
+
+* `<metric_name>\t<metric_type>` - the specified metric has a null value.
+* `<metric_name>\t<metric_type>\t<value>` - the specified metric has a value.
+
+### JSON format
+
+If you elect to product JSON formatted output in your programs, you must provide a JSON object whose keys have values that look so:
+
+```json
+{ "<metric_name>": { "_type": "<metric_type>", "_value": <value> } }
+```
+
+Example:
+
+```json
+{ "my_metric": { "_type": "i", "_value": 10 } }
+```
 
 ### The `<metric_type>`
 
@@ -97,19 +115,6 @@ This mode can be useful for collection information such as `mpstat` or `vmstat` 
 
 Note, that in most cases if you can get raw accumulated counters (instead of averages over some amount of time), that the output can be more useful to monitoring applications as a derivative can be applied after the fact without the risk of data loss.
 
-###   JSON format
-
-If you elect to product JSON formatted output in your programs, you must provide a JSON object whose keys have values that look so:
-
-```json
-{ "<metric_name>": { "_type": "<metric_type>", "_value": <value> } }
-```
-
-Example:
-
-```json
-{ "my_metric": { "_type": "i", "_value": 10 } }
-```
 
 ## Creating a new plugin
 
@@ -119,6 +124,8 @@ Example:
 
 
 ## Native plugins
+
+See [native example](examples/plugins/native)
 
 1. Written as a nodejs module
 1. Expose a `run()` method which will be passed five arguments.
