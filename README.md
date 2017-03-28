@@ -58,25 +58,25 @@ Benefits of using COSI:
 
 ## Manual Install
 
-For convenience and flexibility, pre-built packages are available for selected platforms from [updates.circonus.net](http://updates.circonus.net/node-agent/packages/). These are self-contained *omnibus* packages built for the target OS. Packages contain the correct version of NodeJS, binaries for certain nad plugins, and applicable service configuration. These packages will install nad in `/opt/circonus` and configure and start NAD as a service.
+For convenience and flexibility, pre-built packages are available for selected platforms from [updates.circonus.net](http://updates.circonus.net/node-agent/packages/). These are self-contained *omnibus* packages built for the target OS. Packages contain the correct version of NodeJS, binaries for platform-specific plugins, and applicable service configuration. These packages will install NAD in `/opt/circonus` and configure and start NAD as a service.
 
 At the time of this writing, these are:
 
 * deb packages - Ubuntu: 14.04, 16.04
 * rpm packages - CentOS: EL6, EL7
 
-An up-to-date list of currently supported platforms is available from [COSI](https://onestep.circonus.com/) [in JSON format].
+An up-to-date list of currently supported platforms is available from [COSI](https://onestep.circonus.com/) (list returned in JSON).
 
 ## Source Install
 
 ### Build requirements
 
-* NodeJS v4.4.5+ must be installed and available as `node` on the PATH.
+* NodeJS v4.4.5+ must be installed, `node` and `npm` available in the PATH.
 * A basic development environment (compiler, GNU make, etc.) in order to build certain plugins. For OmniOS/FreeBSD/etc. you must install and use `gmake`.
 
 ### Basic `install` target
 
-A basic install from source will install NAD in `/opt/circonus`.
+A basic install from source installs NAD in `/opt/circonus`.
 
 #### For CentOS/Ubuntu:
 
@@ -96,7 +96,7 @@ sudo gmake install
 
 ### OS `install` targets
 
-In addition to the basic `install` target, there are OS-specific installation targets. Which will build OS-specific plugins, enable default plugins, and install an OS-specific service configuration.
+In addition to the basic `install` target, there are OS-specific installation targets. Which will build certain plugins for the specific OS platform, enable default plugins, and install an OS-specific service configuration.
 
 * `make install-ubuntu`
 * `make install-rhel`
@@ -139,21 +139,21 @@ In addition to the basic `install` target, there are OS-specific installation ta
 ## As a service
 
 * Systemd based systems - CentOS 7.x and Ubuntu 16.04
-  * Configuration: `/lib/systemd/system/nad.service`
-  * Enable: `systemctl enable nad`
-  * Start: `systemctl start nad`
+    * Configuration: `/lib/systemd/system/nad.service`
+    * Enable: `systemctl enable nad`
+    * Start: `systemctl start nad`
 * Upstart based systems - CentOS 6.x and Ubuntu 14.04
-  * Configuration: `/etc/init/nad.conf`
-  * Enable: presence of configuration
-  * Start: `initctl start nad`
+    * Configuration: `/etc/init/nad.conf`
+    * Enable: presence of configuration
+    * Start: `initctl start nad`
 * SMF based systems - OmniOS/Illumos/etc.
-  * Configuration: `/var/svc/manifest/network/circonus/nad.xml`
-  * Enable: `svccfg import /var/svc/manifest/network/circonus/nad.xml`
-  * Start: `svcadm enable nad`
+    * Configuration: `/var/svc/manifest/network/circonus/nad.xml`
+    * Enable: `svccfg import /var/svc/manifest/network/circonus/nad.xml`
+    * Start: `svcadm enable nad`
 * FreeBSD
-  * Configuration: `/etc/rc.d/nad`
-  * Enable: add `nad_enable="YES"` to `/etc/rc.conf`
-  * Start: `service start nad`
+    * Configuration: `/etc/rc.d/nad`
+    * Enable: add `nad_enable="YES"` to `/etc/rc.conf`
+    * Start: `service start nad`
 * OpenBSD - manual service configuration/installation required by user
 
 # Options
