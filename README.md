@@ -158,6 +158,13 @@ In addition to the basic `install` target, there are OS-specific installation ta
     * Enable: add `nad_enable="YES"` to `/etc/rc.conf`
     * Start: `service start nad`
 * OpenBSD - manual service configuration/installation required by user
+  > For example: add the following to your `/etc/rc.local`:
+  >```sh
+  >if [ -x /opt/circonus/sbin/nad ]; then
+  >    echo -n ' nad'; /opt/circonus/sbin/nad >/dev/null 2>&1 &
+  >fi
+  >```
+
 
 # Options
 
