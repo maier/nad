@@ -164,7 +164,7 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | ---                       | ---         |
 | **<a name="opt_general">General</a>** ||
 | `--plugin_dir <dir>`      | Plugin directory. Default: `/opt/circonus/etc/node-agent.d` |
-| `-p, --listen <spec>`     | Listening IP address and port. (`ip`\|`port`\|`ip:port`) Default: 2609 |
+| `--listen <spec>`         | Listening IP address and port. (`ip`\|`port`\|`ip:port`) Default: 2609 |
 | `--no-statsd`             | Disable built-in StatsD interface. Default is enabled |
 | `--statsd_config <file>`  | Configuration file for StatsD interface. No default |
 | **<a name="opt_reverse">Reverse</a>**              ||
@@ -182,7 +182,7 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | `--ssl_cert <file>`       | SSL certificate PEM file, required for SSL. Default: `<plugin_dir>/na.crt`|
 | `--ssl_key <file>`        | SSL certificate key PEM file, required for SSL. Default: `<plugin_dir>/na.key` |
 | `--ssl_ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `<plugin_dir>/na.ca` |
-| `-v, --ssl_verify`        | Verify SSL traffic. Default: false |
+| `--ssl_verify`            | Verify SSL traffic. Default: false |
 | **<a name="opt_misc">Miscellaneous</a>**        ||
 | `-u, --uid <id>`          | User id to drop privileges to on start. Default: `nobody` |
 | `-g, --gid <id>`          | Group id to drop privileges to on start. Default: `nobody` |
@@ -199,8 +199,10 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | `--hostname <host>`       | Hostname self-configure to use in check and graph names. Default: `os.hostname()` |
 | `--brokerid <id>`         | Broker ID for self-configure to use for creating check. No default |
 | `--configfile <file>`     | File in plugin_dir for self-configure. No default |
-| **DEPRECATED**           ||
+| **DEPRECATED**            | Obsolescence 1/2018 |
 | `-c <dir>`                | DEPRECATED use --plugin_dir |
+| `-p <spec>`               | DEPRECATED use --listen |
+| `-v`                      | DEPRECATED use --ssl_verify |
 | `--authtoken <token>`     | DEPRECATED use --api_key |
 | `--apihost <host>`        | DEPRECATED use --api_url |
 | `--apiport <port>`        | DEPRECATED use --api_url |
