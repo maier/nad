@@ -192,7 +192,7 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | `--loglevel <level>`      | Log level (trace, debug, info, warn, error, fatal). Default: info |
 | `-d, --debug`             | Enable debug logging (verbose). Default: false |
 | `-t, --trace`             | Enable trace logging (very verbose). Default: false |
-| `--no-watch`              | Disable automatic plugin_dir rescan on changes. SIGHUP to force rescan. |
+| `--no-watch`              | Disable automatic plugin_dir rescan on changes. Send `SIGHUP` to force rescan. |
 | `-h, --help`              | Output usage information and exit. |
 | `-V, --version`           | Output the version number and exit. |
 | `--debugdir`              | Create debug files for each plugin and write to this directory. No default |
