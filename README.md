@@ -226,6 +226,8 @@ Is used by both Reverse and Self-configure.
 
 ## Reverse mode
 
+Set up reverse connection for metric collection. If the host was registered with COSI then the only *required* parameter is `--reverse`, the rest of the information will be retrieved from the cosi configuration. If the host was *not* registered with cosi then a valid API Token Key must be supplied. If an explicit Check Bundle ID is supplied, NAD will use that check. If no Check Bundle ID is supplied, NAD will search for a json:nad check where the target matches the supplied (or default) `--target`.
+
 ### Required:
 
 * `--reverse` flag signals nad to setup a reverse connection to the broker.
