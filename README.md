@@ -161,9 +161,11 @@ In addition to the basic `install` target, there are OS-specific installation ta
   > For example: add the following to your `/etc/rc.local`:
   >```sh
   >if [ -x /opt/circonus/sbin/nad ]; then
-  >    echo -n ' nad'; /opt/circonus/sbin/nad >/dev/null 2>&1 &
+  >    echo -n ' nad'
+  >    /opt/circonus/sbin/nad --daemon --syslog
   >fi
   >```
+  > Will start NAD and redirect logging to syslog. If you would rather redirect logging to a file replace `--syslog`.
 
 
 # Options
