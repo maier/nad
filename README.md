@@ -172,8 +172,8 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | `--statsd-config <file>`  | Configuration file for StatsD interface. No default |
 | **<a name="opt_reverse">Reverse</a>**              ||
 | `-r, --reverse`           | Use reverse connection to broker. Default: false |
-| `--cid <cid>`             | Check bundle ID for reverse connection. No default |
-| `--broker-ca <file>`      | CA file for broker reverse connection. No default |
+| `--cid <cid>`             | Check bundle ID for reverse connection. Default: from cosi |
+| `--broker-ca <file>`      | CA file for broker reverse connection. Default: fetch from API |
 | `--target <target>`       | Target host -- see [Target](#target) below. Default: `os.hostname()` |
 | **<a name="opt_api">API</a>**                  ||
 | `--api-key <key>`         | Circonus API Token key. No default |
