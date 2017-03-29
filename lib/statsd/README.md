@@ -7,7 +7,7 @@ NAD supports the core StatsD metric types (`c`, `g`, `s`, `ms`) as well as addit
 * `h` histogram, treated exactly the same as timing (`ms`) metrics.
 * `t` text metrics.
 
-Additionally, NAD StatsD does *not* automatically generate all of the derivative metrics from timings since they are represented as histograms in Circonus offering much more flexibility for analysis.
+Additionally, NAD StatsD does *not* automatically generate derivative metrics from timings since they are represented as histograms in Circonus offering much more flexibility for analysis.
 
 ## Configuration
 
@@ -31,11 +31,11 @@ Additionally, NAD StatsD does *not* automatically generate all of the derivative
 
 * `servers` - array of objects - is the same as the StatsD servers list.
 * `flush_interval` - milliseconds - is the same as the StatsD flushInterval.
-* `group_check_id` - /^[0-9]+$/ - default is to retrieve it from COSI installation.
+* `group_check_id` - /^[0-9]+$/ - the ID (numeric portion of CID) for the group check, default is to retrieve from COSI installation.
 * `group_key` - string - metrics prefixed with this key will be sent to the group check (if enabled).
 * `host_key` - string - metrics prefixed with this key will be sent to NAD to be reported as host metrics.
 * `host_category` - string - the category to hold the host metrics e.g. with the default hostCategory of 'statsd', a metric named 'my_metric' would appear in Circonus as 'statsd\`my_metric'.
-* `send_process_stats` - boolean - send statsd module's processing statistics.
+* `send_process_stats` - boolean - send nad-statsd module's processing statistics.
 
 ### Group metrics
 
