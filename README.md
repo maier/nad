@@ -30,7 +30,7 @@
 
 NAD is a portable, extensible, lightweight metric collection agent. It is the recommended way to collect system metrics for the [Circonus](https://circonus.com/) monitoring platform.
 
-NAD comes with a [rich set of plugins](https://github.com/circonus-labs/nad/tree/master/plugins) which collect:
+NAD comes with a [rich set of plugins](plugins/) which collect:
 
 * System metrics on Linux, Solaris, FreeBSD and OpenBSD
 * Application metrics for [MySQL](https://www.mysql.com), [PostgreSQL](https://www.postgresql.org/), [HAProxy](http://www.haproxy.org), [Cassandra](http://cassandra.apache.org/) and more
@@ -269,7 +269,7 @@ If the host was *not* registered with COSI then a valid API Token Key must be su
 
 ## StatsD
 
-See [StatsD module documentation](https://github.com/circonus-labs/nad/lib/statsd/README.md) for details on configuring options specific to StatsD. Note that StatsD uses a *push* method of metric transport, as such, it is not fully compatible with real-time graphing (graphs will update as metrics are received rather than at the higher cadence 1s interval).
+See [StatsD module documentation](lib/statsd/README.md) for details on configuring options specific to StatsD. Note that StatsD uses a *push* method of metric transport, as such, it is not fully compatible with real-time graphing (graphs will update as metrics are received rather than at the higher cadence 1s interval).
 
 ## Self-configure
 
