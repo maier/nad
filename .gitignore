@@ -21,3 +21,4 @@ node-*.tar.[gx]z
 .eslintcache
 TODO.md
 .vscode/
+packaging/omnibus.conf

@@ -7,16 +7,21 @@ set -e
 # force permissive umask (for asset creation default permissions)
 umask 0022
 
+# allow for local overrides which are not comitted in the repository
+[[ -f ./omnibus.conf ]] && source ./omnibus.conf
+
+: ${NAD_REPO:="https://github.com/circonus-labs/nad.git"}
+: ${PREFIX:=/opt/circonus}
+: ${BUILDDIR:="/tmp/nad-omnibus-build"}
+: ${INSTALLDIR:="/tmp/nad-omnibus-install"}
+: ${PUBLISHDIR:="/mnt/node-agent"}
+
 PATH=$PATH:/opt/omni/bin
-PREFIX=/opt/circonus
-NAD_REPO="https://github.com/circonus-labs/nad.git"
-BUILDDIR="/tmp/nad-omnibus-build"
-INSTALLDIR="/tmp/nad-omnibus-install"
-PUBLISHDIR="/mnt/node-agent"
 NODE_VERSION="6.10.0"
 if [[ -f ../.node_version ]]; then
     NODE_VERSION=$(head -1 ../.node_version)
 fi
+
 # CentOS 5/6 wget is unable to verify nodejs cert
 # ERROR: certificate common name `*.nodejs.org' doesn't match requested host name `nodejs.org'.
 # To connect to nodejs.org insecurely, use `--no-check-certificate'.
@@ -38,6 +43,7 @@ if [[ -f /etc/redhat-release ]]; then
     relver=$(sed -e 's/.*release \(.\).*/\1/' /etc/redhat-release)
     case "$relver" in
         5)
+            echo "DEPRECATED -- CentOS 5 end-of-life 3/31/2017"
             OS="rhel5"
             WGET_OPTS="--no-check-certificate"
             export GIT_SSL_NO_VERIFY=true
@@ -61,6 +67,7 @@ elif [[ -f /etc/lsb-release ]]; then
     [[ "$PLATFORM" == "x86_64" ]] && PLATFORM="amd64"
     case "$relver" in
         12.04)
+            echo "DEPRECATED -- Ubuntu 12.04 (precise) end-of-life 4/2017"
             OS="ubuntu.12.04"
             fpm="/var/lib/gems/1.8/gems/fpm-0.4.29/bin/fpm"
             ;;
