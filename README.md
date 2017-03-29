@@ -170,12 +170,15 @@ In addition to the basic `install` target, there are OS-specific installation ta
 
 ## Interface
 
-NAD exposes an HTTP endpoint interface, the default is to listen to TCP:2609. The output from all requests is JSON.
+NAD exposes an HTTP endpoint, the default is to listen to TCP:2609 (e.g. `curl http://127.0.0.1:2609/`). The output from all requests is JSON. 
 
-* `/` and `/run` -- run all plugins, consolidate output, return metrics.
-* `/run/plugin` -- run a single plugin and return metrics. (plugin file name minus extension, if it exists. e.g. `vm.sh` becomes `/run/vm`)
-* `/inventory` -- return list of currently enabled and loaded plugins.
-* `/inventory?full` -- return list of currently enabled and loaded plugins with full details for each plugin.
+| URI | description |
+| --- | --- |
+| `/` | run all plugins, consolidate output, return metrics. |
+| `/run` | run all plugins, consolidate output, return metrics. |
+| `/run/plugin` | run a single plugin and return metrics. (plugin file name minus extension, if it exists. e.g. `vm.sh` becomes `/run/vm`) |
+| `/inventory` | return list of currently enabled and loaded plugins. |
+| `/inventory?full` | return list of currently enabled and loaded plugins with full details for each plugin. |
 
 # Options
 
