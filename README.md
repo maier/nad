@@ -9,6 +9,7 @@
 * [Running NAD](#running)
     * [Command line](#command-line)
     * [Service](#as-a-service)
+    * [Interface](#interface)
 * [Configuration options](#options)
     * [General](#opt_general)
     * [Reverse](#opt_reverse)
@@ -167,6 +168,14 @@ In addition to the basic `install` target, there are OS-specific installation ta
     >```
     > Will start NAD and redirect logging to syslog via the `logger` command. To redirect logging to a file or elsewhere, replace the `--syslog` option with redirection e.g. `> /tmp/my.log 2>&1`.
 
+## Interface
+
+NAD exposes an HTTP endpoint interface, the default is to listen to TCP:2609. The output from all requests is JSON.
+
+* `/` and `/run` -- run all plugins, consolidate output, return metrics.
+* `/run/plugin` -- run a single plugin and return metrics. (plugin file name minus extension, if it exists. e.g. `vm.sh` becomes `/run/vm`)
+* `/inventory` -- return list of currently enabled and loaded plugins.
+* `/inventory?full` -- return list of currently enabled and loaded plugins with full details for each plugin.
 
 # Options
 
