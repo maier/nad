@@ -17,7 +17,7 @@
     * [SSL](#opt_ssl)
     * [StatsD](#statsd)
     * [Miscellaneous](#opt_misc)
-* [Plugin management and development](PLUGINS.md)
+* [Plugin management and development](DEVELOPMENT.md#plugins)
 * [NAD Development](DEVELOPMENT.md)
 
 ---
