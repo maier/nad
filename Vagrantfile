@@ -6,7 +6,7 @@
 # defines VMs for testing builds
 #
 
-node_ver = '6.10.1'
+node_ver = File.read('.node_version').strip
 
 Vagrant.configure('2') do |config|
     config.vm.define 'c7', autostart: false do |c7|
