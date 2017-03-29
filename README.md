@@ -269,7 +269,7 @@ If the host was *not* registered with COSI then a valid API Token Key must be su
 
 ## StatsD
 
-See [StatsD module documentation](lib/statsd/README.md) for details on configuring options specific to StatsD. Note that StatsD uses a *push* method of metric transport, as such, it is not fully compatible with real-time graphing (graphs will update as metrics are received rather than at the higher cadence 1s interval).
+See [StatsD module documentation](lib/statsd/) for details on configuring options specific to StatsD. Note that StatsD uses a *push* method of metric transport, as such, it is not fully compatible with real-time graphing (graphs will update as metrics are received rather than at the higher cadence 1s interval).
 
 ## Self-configure
 
