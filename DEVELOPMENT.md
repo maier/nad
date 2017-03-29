@@ -160,7 +160,7 @@ Continuous output is supported for long-running executables. After a set of metr
 
  A native plugin is a NodeJS module which will be loaded into NAD. See [native example](examples/plugins/native), additionally, there are several native plugins in the [plugins](plugins/) directory.
 
- 1. Written as a nodejs module
+ 1. Written as a module
  1. Expose a `run()` method which will be passed five arguments.
      1. The plugin definition object
      1. A callback function
@@ -173,7 +173,7 @@ Continuous output is supported for long-running executables. After a set of metr
      1. The instance ID (which was passed to the `run()` method)
  1. Additionally, the `run()` method should set its plugin definition object property `running` to false when done. (`def.running = false;`)
 
-### Native plugin metric object
+### Metrics from native plugin
 
 ```js
 {
@@ -194,7 +194,6 @@ Example:
     }
 }
 ```
-
 
 ## Creating a new plugin
 
