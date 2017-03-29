@@ -1,15 +1,19 @@
-# NAD StatsD
+# NAD-StatsD
 
 ## Metric types
 
-NAD supports the core StatsD metric types (`c`, `g`, `s`, `ms`) as well as additional types specific to Circonus.
+NAD-StatsD (nad-statsd) supports the core StatsD metric types (`c`, `g`, `s`, `ms`) as well as additional types specific to Circonus.
 
 * `h` histogram, treated exactly the same as timing (`ms`) metrics.
 * `t` text metrics.
 
-Additionally, NAD StatsD does *not* automatically generate derivative metrics from timings since they are represented as histograms in Circonus offering much more flexibility for analysis.
+Additionally, nad-statsd does *not* automatically generate derivative metrics from timings since they are represented as histograms in Circonus offering much more flexibility for analysis.
 
 ## Configuration
+
+Place configuration in a file, e.g. `/opt/circonus/etc/statsd.json`. Use the NAD `--statsd-config` option to indicate where the configuration file is located. e.g. `nad --statsd-config=/opt/circonus/etc/statsd.json`.
+
+The default nad-statsd configuration is:
 
 ```js
 {
@@ -33,13 +37,13 @@ Additionally, NAD StatsD does *not* automatically generate derivative metrics fr
 * `flush_interval` - milliseconds - is the same as the StatsD flushInterval.
 * `group_check_id` - /^[0-9]+$/ - the ID (numeric portion of CID) for the group check, default is to retrieve from COSI installation.
 * `group_key` - string - metrics prefixed with this key will be sent to the group check (if enabled).
-* `host_key` - string - metrics prefixed with this key will be sent to NAD to be reported as host metrics.
-* `host_category` - string - the category to hold the host metrics e.g. with the default hostCategory of 'statsd', a metric named 'my_metric' would appear in Circonus as 'statsd\`my_metric'.
+* `host_key` - string - metrics prefixed with this key will be sent to NAD. Show up in Circonus in the host check.
+* `host_category` - string - the category to hold the host metrics e.g. with the default host_category of 'statsd', a metric named 'my_metric' would appear in Circonus as 'statsd\`my_metric'.
 * `send_process_stats` - boolean - send nad-statsd module's processing statistics.
 
 ### Group metrics
 
-The StatsD module can bifurcate metrics - sending some to NAD (host) and some to a group check (intended to be used by multiple hosts - e.g. a group of web servers). COSI will create a group check if the `--statsd-group` parameter is provided when COSI registers the system. Additional systems which use the same parameter when COSI registers them will also send group metrics to the group check. This allows application metrics to go to either the host, the group, or both - providing more flexibility in viewing, aggregating and analytics. A group check can also be manually created as an HTTPTRAP check and setting  `group_check_id` in the StatsD configuration.
+The nad-statsd module can bifurcate metrics - sending some metrics to NAD (host) and some to a group check (intended to be used by multiple hosts - e.g. a group of web servers). If the `--statsd-group` parameter is provided to COSI when it registers the system, it will create a group check (or use the existing group check if one has already been created by another system). Additional systems which use the same parameter when COSI registers them will also send group metrics to the group check. This allows application metrics to go to either the host, the group, or both - providing more flexibility in viewing, aggregating and analytics. A group check can also be manually created as an HTTPTRAP check and setting  `group_check_id` in the StatsD configuration.
 
 ### `host_key` and `group_key`
 
