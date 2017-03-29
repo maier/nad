@@ -103,10 +103,9 @@ rsync -a lib/* /opt/circonus/lib/node_modules/nad/
 
 Term 2:
 ```sh
-$ vagrant ssh c7
-[vagrant@centos7 ~]$ curl 127.0.0.1:2609
-{"nad":{"memory":{"rss":24330240,"heapTotal":13668352,"heapUsed":8778616,"external":123130},"uptime":48.511,"cpu":{"user":267108,"system":18549}},"statsd":{"open_req_count":{"_type":"n","_value":[0,0,0,0]},"open_handle_count":{"_type":"n","_value":[5,5,7,5]},"uptime_seconds":{"_type":"n","_value":[10.222,20.169,30.172,40.171]},"bad_lines_seen":{"_type":"n","_value":[0,0,0,0]},"packets_received":{"_type":"n","_value":[0,0,0,0]},"metrics_received":{"_type":"n","_value":[0,0,0,0]},"last_packet_seen":{"_type":"n","_value":[1490798765.544,1490798765.544,1490798765.544,1490798765.544]},"host_last_flush":{"_type":"n","_value":[0,1490798775,1490798785,1490798795]},"host_last_exception":{"_type":"n","_value":[0,0,0,0]},"host_flush_time_ms":{"_type":"n","_value":[0,31,8,2]},"host_flush_length_bytes":{"_type":"n","_value":[0,606,664,665]},"calculation_time_ms":{"_type":"n","_value":[1.307484,0.768699,0.126359,0.111187]},"host_num_stats":{"_type":"n","_value":[13,14,14,14]},"timestamp_lag_ms":{"_type":"n","_value":[-52,-9998,-1]}}}
-[vagrant@centos7 ~]$
+$ vagrant ssh c7 -c 'curl http://127.0.0.1:2609/'
+{"nad":{"memory":{"rss":24186880,"heapTotal":11571200,"heapUsed":8670448,"external":19324},"uptime":305.852,"cpu":{"user":375930,"system":33867}},"statsd":{"open_req_count":{"_type":"n","_value":[0,0,0,0,0,0]},"open_handle_count":{"_type":"n","_value":[5,5,5,5,5,5]},"uptime_seconds":{"_type":"n","_value":[250.175,260.174,270.174,280.176,290.175,300.174]},"bad_lines_seen":{"_type":"n","_value":[0,0,0,0,0,0]},"packets_received":{"_type":"n","_value":[0,0,0,0,0,0]},"metrics_received":{"_type":"n","_value":[0,0,0,0,0,0]},"last_packet_seen":{"_type":"n","_value":[1490798765.544,1490798765.544,1490798765.544,1490798765.544,1490798765.544,1490798765.544]},"timestamp_lag_ms":{"_type":"n","_value":[1,-2,1,1,0,-2]},"host_last_flush":{"_type":"n","_value":[1490799005,1490799015,1490799025,1490799035,1490799045,1490799055]},"host_last_exception":{"_type":"n","_value":[0,0,0,0,0,0]},"host_flush_time_ms":{"_type":"n","_value":[2,2,2,2,3,6]},"host_flush_length_bytes":{"_type":"n","_value":[663,662,663,662,662,662]},"calculation_time_ms":{"_type":"n","_value":[0.094398,0.112727,0.092069,0.093844,0.094848,0.112577]},"host_num_stats":{"_type":"n","_value":[14,14,14,14,14,14]}}}Connection to 127.0.0.1 closed.
+$
 ```
 
 ## Building a custom omnibus package
