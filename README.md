@@ -170,7 +170,7 @@ In addition to the basic `install` target, there are OS-specific installation ta
 
 ## Interface
 
-NAD exposes an HTTP endpoint, the default is to listen to TCP:2609 (e.g. `curl http://127.0.0.1:2609/`). The output from all requests is JSON. 
+NAD exposes an HTTP endpoint, the default is to listen to TCP:2609 (e.g. `curl http://127.0.0.1:2609/`). The output from all requests is JSON.
 
 | URI | description |
 | --- | --- |
@@ -290,7 +290,7 @@ NAD plugins are located in the plugin directory (default: `/opt/circonus/etc/nod
 
 ## Enabling
 
-When NAD starts it scans the plugin directory for plugins to enable. Rudimentary filters are used to determine what is a plugin and what is not. e.g. entry is not a directory, entry has a name in the format `name.ext`, entry is executable, entry is not a configuration file (extension of `.json` or `.conf`), etc.
+When NAD starts it scans the plugin directory for plugins to enable. Rudimentary filters are used to determine what is a plugin and what is not. e.g. entry is not a directory, entry has a name in the format `name.ext`, entry is executable, entry is not a configuration file (extension of `.json` or `.conf`), etc. It is recommended that plugins be stored in subdirectories of the plugin directory.  Subdirectories are not scanned, those plugins will not be loaded and enabled without an additional step.
 
 To enable a plugin, create a symlink in the plugin directory. For example:
 
