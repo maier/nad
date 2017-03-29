@@ -176,7 +176,7 @@ NAD exposes an HTTP endpoint, the default is to listen to TCP:2609 (e.g. `curl h
 | --- | --- |
 | `/` | run all plugins, consolidate output, return metrics. |
 | `/run` | run all plugins, consolidate output, return metrics. |
-| `/run/plugin` | run a single plugin and return metrics.<br />(plugin file name minus extension. e.g. `vm.sh` becomes `/run/vm`) |
+| `/run/plugin` | run a single plugin and return metrics. `plugin` is file name minus extension.<br />e.g. the `vm.sh` plugin becomes `/run/vm` |
 | `/inventory` | return list of currently enabled and loaded plugins. |
 | `/inventory?full` | return list of currently enabled and loaded plugins with full details for each plugin. |
 
