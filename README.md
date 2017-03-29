@@ -17,7 +17,11 @@
     * [SSL](#opt_ssl)
     * [StatsD](#statsd)
     * [Miscellaneous](#opt_misc)
-* [Plugin management and development](DEVELOPMENT.md#plugins)
+* [Plugins](#plugins)
+    * [Enable](#plugin_enable)
+    * [Disable](#plugin_disable)
+    * [Verify](#plugin_verify)
+    * [Developing](DEVELOPMENT.md#plugins)
 * [NAD Development](DEVELOPMENT.md)
 
 ---
@@ -288,7 +292,7 @@ Providing an API token key without the reverse flag will initiate a self-configu
 
 NAD plugins are located in the plugin directory (default: `/opt/circonus/etc/node-agent.d`, configurable with `--plugin-dir` option). If the automated or manual install were used, platform specific plugins for the current OS are already built. If the source installation method was used - change to the appropriate directory for the current OS and run `make` or `gmake` to build the platform specific plugins for the OS. (e.g. `cd /opt/circonus/etc/node-agent.d/linux && make`)
 
-## Enabling
+## <a name="plugin_enable">Enabling</a>
 
 When NAD starts it scans the plugin directory for plugins to enable. Rudimentary filters are used to determine what is a plugin and what is not. e.g. entry is not a directory, entry has a name in the format `name.ext`, entry is executable, entry is not a configuration file (extension of `.json` or `.conf`), etc. It is recommended that plugins be stored in subdirectories of the plugin directory.  Subdirectories are not scanned, those plugins will not be loaded and enabled without an additional step.
 
@@ -301,7 +305,7 @@ ln -s linux/vm.sh .                # create symlink
 
 The plugin will be automatically found and loaded if file watching is enabled (the default). If file watching is disabled (`--no-watch`), send a `SIGHUP` to the NAD process to trigger scanning for plugins.
 
-## Disabling
+## <a name="plugin_disable">Disabling</a>
 
 To disable a plugin, delete the symlink in the plugin directory. For example:
 
@@ -312,7 +316,7 @@ rm vm.sh                           # delete symlink
 
 The plugin will automatically be purged from the loaded plugins if file watching is enabled (the default). If file watching is disabled (`--no-watch`), send a `SIGHUP` to the NAD process to trigger scanning for plugins.
 
-## Verify
+## <a name="plugin_verify">Verify</a>
 
 The output from a plugin can be verified/inspected at any time by making a request for that specific plugin:
 
