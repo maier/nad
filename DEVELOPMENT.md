@@ -44,8 +44,9 @@ v3.18.0
 The `packaging/make-omnibus` shell script is used to build the omnibus packages. The build can be customized by copying `example-omnibus.conf` to `omnibus.conf` and setting the applicable variables. `make-omnibus` will clone its own copy of the repository so, ensure changes are committed and pushed to the fork represented in `NAD_REPO`.
 
 1. Clone fork
-1. Copy `packaging/example-omnibus.conf` to `packaging/omnibus.conf`
-1. Ensure `NAD_REPO` is set to the fork's clone URL in `packaging/omnibus.conf`
+1. Copy `packaging/example-omnibus.conf` to `packaging/omnibus.conf` and customize
+    1. Ensure `NAD_REPO` is set to the fork's clone URL in `packaging/omnibus.conf`
+    1. *If working on a custom feature branch*, ensure `NAD_BRANCH` is set to the correct branch in `packaging/omnibus.conf`
 1. `vagrant up <target_os>`
 1. `vagrant ssh <target_os>`
 1. `cd /vagrant/packaging && ./make-omnibus`

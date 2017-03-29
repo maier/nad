@@ -195,6 +195,7 @@ nad_src() {
         set +e
         git clone $NAD_REPO
         [[ $? -eq 0 ]] || { echo "Error cloning ${NAD_REPO}"; exit 1; }
+        cd nad
         git checkout $NAD_BRANCH
         [[ $? -eq 0 ]] || { echo "Error checking out ${NAD_BRANCH}"; exit 1; }
         set -e
