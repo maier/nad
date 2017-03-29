@@ -11,6 +11,7 @@ umask 0022
 [[ -f ./omnibus.conf ]] && source ./omnibus.conf
 
 : ${NAD_REPO:="https://github.com/circonus-labs/nad.git"}
+: ${NAD_BRANCH:="master"}
 : ${PREFIX:=/opt/circonus}
 : ${BUILDDIR:="/tmp/nad-omnibus-build"}
 : ${INSTALLDIR:="/tmp/nad-omnibus-install"}
@@ -173,8 +174,10 @@ nad_src() {
 
     if [[ -d $BUILDDIR/nad/.git ]]; then
         pushd $BUILDDIR/nad > /dev/null
-        echo "--- checkout exists, pulling latest revision"
+        echo "--- clone exists, pulling latest revision"
         set +e
+        git checkout $NAD_BRANCH
+        [[ $? -eq 0 ]] || { echo "Error checking out ${NAD_BRANCH}"; exit 1; }
         git pull
         force_clone=$?
         [[ $force_clone -ne 0 ]] && echo "--- 'git pull' exited with code:$force_clone"
@@ -189,7 +192,12 @@ nad_src() {
             rm -rf nad
         }
         echo "--- cloning from $NAD_REPO"
+        set +e
         git clone $NAD_REPO
+        [[ $? -eq 0 ]] || { echo "Error cloning ${NAD_REPO}"; exit 1; }
+        git checkout $NAD_BRANCH
+        [[ $? -eq 0 ]] || { echo "Error checking out ${NAD_BRANCH}"; exit 1; }
+        set -e
         popd > /dev/null
     fi
 

@@ -12,18 +12,20 @@ A [Vagrantfile](Vagrantfile) is provided with current OS targets.
 * `vagrant up bsd11` FreeBSD 11.0-RELEASE-p1
 * `vagrant up bsd10` FreeBSD 10.3-RELEASE
 
+Deprecated, no longer supported/built:
+
+* 3/31/2017 - CentOS 5 end of life
+* 4/2017 - Ubuntu 12.04 (precise) end of life
+
 Development host environment (at the time of this writing):
 
 ```sh
-$  echo $(system_profiler SPSoftwareDataType | grep 'System Version' | cut -d ':' -f 2) \
-   vagrant -v \
-   vboxmanage --version \
-   node -v \
-   eslint -v
+$  echo $(system_profiler SPSoftwareDataType | grep 'System Version' | cut -d ':' -f 2) ;\
+   vagrant -v ; vboxmanage --version ; node -v ; eslint -v
 macOS 10.12.4 (16E195)
 Vagrant 1.9.2
 5.1.18r114002
-v6.10.0
+v6.10.1
 v3.18.0
 ```
 
@@ -31,20 +33,23 @@ v3.18.0
 
 1. Fork [NAD repository on github](https://github.com/circonus-labs/nad)
 1. Clone fork on development host
-1. `vagrant up <os>` where `<os>` is the type of OS to target from above
-1. `vagrant ssh <os>`
+1. `vagrant up <target_os>` where `<target_os>` is the desired OS from the list above
+1. `vagrant ssh <target_os>`
 1. `cd /vagrant && make install`
 1. `/opt/circonus/nad`
 1. In another terminal, `vagrant ssh <os> -c 'curl http://127.0.0.1:2609/'`
 
-## Building custom omnibus packages
+## Building a custom omnibus package
+
+The `packaging/make-omnibus` shell script is used to build the omnibus packages. The build can be customized by copying `example-omnibus.conf` to `omnibus.conf` and setting the applicable variables. `make-omnibus` will clone its own copy of the repository so, ensure changes are committed and pushed to the fork represented in `NAD_REPO`.
 
 1. Clone fork
-1. Ensure `NAD_REPO` in `packaging/make-omnibus` points to clone URL
+1. Copy `packaging/example-omnibus.conf` to `packaging/omnibus.conf`
+1. Ensure `NAD_REPO` is set to the fork's clone URL in `packaging/omnibus.conf`
 1. `vagrant up <target_os>`
 1. `vagrant ssh <target_os>`
 1. `cd /vagrant/packaging && ./make-omnibus`
-1. The result should be an installable omnibus package in `/mnt/node-agent/packages`
+1. The result should be an installable omnibus package in `PUBLISHDIR` (as set in `omnibus.conf`)
 
 ## If a specific branch is needed
 
