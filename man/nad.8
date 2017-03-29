@@ -8,143 +8,57 @@
 .P
 The node agent daemon (NAD) provides a simple mechanism to expose systems and application metrics to external onlookers. It inventories all executable programs/scripts in the \fIplugin directory\fR and executes them upon external request (via http or https) and returns the results in JSON format.
 .P
-It is recommended that executables be stored in subdirectories of the \fIplugin directory\fR. Because those subdirectories are not scanned, those executables will not be executed without an additional step. Those executables that the administrator wishes activated can be soft linked directly within the \fIplugin directory\fR.
-.P
-No arguments are accepted from the onlooker and thus no special precautions must be taken handling/validating/sanitizing arguments.
-.P
-The daemon provides several locations for information:
-.SS "\fB/\fR and \fB/run\fR"
-.P
-cause execution and consolidation of all plugins and their output.
-.SS "\fB/run/plugin\fR"
-.P
-causes the execution of a single plugin (minus the extension on script if it exists)
-.SS "\fB/inventory\fR"
-.P
-returns the current active inventory of plugins.
-.SS "\fB/inventory?full\fR"
-.P
-returns the current active inventory of plugins with full details for each plugin.
+Full documentation is available online in the NAD github repository - \fI\(lahttps://github.com/circonus-labs/nad\(ra\fR.
 .SH "OPTIONS"
 .P
 .RS 2
 .nf
-   -h, --help                          output usage information
-   -V, --version                       output the version number
-   --plugin_dir <dir>                  Plugin directory \[lB]/opt/circonus/etc/node-agent.d\[rB]
-   -p, --listen <ip|port|ip:port>      Listening IP address and port \[lB]2609\[rB]
-   -r, --reverse                       Use reverse connection to broker \[lB]false\[rB]
-   --cid <cid>                         Check bundle id for reverse connection \[lB]\[rB]
-   --broker_ca <file>                  CA file for broker reverse connection \[lB]\[rB]
-   --api_key <key>                     Circonus API Token key \[lB]\[rB]
-   --api_app <app>                     Circonus API Token app \[lB]nad\[rB]
-   --api_url <url>                     Circonus API URL \[lB]https://api.circonus.com/v2/\[rB]
-   --api_ca <file>                     CA file for API URL \[lB]\[rB]
-   --hostname <host>                   Hostname self-configure to use in check and graph names \[lB]centos7\[rB]
-   --brokerid <id>                     Broker ID for self-configure to use for creating check \[lB]\[rB]
-   --configfile <file>                 File in plugin_dir for self-configure \[lB]\[rB]
-   --target <target>                   Target host \[lB]centos7\[rB] -- see Target below
-   -s, --ssl_listen <ip|port|ip:port>  SSL listening IP address and port \[lB]\[rB]
-   --ssl_cert <file>                   SSL certificate PEM file, requried for SSL \[lB]<plugin_dir>/na.crt\[rB]
-   --ssl_key <file>                    SSL certificate key PEM file, required for SSL \[lB]<plugin_dir>/na.key\[rB]
-   --ssl_ca <file>                     SSL CA certificate PEM file, required for SSL w/verify \[lB]<plugin_dir>/na.ca\[rB]
-   -v, --ssl_verify                    Verify SSL traffic \[lB]false\[rB]
-   -u, --uid <id>                      User id to drop privileges to on start \[lB]\[rB]
-   --loglevel <level>                  Log level (trace|debug|info|warn|error|fatal) \[lB]info\[rB]
-   -d, --debug                         Enable debug logging (verbose) \[lB]false\[rB]
-   -t, --trace                         Enable trace logging (very verbose) \[lB]false\[rB]
-   --no_watch                          Disable automatic watches of plugin directory, script files, config files. Send SIGHUP to rescan plugins. \[lB]true\[rB]
-   --debugdir                          Create debug files for each plugin and write to this directory \[lB]\[rB]
-   --wipedebugdir                      Wipe debug directory clean before each write \[lB]false\[rB]
-   -i, --inventory                     Offline inventory
-   -c <dir>                            DEPRECATED Plugin directory - use --plugin_dir
-   --authtoken <token>                 DEPRECATED Circonus API Token Key - use --api_key
-   --apihost <host>                    DEPRECATED Override the host for the Circonus API server \[lB]api.circonus.com\[rB] - use --api_url
-   --apiport <port>                    DEPRECATED Override the port for the Circonus API server \[lB]443\[rB] - use --api_url
-   --apipath <path>                    DEPRECATED Override the path for the Circonus API server \[lB]/v2\[rB] - use --api_url
-   --apiprotocol <proto>               DEPRECATED Override the protocol for the Circonus API server \[lB]https\[rB] - use --api_url
-   --apiverbose                        DEPRECATED Output information on API communications to STDERR - NOP - see --debug
-   --sslcert <file>                    DEPRECATED SSL certificate PEM file, requried for SSL - use --ssl_cert
-   --sslkey <file>                     DEPRECATED SSL certificate key PEM file, required for SSL - use --ssl_key
-   --sslca <file>                      DEPRECATED SSL CA certificate PEM file, required for SSL w/verify - use --ssl_ca
-   --cafile <file>                     DEPRECATED Path to CA certificate file to use for the broker during reverse connections \[lB]\[rB] - use --broker_ca
-
-Target
-
-   Is used by both Reverse and Self-configure.
-       Reverse will use it to search for a check if a cid is not provided.
-       Self-configure will use it to configure the check on the broker - it is
-       the host the broker will connect to in order to pull metrics.
-
-Reverse mode
-   Required:
-       --reverse flag signals nad to setup a reverse connection to the broker.
-   Optional:
-       --api_key - will pull from cosi if available or fail if not provided.
-       --target - to enable searching for a check (e.g. on a host not registered by cosi).
-       or
-       --cid - will pull from cosi if available (and --target not specified).
-
-StatsD
-   See https://github.com/circonus-labs/nad/lib/statsd/README.md
-   for details on configuring the statsd interface.
-
-Self-configure
-   DEPRECATED -- use cosi instead (https://github.com/circonus-labs/circonus-one-step-install)
-
-   Providing an API token key without the reverse flag will initiate a self-configuration attempt.
-
-   Required:
-       --api_key
-       --target
-       --brokerid
-       --configfile
-   Optional:
-       --hostname
+  -h, --help                      output usage information
+  -V, --version                   output the version number
+  --plugin-dir <path>             Plugin directory \[lB]/opt/circonus/etc/node-agent.d\[rB]
+  -p, --listen <ip|port|ip:port>  Listening IP address and port \[lB]2609\[rB]
+  -r, --reverse                   Use reverse connection to broker \[lB]false\[rB]
+  --cid <cid>                     Check bundle id for reverse connection \[lB]\[rB]
+  --broker-ca <file>              CA file for broker reverse connection and statsd \[lB]\[rB]
+  --api-key <key>                 Circonus API Token key \[lB]\[rB]
+  --api-app <app>                 Circonus API Token app \[lB]nad\[rB]
+  --api-url <url>                 Circonus API URL \[lB]https://api.circonus.com/v2/\[rB]
+  --api-ca <file>                 CA file for API URL \[lB]\[rB]
+  --hostname <host>               Hostname self-configure to use in check and graph names \[lB]centos7\[rB]
+  --brokerid <id>                 Broker ID for self-configure to use for creating check \[lB]\[rB]
+  --configfile <file>             File in plugin-dir for self-configure \[lB]\[rB]
+  --target <target>               Target host \[lB]centos7\[rB] -- see Target below
+  --ssl-listen <ip|port|ip:port>  SSL listening IP address and port \[lB]\[rB]
+  --ssl-cert <file>               SSL certificate PEM file, required for SSL \[lB]<plugin_dir>/na.crt\[rB]
+  --ssl-key <file>                SSL certificate key PEM file, required for SSL \[lB]<plugin_dir>/na.key\[rB]
+  --ssl-ca <file>                 SSL CA certificate PEM file, required for SSL w/verify \[lB]<plugin_dir>/na.ca\[rB]
+  --ssl-verify                    Enable SSL verification
+  --no-statsd                     Disable builtin StatsD interface
+  --statsd-config <file>          Config file for builtin StatsD interface \[lB]\[rB]
+  -u, --uid <id>                  User id to drop privileges to on start \[lB]\[rB]
+  --log-level <level>             Log level (trace|debug|info|warn|error|fatal) \[lB]info\[rB]
+  -d, --debug                     Enable debug logging (verbose) \[lB]false\[rB]
+  -t, --trace                     Enable trace logging (very verbose) \[lB]false\[rB]
+  --no-watch                      Disable automatic watches of plugin directory, script files, config files. Send SIGHUP to rescan plugins. \[lB]true\[rB]
+  --debugdir                      Create debug files for each plugin and write to this directory \[lB]\[rB]
+  --wipedebugdir                  Wipe debug directory clean before each write \[lB]false\[rB]
+  -i, --inventory                 Offline inventory
+  -c <path>                       DEPRECATED use --plugin-dir
+  -p <spec>                       DEPRECATED use --listen
+  -s <spec>                       DEPRECATED use --ssl-listen
+  -v                              DEPRECATED use --ssl-verify
+  --authtoken <token>             DEPRECATED use --api-key
+  --apihost <host>                DEPRECATED use --api-url
+  --apiport <port>                DEPRECATED --api-url
+  --apipath <path>                DEPRECATED --api-url
+  --apiprotocol <proto>           DEPRECATED --api-url
+  --apiverbose                    DEPRECATED NOP, see --debug
+  --sslcert <file>                DEPRECATED use --ssl-cert
+  --sslkey <file>                 DEPRECATED use --ssl-key
+  --sslca <file>                  DEPRECATED use --ssl-ca
+  --cafile <file>                 DEPRECATED use --broker-ca
 .fi
 .RE
-.SH "SCRIPT OUTPUT"
-.P
-The executables placed in the \fIplugin directory\fR must produce metrics to standard output. They may produce JSON output. Alternatively, the may produce simple tab-separated metric output that adheres to the following format.
-.SS "metric_name\[lB]TAB\[rB]metric_type"
-.P
-Indicating the the metric specified has a null value.
-.SS "metric_name\[lB]TAB\[rB]metric_type\[lB]TAB\[rB]value"
-.P
-Indicating the the metric specified has value
-.SS "The metric_type"
-.RS 0
-.IP \(bu 4
-i - indicating a signed 32bit integer value,
-.IP \(bu 4
-I - indicating an unsigned 32bit integer value,
-.IP \(bu 4
-l - indicating a signed 64bit integer value,
-.IP \(bu 4
-L - indicating an unsigned 64bit integer value,
-.IP \(bu 4
-n - indicating a value to be represented as a double, or
-.IP \(bu 4
-s - indicating the the value is a string.
-.RE 0
-
-.SS "Control Information"
-.P
-You may provide control information in a line starting with a \fB#\fR character and followed by a JSON block. Currently, timeout is the only parameter accepted and the argument is interpreted as seconds. For example, to indicate that the script should be aborted if a set of output metrics cannot be completed in 1.12 seconds:
-.P
-# { "timeout": 1.12 }
-.SS "Continuous Output"
-.P
-Continuous output is supported by long-running scripts. After a set of metrics is emitted to standard output, emit a single empty line. NAD will accept the previous metrics into a result set and return them on the next request for data. The program can then pause for some ad-hoc amount of time and produce another set of metrics followed by a blank line.
-.P
-This mode can be useful for collection information such as \fBmpstat\fR or \fBvmstat\fR information.
-.P
-Note, that in most cases if you can get raw accumulated counters (instead of averages over some amount of time), that the output can be more useful to monitoring applications as a derivative can be applied after the fact without the risk of data loss.
-.SS "JSON format"
-.P
-If you elect to product JSON formatted output in your programs, you must provide a JSON object whose keys have values that look so:
-.P
-{ "_type": <metric_type>, "_value": "yourvalue" }
 .SH "BUGS"
 .P
 \fI\(lahttps://github.com/circonus-labs/nad/issues\(ra\fR
