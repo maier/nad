@@ -31,13 +31,13 @@ v3.18.0
 
 # Core
 
-1. Fork [NAD repository on github](https://github.com/circonus-labs/nad)
+1. Fork the [NAD repository on github](https://github.com/circonus-labs/nad)
 1. Clone fork on development host
 1. `vagrant up <target_os>` where `<target_os>` is the desired OS from the list above
 1. `vagrant ssh <target_os>`
 1. `cd /vagrant && make install`
 1. `/opt/circonus/nad`
-1. In another terminal, `vagrant ssh <os> -c 'curl http://127.0.0.1:2609/'`
+1. In another terminal, `vagrant ssh <target_os> -c 'curl http://127.0.0.1:2609/'`
 
 ## Building a custom omnibus package
 
@@ -52,59 +52,18 @@ The `packaging/make-omnibus` shell script is used to build the omnibus packages.
 1. `cd /vagrant/packaging && ./make-omnibus`
 1. The result should be an installable omnibus package in `PUBLISHDIR` (as set in `omnibus.conf`)
 
-## If a specific branch is needed
-
-The target os build vm will need to be primed with the specific branch.
-
-For example, after `vagrant ssh <target_os>`:
-
-```sh
-mkdir -p /tmp/nad-omnibus-build
-pushd /tmp/nad-omnibus-build
-git clone https://github.com/your_github_user_name/nad
-cd nad
-git checkout cool_new_feature_branch
-popd
-cd /vagrant/packaging
-./make-omnibus
-```
-
 ## Testing
 
 * Live testing can be performed by developing on host and running `make install` in guest VM.
-* Run NAD in the foreground with debug. `/opt/circonus/sbin/nad --debug`
+* Run NAD in the foreground with debugging. `/opt/circonus/sbin/nad --debug`
 * Leverage `curl` to simulate requests. `curl 'http://127.0.0.1:2609/'`
+* If working on an executable plugin, ensure the plugin works from the command line first.
 
 # Plugins
 
-NAD supports two primary types of plugins - executables and native. An executable can be a shell script, perl/python/ruby/etc. script, a compiled binary, etc. A native plugin is a nodejs module which will be loaded into NAD.
+NAD uses a *plugin* system for gathering metrics. NAD supports two primary types of plugins - **executable** and **native**. Each type of plugin produces output that NAD consumes and makes available to Circonus. NAD/Circonus support several *types* of metrics.
 
-## Executable plugin output
-
-See [script example](examples/plugins/script)
-
-Executables must produce metrics to standard output. They may produce JSON or tab-delimited output.  
-
-### Tab-delimited format
-
-* `<metric_name>\t<metric_type>` - the specified metric has a null value.
-* `<metric_name>\t<metric_type>\t<value>` - the specified metric has a value.
-
-### JSON format
-
-If you elect to product JSON formatted output in your programs, you must provide a JSON object whose keys have values that look so:
-
-```json
-{ "<metric_name>": { "_type": "<metric_type>", "_value": <value> } }
-```
-
-Example:
-
-```json
-{ "my_metric": { "_type": "i", "_value": 10 } }
-```
-
-### The `<metric_type>`
+## Metric types
 
 * `i` - a signed 32bit integer value,
 * `I` - an unsigned 32bit integer value,
@@ -113,44 +72,57 @@ Example:
 * `n` - a value to be represented as a double, or
 * `s` - the the value is a string.
 
+
+## Executable plugins
+
+An executable can be a shell script, perl/python/ruby/etc. script, a compiled binary, etc. Anything that one can *run* from the command line. See the [plugins](plugins/) directory for examples of several types of executable plugins. Executables must produce metrics to standard output. They may produce JSON or tab-delimited output.  
+
+
+### Tab-delimited output format
+
+* `<metric_name>\t<metric_type>` - the specified metric has a null value.
+* `<metric_name>\t<metric_type>\t<value>` - the specified metric has a value.
+
+### JSON output format
+
+```json
+{ "<metric_name>": { "_type": "<metric_type>", "_value": <value> } }
+```
+
+Example:
+
+```json
+{ "my_metric": { "_type": "i", "_value": 10 }, "cherry\`pi": { "_type": "n", "_value": 3.14 } }
+```
+
 ### Control Information
 
-You may provide control information in a line starting with a `#` character and followed by a JSON block.  Currently, `timeout` is the only  parameter accepted and the argument is interpreted as seconds.  For example, to indicate that the script should be aborted if a set of output metrics cannot be completed in 1.12 seconds:
+An executable plugin may provide control information in a line starting with a `#` character followed by a JSON block. Currently, `timeout` is the only parameter accepted and the argument is interpreted as seconds. For example, to indicate that the script should be aborted if a set of output metrics cannot be completed in 1.12 seconds, the plugin would emit:
 
 `# { "timeout": 1.12 }`
 
 ### Continuous Output
 
-Continuous output is supported by long-running scripts.  After a set of metrics is emitted to standard output, emit a single empty line. NAD  will accept the previous metrics into a result set and return them on the next request for data.  The program can then pause for some ad-hoc amount of time and produce another set of metrics followed by a blank line.
+Continuous output is supported for long-running executables. After a set of metrics is emitted to standard output, emit a single empty line. NAD will accept the previous output into a result set and return them on the next request for metrics. The executable can then pause for some ad-hoc amount of time and produce more output followed by another empty line. This mode can be useful for collection of information from tools such as `mpstat` or `vmstat`.
 
-This mode can be useful for collection information such as `mpstat` or `vmstat` information.
-
-Note, that in most cases if you can get raw accumulated counters (instead of averages over some amount of time), that the output can be more useful to monitoring applications as a derivative can be applied after the fact without the risk of data loss.
-
-
-## Creating a new plugin
-
-1. Create a directory for plugin. `mkdir /opt/circonus/etc/node-agent.d/my_plugin && cd /opt/circonus/etc/node-agent.d/my_plugin`
-1. Write plugin script, running from command line during development
-1. When ready to test plugin create symlink in parent directory `ln -s my_plugin.sh ..`
-
+> Note: in most cases if you can get raw accumulated counters (instead of averages over some amount of time), that the output can be more useful to monitoring applications as a derivative can be applied after the fact without the risk of data loss.
 
 ## Native plugins
 
-See [native example](examples/plugins/native)
+ A native plugin is a NodeJS module which will be loaded into NAD. See [native example](examples/plugins/native), additionally, there are several native plugins in the [plugins](plugins/) directory.
 
-1. Written as a nodejs module
-1. Expose a `run()` method which will be passed five arguments.
-    1. The plugin definition object
-    1. A callback function
-    1. The incoming request which fired the plugin
-    1. The plugin arguments (as an object), if there are any
-    1. The plugin instance ID
-1. The `run()` method is responsible for calling the callback with three arguments
-    1. The plugin definition object (which was passed to the `run()` method)
-    1. The metrics (as an object)
-    1. The instance ID (which was passed to the `run()` method)
-1. Additionally, the `run()` method should set its plugin definition object property `running` to false when done. (`def.running = false;`)
+ 1. Written as a nodejs module
+ 1. Expose a `run()` method which will be passed five arguments.
+     1. The plugin definition object
+     1. A callback function
+     1. The incoming request which fired the plugin
+     1. The plugin arguments (as an object), if there are any
+     1. The plugin instance ID
+ 1. The `run()` method is responsible for calling the callback with three arguments
+     1. The plugin definition object (which was passed to the `run()` method)
+     1. The metrics (as an object)
+     1. The instance ID (which was passed to the `run()` method)
+ 1. Additionally, the `run()` method should set its plugin definition object property `running` to false when done. (`def.running = false;`)
 
 ### Native plugin metric object
 
@@ -173,3 +145,10 @@ Example:
     }
 }
 ```
+
+
+## Creating a new plugin
+
+1. Create a directory for plugin. `mkdir /opt/circonus/etc/node-agent.d/my_plugin && cd /opt/circonus/etc/node-agent.d/my_plugin`
+1. Write plugin, running from command line during development (for an executable)
+1. When ready to test plugin create symlink in parent directory `ln -s my_plugin.sh ..`
