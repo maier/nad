@@ -47,27 +47,7 @@ $ vagrant up c7
 $ vagrant ssh c7
 [vagrant@centos7 ~]$ cd /vagrant
 [vagrant@centos7 vagrant]$ sudo make install
-./mkinstalldirs /opt/circonus/bin
-./mkinstalldirs /opt/circonus/sbin
-mkdir -p -- /opt/circonus/sbin
-./mkinstalldirs /opt/circonus/etc
-mkdir -p -- /opt/circonus/etc
-./mkinstalldirs /opt/circonus/etc/node-agent.d
-mkdir -p -- /opt/circonus/etc/node-agent.d
-./mkinstalldirs /opt/circonus/lib/node_modules
-./mkinstalldirs /opt/circonus/lib/node_modules/nad
-mkdir -p -- /opt/circonus/lib/node_modules/nad
-./mkinstalldirs /opt/circonus/man/man8
-mkdir -p -- /opt/circonus/man/man8
-./mkinstalldirs /var/run
-sed -e "s#@@PREFIX@@#/opt/circonus#g" -e "s#@@PID_FILE@@#/var/run/nad.pid#g" nad.sh > nad.sh.out
-./install-sh -c -m 0644 nad.js /opt/circonus/sbin/nad.js
-./install-sh -c -m 0755 nad.sh.out /opt/circonus/sbin/nad
-./install-sh -c -m 0644 man/nad.8 /opt/circonus/man/man8/nad.8
-rsync -a plugins/ /opt/circonus/etc/node-agent.d/
-PATH="/sbin:/bin:/usr/sbin:/usr/bin:/opt/circonus/bin" npm install --no-progress
-rsync -a node_modules/ /opt/circonus/lib/node_modules/
-rsync -a lib/* /opt/circonus/lib/node_modules/nad/
+--snip--
 [vagrant@centos7 vagrant]$ /opt/circonus/sbin/nad
 {"pid":14533,"hostname":"centos7","name":"nad","level":30,"time":1490798765547,"msg":"initializing","module":"main","v":1}
 {"pid":14533,"hostname":"centos7","name":"nad","level":30,"time":1490798765553,"msg":"push receiver handler loaded","module":"main","v":1}
@@ -95,7 +75,7 @@ rsync -a lib/* /opt/circonus/lib/node_modules/nad/
 {"pid":14533,"hostname":"centos7","name":"nad","level":30,"time":1490798765594,"msg":"initialized, no check id supplied","enabled":false,"module":"nad-statsd","submodule":"circonus","submodule":"trap","type":"group","v":1}
 {"pid":14533,"hostname":"centos7","name":"nad","level":30,"time":1490798765595,"msg":"initialized","enabled":true,"module":"nad-statsd","submodule":"circonus","submodule":"trap","type":"host","v":1}
 {"pid":14533,"hostname":"centos7","name":"nad","level":30,"time":1490798765595,"msg":"statsd listener loaded","module":"main","v":1}
-{"pid":14533,"hostname":"centos7","name":"nad","level":30,"time":1490798765595,"msg":"started","enabld":true,"module":"nad-statsd","submodule":"circonus","v":1}
+{"pid":14533,"hostname":"centos7","name":"nad","level":30,"time":1490798765595,"msg":"started","enabled":true,"module":"nad-statsd","submodule":"circonus","v":1}
 {"pid":14533,"hostname":"centos7","name":"nad","level":30,"time":1490798765595,"msg":"NAD bootstrap complete","module":"main","v":1}
 {"pid":14533,"hostname":"centos7","name":"nad","level":30,"time":1490798765598,"msg":"listener up","module":"nad-statsd","v":1}
 {"pid":14533,"hostname":"centos7","name":"nad","level":30,"time":1490798813888,"msg":"responding with metrics","est_metrics":17,"module":"plugins","v":1}
