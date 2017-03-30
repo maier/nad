@@ -3,7 +3,7 @@
 # rubocop:disable Metrics/BlockLength
 
 #
-# defines VMs for testing builds
+# defines VMs for testing NAD and building NAD omnibus packages
 #
 
 # extract node version to use from common place
