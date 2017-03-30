@@ -8,13 +8,24 @@
 
 node_ver = File.read('.node_version').strip
 
+#
+# this links up these VMs with cosi-site for testing
+# git clone https://github.com/circonus-labs/circonus-one-step-install
+# cd src && make package # note there are requirements for building...
+# cd ../demo && vagrant up site
+# each VM below will add an alias to /etc/hosts for 'cosi-site'
+# (use http://cosi-site/install ... --cosiurl http://cosi-site/)
+cosi_site_ip = '192.168.100.10'
+
 Vagrant.configure('2') do |config|
     config.vm.define 'c7', autostart: false do |c7|
         c7.vm.box = 'maier/centos-7.3.1611-x86_64'
         c7.vm.provider 'virtualbox' do |vb|
             vb.name = 'c7'
         end
+        c7.vm.network 'private_network', ip: '192.168.100.202'
         c7.vm.provision 'shell', inline: <<-SHELL
+            echo "#{cosi_site_ip} cosi-site" >> /etc/hosts
             yum -q -e 0 makecache fast
             echo "Installing needed packages for 'make install' and 'make install-rhel'"
             yum -q install -y rsync gcc
@@ -40,7 +51,9 @@ Vagrant.configure('2') do |config|
         c6.vm.provider 'virtualbox' do |vb|
             vb.name = 'c6'
         end
+        c6.vm.network 'private_network', ip: '192.168.100.201'
         c6.vm.provision 'shell', inline: <<-SHELL
+            echo "#{cosi_site_ip} cosi-site" >> /etc/hosts
             yum -q -e 0 makecache fast
             echo "Installing needed packages for 'make install' and 'make install-rhel'"
             yum -q install -y rsync gcc
@@ -68,7 +81,9 @@ Vagrant.configure('2') do |config|
         u16.vm.provider 'virtualbox' do |vb|
             vb.name = 'u16'
         end
+        u16.vm.network 'private_network', ip: '192.168.100.212'
         u16.vm.provision 'shell', inline: <<-SHELL
+            echo "#{cosi_site_ip} cosi-site" >> /etc/hosts
             echo "Installing needed packages for 'make install' and 'make install-ubuntu'"
             apt-get install -qq gcc
             echo "Installing needed packages for 'packaging/make-omnibus'"
@@ -96,7 +111,9 @@ Vagrant.configure('2') do |config|
         u14.vm.provider 'virtualbox' do |vb|
             vb.name = 'u14'
         end
+        u14.vm.network 'private_network', ip: '192.168.100.211'
         u14.vm.provision 'shell', inline: <<-SHELL
+            echo "#{cosi_site_ip} cosi-site" >> /etc/hosts
             echo "Installing needed packages for 'make install' and 'make install-ubuntu'"
             apt-get install -qq gcc
             echo "Installing needed packages for 'packaging/make-omnibus'"
@@ -119,7 +136,12 @@ Vagrant.configure('2') do |config|
 
     config.vm.define 'o14', autostart: false do |o14|
         o14.vm.box = 'maier/omnios-r151014-x86_64'
+        o14.vm.provider 'virtualbox' do |vb|
+            vb.name = 'o14'
+        end
+        o14.vm.network 'private_network', ip: '192.168.100.221'
         o14.vm.provision 'shell', inline: <<-SHELL
+            echo "#{cosi_site_ip} cosi-site" >> /etc/hosts
             echo "Installing needed packages for 'make install' and 'make install-illumos'"
             pkg set-publisher -g http://updates.circonus.net/omnios/r151014/ circonus
             pkg install -q platform/runtime/nodejs network/rsync developer/gcc48
@@ -134,7 +156,6 @@ Vagrant.configure('2') do |config|
         bsd11.vm.guest = :freebsd
         bsd11.vm.box = 'freebsd/FreeBSD-11.0-RELEASE-p1'
         bsd11.vm.synced_folder '.', '/vagrant', id: 'vagrant-root', disabled: true
-        bsd11.vm.network 'private_network', ip: '192.168.200.11'
         bsd11.vm.synced_folder '.', '/vagrant', type: 'nfs'
         # mac not set in base box, just needs to be set to something to avoid vagrant errors
         bsd11.vm.base_mac = ''
@@ -148,7 +169,9 @@ Vagrant.configure('2') do |config|
             vb.customize ['modifyvm', :id, '--nictype1', 'virtio']
             vb.customize ['modifyvm', :id, '--nictype2', 'virtio']
         end
+        bsd11.vm.network 'private_network', ip: '192.168.100.232'
         bsd11.vm.provision 'shell', inline: <<-SHELL
+            echo "#{cosi_site_ip} cosi-site" >> /etc/hosts
             echo "Installing needed packages for 'make install' and 'make install-freebsd'"
             pkg install -y -q gcc node npm gmake bash logrotate curl
             if [ $(grep -c fdescfs /etc/fstab) -eq 0 ]; then
@@ -162,7 +185,6 @@ Vagrant.configure('2') do |config|
         bsd10.vm.guest = :freebsd
         bsd10.vm.box = 'freebsd/FreeBSD-10.3-RELEASE'
         bsd10.vm.synced_folder '.', '/vagrant', id: 'vagrant-root', disabled: true
-        bsd10.vm.network 'private_network', ip: '192.168.200.10'
         bsd10.vm.synced_folder '.', '/vagrant', type: 'nfs'
         # mac not set in base box, just needs to be set to something to avoid vagrant errors
         bsd10.vm.base_mac = ''
@@ -176,7 +198,9 @@ Vagrant.configure('2') do |config|
             vb.customize ['modifyvm', :id, '--nictype1', 'virtio']
             vb.customize ['modifyvm', :id, '--nictype2', 'virtio']
         end
+        bsd10.vm.network 'private_network', ip: '192.168.100.231'
         bsd10.vm.provision 'shell', inline: <<-SHELL
+            echo "#{cosi_site_ip} cosi-site" >> /etc/hosts
             echo "Installing needed packages for 'make install' and 'make install-freebsd'"
             pkg install -y -q gcc node npm gmake bash logrotate curl
             if [ $(grep -c fdescfs /etc/fstab) -eq 0 ]; then
