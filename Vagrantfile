@@ -6,12 +6,16 @@
 # defines VMs for testing builds
 #
 
+# extract node version to use from common place
 node_ver = File.read('.node_version').strip
 
 #
-# this links up these VMs with cosi-site for testing
+# this links up these VMs with a local cosi-site for testing
+#
+# !!! IMPORTANT !!! -- NOT REQUIRED for NAD plugin development
+#
 # git clone https://github.com/circonus-labs/circonus-one-step-install
-# cd src && make package # note there are requirements for building...
+# cd src && make package # !! NOTE !! build requirements in cosi's readme...
 # cd ../demo && vagrant up site
 # each VM below will add an alias to /etc/hosts for 'cosi-site'
 # (use http://cosi-site/install ... --cosiurl http://cosi-site/)
