@@ -19,6 +19,7 @@ umask 0022
 
 PATH=$PATH:/opt/omni/bin
 NODE_VERSION="6.10.0"
+# extract actual node version to use from common place
 if [[ -f ../.node_version ]]; then
     NODE_VERSION=$(head -1 ../.node_version)
 fi
