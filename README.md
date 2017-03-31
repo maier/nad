@@ -22,7 +22,7 @@
     * [Enable](#plugin_enable)
     * [Disable](#plugin_disable)
     * [Verify](#plugin_verify)
-    * [Developing](DEVELOPMENT.md#plugins)
+    * [Creating custom plugins](DEVELOPMENT.md#plugins)
 * [NAD Development](DEVELOPMENT.md)
 
 ---
