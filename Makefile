@@ -84,8 +84,8 @@ install-linux:	install
 	@# logging
 	./mkinstalldirs $(DESTDIR)$(LOG)
 	/bin/sed \
-		-e "s#@@LOG@@#$(LOG)#g" l\
-		inux-init/logrotate > linux-init/logrotate.out
+		-e "s#@@LOG@@#$(LOG)#g" \
+		linux-init/logrotate > linux-init/logrotate.out
 	./install-sh -c -m 0644 linux-init/logrotate.out $(DESTDIR)/etc/logrotate.d/nad
 	/bin/sed \
 		-e "s#@@BIN@@#$(BIN)#g" \
@@ -99,7 +99,7 @@ install-linux:	install
 ifneq ($(wildcard /sbin/zpool),)
 	cd $(DESTDIR)$(CONF) ; /bin/ln -sf common/zpool.sh
 endif
-ifneq ($($(SYSTEMD_BIN),)
+ifneq ($(SYSTEMD_BIN),)
 	cd $(DESTDIR)$(CONF) ; /bin/ln -sf linux/systemd.sh
 endif
 
@@ -117,11 +117,21 @@ else ifneq ($(and $(UPSTART_BIN), $(UPSTART_DIR)),)
 		linux-init/upstart > linux-init/upstart.out
 	./install-sh -c -m 0755 linux-init/upstart.out $(DESTDIR)/etc/init/nad.conf
 else
+ifneq ($(wildcard /etc/redhat-release),)
 	/bin/sed \
 		-e "s#@@PREFIX@@#$(PREFIX)#g" \
 		-e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" \
-		linux-init/ubuntu-init > linux-init/ubuntu-init.out
-	./install-sh -c -m 0755 linux-init/ubuntu-init.out $(DESTDIR)/etc/init.d/nad
+		linux-init/rhel-init > linux-init/initd.out
+else ifneq ($(wildcard /etc/debian_version),)
+	/bin/sed \
+		-e "s#@@PREFIX@@#$(PREFIX)#g" \
+		-e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" \
+		linux-init/ubuntu-init > linux-init/initd.out
+else
+	@echo "Unable to determine OS init variant"
+	@exit 1
+endif
+	./install-sh -c -m 0755 linux-init/initd.out $(DESTDIR)/etc/init.d/nad
 endif
 
 install-ubuntu:	install-linux-init
@@ -171,4 +181,4 @@ install-openbsd:	install
 	cd $(DESTDIR)$(CONF) ; /bin/ln -sf pf/pf.pl
 
 clean:
-	rm -f freebsd-init/*.out linux-init/*.out smf/*.out bin/nad-log.out sbin/nad.sh.out
+	rm -f etc/*.out bin/*.out sbin/*.out freebsd-init/*.out linux-init/*.out smf/*.out
