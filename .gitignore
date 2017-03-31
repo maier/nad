@@ -1,21 +1,7 @@
-aggcpu.elf
-cpu.elf
-disk.elf
-fs.elf
-zpoolio.elf
-boot_time.elf
-loadavg.elf
-user_logins.elf
-file_stat.elf
+*.elf
 *~
-freebsd-init/nad.out
-linux-init/*.out
-packaging/omnibus-rpm.spec
-smf/circonus-nad.out
-smf/nad.xml.out
-
-# mgm 
 *.out
+packaging/omnibus-rpm.spec
 node_modules/
 node-*.tar.[gx]z
 .eslintcache
