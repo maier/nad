@@ -1,10 +1,20 @@
-*.elf
-*~
+# osx
+.DS_Store
+
+# temporary files
 *.out
 packaging/omnibus-rpm.spec
+# platform specific 
 node_modules/
+*.elf
+
+# vagrant/editor files
 node-*.tar.[gx]z
 .eslintcache
-TODO.md
 .vscode/
+*~
+
+# custom local packaging configuration
 packaging/omnibus.conf
+# notes/todo
+TODO.md
