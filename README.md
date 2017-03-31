@@ -33,7 +33,7 @@ NAD is a portable, extensible, lightweight metric collection agent. It is the re
 
 NAD comes with a [rich set of plugins](plugins/) which collect:
 
-* System metrics on Linux, Solaris, FreeBSD and OpenBSD
+* System metrics on [Linux](plugins/linux), [Illumos](plugins/illumos) (Solaris), [FreeBSD](plugins/freebsd) and [OpenBSD](plugins/openbsd)
 * Application metrics for [MySQL](https://www.mysql.com), [PostgreSQL](https://www.postgresql.org/), [HAProxy](http://www.haproxy.org), [Cassandra](http://cassandra.apache.org/) and more
 
 Further, applications can be easily added using a simple but powerful plugin system. We welcome further contributions by the community. Just submit a pull request against this repository.
@@ -55,7 +55,7 @@ NAD Features:
 
 ## Automated Install
 
-The easiest, and recommended, method to install NAD is via the Circonus one-step Installer (COSI). See the [COSI documentation](https://github.com/circonus-labs/circonus-one-step-install) for details.
+The easiest, and recommended, method to install NAD for Linux and Illumos based systems is via the Circonus one-step Installer (COSI). See the [COSI documentation](https://github.com/circonus-labs/circonus-one-step-install) for details.
 
 Benefits of using COSI:
 
