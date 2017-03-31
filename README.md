@@ -331,7 +331,7 @@ The default nad-statsd configuration is:
 
 ## <a name="statsd_group">Group metrics</a>
 
-The nad-statsd module can bifurcate metrics - sending some metrics to NAD (host) and some to a group check (intended to be used by multiple hosts - e.g. a group of web servers). If the `--statsd-group` parameter is provided to COSI when it registers the system, it will create a group check (or use the existing group check if one has already been created by another system). Additional systems which use the same parameter when COSI registers them will also send group metrics to the group check. This allows application metrics to go to either the host, the group, or both - providing more flexibility in viewing, aggregating and analytics. If an HTTPTRAP group check is manually created, set  `group_check_id` in the nad-statsd configuration.
+The nad-statsd module can bifurcate metrics - sending some metrics to NAD (host) and some to a group check (intended to be used by multiple hosts - e.g. a group of web servers). If the `--statsd-group` parameter is provided to COSI when the system is registered, it will create a group check (or use the existing group check if one has already been created from another system registration with the same `--statsd-group`). Any additional systems which use the same `--statsd-group` parameter when COSI registers them will also send group metrics to the same group check. This allows application metrics to go to either the host, the group, or both - providing more flexibility in viewing, aggregating and analytics. If an HTTPTRAP group check is manually created, set  `group_check_id` in the nad-statsd configuration.
 
 ### `host_key` and `group_key`
 
