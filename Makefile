@@ -36,9 +36,18 @@ install-dirs:
 	./mkinstalldirs $(DESTDIR)$(RUNSTATE_DIR)
 
 install-nad:	install-dirs
-	sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" sbin/nad.sh > sbin/nad.sh.out
+	@# main nad scripts
+	/bin/sed \
+		-e "s#@@PREFIX@@#$(PREFIX)#g" \
+		-e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" \
+		sbin/nad.sh > sbin/nad.sh.out
 	./install-sh -c -m 0644 sbin/nad.js $(DESTDIR)$(SBIN)/nad.js
 	./install-sh -c -m 0755 sbin/nad.sh.out $(DESTDIR)$(SBIN)/nad
+	@# default configuration file
+	/bin/sed \
+		-e "s#@@CONF@@#$(CONF)#g" \
+		etc/nad.conf > etc/nad.conf.out
+	./install-sh -c -m 0644 etc/nad.conf.out $(DESTDIR)$(ETC)/nad.conf
 
 install-man:	install-dirs
 	./install-sh -c -m 0644 man/nad.8 $(DESTDIR)$(MAN)/nad.8
@@ -52,64 +61,72 @@ install-modules:
 	rsync -a lib/* $(DESTDIR)$(NAD_LIB)/
 
 install-illumos:	install
+	@# service manifest
+	mkdir -p $(DESTDIR)$(MANIFEST_DIR)
 	/bin/sed \
 		-e "s#@@PREFIX@@#$(PREFIX)#g" \
 		-e "s#@@METHOD_DIR@@#$(METHOD_DIR)#g" \
 		smf/nad.xml > smf/nad.xml.out
+	./install-sh -c -m 0644 smf/nad.xml.out $(DESTDIR)$(MANIFEST_DIR)/nad.xml
+	@# service method
+	mkdir -p $(DESTDIR)$(METHOD_DIR)
 	/bin/sed \
 		-e "s#@@SBIN@@#$(SBIN)#g" \
 		-e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" \
 		smf/circonus-nad > smf/circonus-nad.out
-	mkdir -p $(DESTDIR)$(MANIFEST_DIR)
-	mkdir -p $(DESTDIR)$(METHOD_DIR)
-	./install-sh -c -m 0644 smf/nad.xml.out $(DESTDIR)$(MANIFEST_DIR)/nad.xml
 	./install-sh -c -m 0755 smf/circonus-nad.out $(DESTDIR)$(METHOD_DIR)/circonus-nad
+	@# illumos binaries and default plugins
 	cd $(DESTDIR)$(CONF)/illumos ; $(MAKE)
 	cd $(DESTDIR)$(CONF) ; for f in aggcpu.elf cpu.elf fs.elf zpoolio.elf if.sh iflink.sh sdinfo.sh smf.sh tcp.sh udp.sh vminfo.sh vnic.sh zfsinfo.sh zone_vfs.sh; do /bin/ln -sf illumos/$$f ; done
 	cd $(DESTDIR)$(CONF) ; /bin/ln -sf common/zpool.sh
 
 install-linux:	install
+	@# logging
 	./mkinstalldirs $(DESTDIR)$(LOG)
-	/bin/sed -e "s#@@LOG@@#$(LOG)#g" linux-init/logrotate > linux-init/logrotate.out
+	/bin/sed \
+		-e "s#@@LOG@@#$(LOG)#g" l\
+		inux-init/logrotate > linux-init/logrotate.out
 	./install-sh -c -m 0644 linux-init/logrotate.out $(DESTDIR)/etc/logrotate.d/nad
-	/bin/sed -e "s#@@CONF@@#$(CONF)#g" linux-init/defaults > linux-init/defaults.out
-	./install-sh -c -m 0644 linux-init/defaults.out $(DESTDIR)$(ETC)/nad.conf
-	/bin/sed -e "s#@@BIN@@#$(BIN)#g" -e "s#@@MODULES@@#$(MODULES)#g" -e "s#@@LOG@@#$(LOG)#g" bin/nad-log.sh > bin/nad-log.out
+	/bin/sed \
+		-e "s#@@BIN@@#$(BIN)#g" \
+		-e "s#@@MODULES@@#$(MODULES)#g" \
+		-e "s#@@LOG@@#$(LOG)#g" \
+		bin/nad-log.sh > bin/nad-log.out
 	./install-sh -c -m 0755 bin/nad-log.out $(DESTDIR)$(BIN)/nad-log
+	@# linux binaries and default plugins
 	cd $(DESTDIR)$(CONF)/linux ; $(MAKE)
 	cd $(DESTDIR)$(CONF) ; for f in cpu.sh disk.sh diskstats.sh fs.elf if.sh vm.sh ; do /bin/ln -sf linux/$$f ; done
 ifneq ($(wildcard /sbin/zpool),)
 	cd $(DESTDIR)$(CONF) ; /bin/ln -sf common/zpool.sh
 endif
-ifneq ($(wildcard /usr/bin/systemctl),)
+ifneq ($($(SYSTEMD_BIN),)
 	cd $(DESTDIR)$(CONF) ; /bin/ln -sf linux/systemd.sh
 endif
 
-# init
-install-ubuntu:	install-linux
+install-linux-init:	install-linux
 ifneq ($(and $(SYSTEMD_BIN), $(SYSTEMD_DIR)),)
-	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" linux-init/systemd.service > linux-init/systemd.service.out
+	/bin/sed \
+		-e "s#@@SBIN@@#$(SBIN)#g" \
+		-e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" \
+		linux-init/systemd.service > linux-init/systemd.service.out
 	./install-sh -c -m 0755 linux-init/systemd.service.out $(DESTDIR)/lib/systemd/system/nad.service
 else ifneq ($(and $(UPSTART_BIN), $(UPSTART_DIR)),)
-	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" linux-init/upstart > linux-init/upstart.out
+	/bin/sed \
+		-e "s#@@SBIN@@#$(SBIN)#g" \
+		-e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" \
+		linux-init/upstart > linux-init/upstart.out
 	./install-sh -c -m 0755 linux-init/upstart.out $(DESTDIR)/etc/init/nad.conf
 else
-	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" linux-init/ubuntu-init > linux-init/ubuntu-init.out
+	/bin/sed \
+		-e "s#@@PREFIX@@#$(PREFIX)#g" \
+		-e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" \
+		linux-init/ubuntu-init > linux-init/ubuntu-init.out
 	./install-sh -c -m 0755 linux-init/ubuntu-init.out $(DESTDIR)/etc/init.d/nad
 endif
 
-# init
-install-rhel:	install-linux
-ifneq ($(and $(SYSTEMD_BIN), $(SYSTEMD_DIR)),)
-	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" linux-init/systemd.service > linux-init/systemd.service.out
-	./install-sh -c -m 0755 linux-init/systemd.service.out $(DESTDIR)/lib/systemd/system/nad.service
-else ifneq ($(and $(UPSTART_BIN), $(UPSTART_DIR)),)
-	/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" linux-init/upstart > linux-init/upstart.out
-	./install-sh -c -m 0755 linux-init/upstart.out $(DESTDIR)/etc/init/nad.conf
-else
-	/bin/sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" linux-init/rhel-init > linux-init/rhel-init.out
-	./install-sh -c -m 0755 linux-init/rhel-init.out $(DESTDIR)/etc/init.d/nad
-endif
+install-ubuntu:	install-linux-init
+
+install-rhel:	install-linux-init
 
 install-freebsd:	install
 	for f in plugins/freebsd/*.sh ; do \
@@ -123,11 +140,21 @@ install-freebsd:	install
 	@# it is up to the user to ensure logrotate is cron'd correctly
 ifeq ($(wildcard /usr/local/etc/logrotate.d),/usr/local/etc/logrotate.d)
 	./mkinstalldirs $(DESTDIR)$(LOG)
-	/usr/bin/sed -e "s#@@LOG@@#$(LOG)#g" linux-init/logrotate > linux-init/logrotate.out
+	/usr/bin/sed \
+		-e "s#@@LOG@@#$(LOG)#g" \
+		linux-init/logrotate > linux-init/logrotate.out
 	./install-sh -c -m 0644 linux-init/logrotate.out $(DESTDIR)/usr/local/etc/logrotate.d/nad
-	/usr/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" -e "s#@@SYSLOG@@##g" freebsd-init/nad > freebsd-init/nad.out
+	/usr/bin/sed \
+		-e "s#@@SBIN@@#$(SBIN)#g" \
+		-e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" \
+		-e "s#@@SYSLOG@@##g" \
+		freebsd-init/nad > freebsd-init/nad.out
 else
-	/usr/bin/sed -e "s#@@SBIN@@#$(SBIN)#g" -e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" -e "s#@@SYSLOG@@#--syslog#g" freebsd-init/nad > freebsd-init/nad.out
+	/usr/bin/sed \
+		-e "s#@@SBIN@@#$(SBIN)#g" \
+		-e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" \
+		-e "s#@@SYSLOG@@#--syslog#g" \
+		freebsd-init/nad > freebsd-init/nad.out
 endif
 	./install-sh -c -m 0755 freebsd-init/nad.out $(DESTDIR)/etc/rc.d/nad
 	cd $(DESTDIR)$(CONF)/freebsd ; $(MAKE)
