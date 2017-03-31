@@ -89,9 +89,9 @@ Vagrant.configure('2') do |config|
         u16.vm.provision 'shell', inline: <<-SHELL
             echo "#{cosi_site_ip} cosi-site" >> /etc/hosts
             echo "Installing needed packages for 'make install' and 'make install-ubuntu'"
-            apt-get install -qq gcc
+            apt install -qq gcc
             echo "Installing needed packages for 'packaging/make-omnibus'"
-            apt-get install -qq git build-essential checkinstall python ruby ruby-dev
+            apt install -qq git build-essential checkinstall python ruby ruby-dev
             gem install fpm
             mkdir -p /mnt/node-agent/packages
             chown -R vagrant:vagrant /mnt/node-agent
