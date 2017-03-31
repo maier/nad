@@ -36,9 +36,9 @@ install-dirs:
 	./mkinstalldirs $(DESTDIR)$(RUNSTATE_DIR)
 
 install-nad:	install-dirs
-	sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" nad.sh > nad.sh.out
-	./install-sh -c -m 0644 nad.js $(DESTDIR)$(SBIN)/nad.js
-	./install-sh -c -m 0755 nad.sh.out $(DESTDIR)$(SBIN)/nad
+	sed -e "s#@@PREFIX@@#$(PREFIX)#g" -e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" sbin/nad.sh > sbin/nad.sh.out
+	./install-sh -c -m 0644 sbin/nad.js $(DESTDIR)$(SBIN)/nad.js
+	./install-sh -c -m 0755 sbin/nad.sh.out $(DESTDIR)$(SBIN)/nad
 
 install-man:	install-dirs
 	./install-sh -c -m 0644 man/nad.8 $(DESTDIR)$(MAN)/nad.8
@@ -144,4 +144,4 @@ install-openbsd:	install
 	cd $(DESTDIR)$(CONF) ; /bin/ln -sf pf/pf.pl
 
 clean:
-	rm -f freebsd-init/*.out linux-init/*.out smf/*.out bin/nad-log.out nad.sh.out
+	rm -f freebsd-init/*.out linux-init/*.out smf/*.out bin/nad-log.out sbin/nad.sh.out
