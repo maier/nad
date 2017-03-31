@@ -1,11 +1,7 @@
 # NAD - Node Agent Daemon
 
 * [Overview](#overview)
-    * [Features](#features)
-* [Installation](#installation)
-    * [Automated](#automated-install) *recommended*
-    * [Manual](#manual-install)
-    * [Source](#source-install)
+* [Installation](#installation): [Automated](#automated-install) *recommended*, [Manual](#manual-install), or [Source](#source-install)
 * [Running NAD](#running)
     * [Command line](#command-line)
     * [Service](#as-a-service)
@@ -39,7 +35,7 @@ NAD comes with a [rich set of plugins](plugins/) which collect:
 
 Further, applications can be easily added using a simple but powerful plugin system. We welcome further contributions by the community. Just submit a pull request against this repository.
 
-### Features
+NAD Features:
 
 * Simple HTTP interface for metric collection.
 * Metrics exposed in easy to parse JSON format.
