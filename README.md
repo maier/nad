@@ -1,8 +1,14 @@
 # NAD - Node Agent Daemon
 
 * [Overview](#overview)
-* [Installation](#installation) methods: [Automated](#automated-install) *recommended*, [Manual](#manual-install), or [Source](#source-install)
-* [Running NAD](#running): from [Command line](#command-line), as a [Service](#as-a-service), the [NAD Interface](#interface)
+* [Installation](#installation)
+    * [Automated](#automated-install) *recommended*
+    * [Manual](#manual-install)
+    * [Source](#source-install)
+* [Running NAD](#running)
+    * [Command line](#command-line)
+    * [As a service](#as-a-service)
+    * [NAD HTTP interface](#interface)
 * [Configuration options](#options)
     * [General](#opt_general)
     * [Reverse](#opt_reverse)
