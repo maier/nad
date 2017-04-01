@@ -57,17 +57,6 @@ function handler(req, res) {
 
         log.debug({ method: req.method, path: url_path, base: req.url }, 'request');
         if (req.method === 'GET') {
-            // request for meta-info about the loaded plugins
-            if (/^\/inventory$/.test(url_path)) {
-                const full = (/\?full/).test(url_parts.search);
-
-                log.debug('inventory request');
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.write(plugins.inventory(full));
-                res.end();
-                return;
-            }
-
             // request to run all plugins and return results
             if (/^\/(?:run)?$/.test(url_path)) {
                 log.debug('running all scripts');
@@ -80,6 +69,33 @@ function handler(req, res) {
             if (matches) {
                 log.debug({ script: matches[1] }, 'running plugin');
                 plugins.run(req, res, matches[1]);
+                return;
+            }
+
+            // push plugin
+            if (push_receiver !== null) {
+                matches = (/^\/write\/(.+)$/).exec(url_path);
+                if (matches) {
+                    if (req.method !== 'PUT' && req.method !== 'POST') {
+                        res.writeHead(405, 'Method Not Allowed', { Allow: 'PUT, POST' });
+                        res.end();
+                        return;
+                    }
+                    push_receiver.native_obj.store_incoming_data(matches[1], body);
+                    res.writeHead(200, 'OK', { 'Content-Type': 'text/plan' });
+                    res.end();
+                    return;
+                }
+            }
+
+            // request for meta-info about the loaded plugins
+            if (/^\/inventory$/.test(url_path)) {
+                const full = (/\?full/).test(url_parts.search);
+
+                log.debug('inventory request');
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.write(plugins.inventory(full));
+                res.end();
                 return;
             }
 
@@ -96,22 +112,6 @@ function handler(req, res) {
                     circwmi.get_counters_for_category(res, matches[1], settings.debug_dir, settings.wipe_debug_dir);
                     return;
                 }
-            }
-        }
-
-        // push plugin
-        if (push_receiver !== null) {
-            matches = (/^\/write\/(.+)$/).exec(url_path);
-            if (matches) {
-                if (req.method !== 'PUT' && req.method !== 'POST') {
-                    res.writeHead(405, 'Method Not Allowed', { Allow : 'PUT, POST' });
-                    res.end();
-                    return;
-                }
-                push_receiver.native_obj.store_incoming_data(matches[1], body);
-                res.writeHead(200, 'OK', { 'Content-Type': 'text/plan' });
-                res.end();
-                return;
             }
         }
 
@@ -276,7 +276,8 @@ function bootstrap() {
             then((msg) => {
                 log.info(msg);
 
-                // if not running as root, don't drop privileges
+                // if not running as root, don't drop privileges.
+                // implies nad was started as the intended user.
                 if (process.getuid() !== 0) {
                     return;
                 }
@@ -285,6 +286,12 @@ function bootstrap() {
                 if ((/^(root|0)$/i).test(settings.drop_uid)) {
                     return;
                 }
+
+                // NOTE: primary benefits of performing this drop in situ:
+                //       1. nad can only run as root intentionally (e.g. user
+                //          supplied`--uid=0` on command line)
+                //       2. permissions issues manifest when nad is run from
+                //          the command line, not just when run as service
 
                 log.info({ uid: settings.drop_uid, gid: settings.drop_gid }, 'dropping privileges');
 
