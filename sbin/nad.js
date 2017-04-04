@@ -175,7 +175,6 @@ function start_statsd() {
             return;
         }
 
-        statsd.start();
         resolve('statsd listener loaded');
     });
 }
