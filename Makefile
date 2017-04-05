@@ -46,6 +46,7 @@ install-nad:	install-dirs
 	@# default configuration file
 	/bin/sed \
 		-e "s#@@CONF@@#$(CONF)#g" \
+		-e "s#@@ETC@@#$(ETC)#g" \
 		etc/nad.conf > etc/nad.conf.out
 	./install-sh -c -m 0644 etc/nad.conf.out $(DESTDIR)$(ETC)/nad.conf
 

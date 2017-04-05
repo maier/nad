@@ -187,7 +187,7 @@ NAD exposes an HTTP endpoint, the default is to listen to TCP:2609 (e.g. `curl h
 
 # Options
 
-Options are configured in `/opt/circonus/etc/nad.conf`. Options can be set using their individual environment variables or added to a single `NAD_OPTS` variable.
+Options are configured in `/opt/circonus/etc/nad.conf`. Options can be set using their individual environment variables or added to a single `NAD_OPTS` variable (for backwards compatibility).
 
 | Option                    | Description |
 | ---                       | ---         |
@@ -208,9 +208,9 @@ Options are configured in `/opt/circonus/etc/nad.conf`. Options can be set using
 | `--api-ca <file>`         | CA file for API URL. Default: none<br />`NAD_API_CA="<file>"` |
 | **<a name="opt_ssl">SSL</a>**                  ||
 | `--ssl-listen <spec>`     | SSL listening IP address and port. (`ip`\|`port`\|`ip:port`) Default: none<br />`NAD_SSL_LISTEN="<spec>"` |
-| `--ssl-cert <file>`       | SSL certificate PEM file, required for SSL. Default: `<plugin-dir>/na.crt`<br />`NAD_SSL_CERT="<file>"` |
-| `--ssl-key <file>`        | SSL certificate key PEM file, required for SSL. Default: `<plugin-dir>/na.key`<br />`NAD_SSL_KEY="<file>"` |
-| `--ssl-ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `<plugin-dir>/na.ca`<br />`NAD_SSL_CA="<file>"` |
+| `--ssl-cert <file>`       | SSL certificate PEM file, required for SSL. Default: `/opt/circonus/etc/na.crt`<br />`NAD_SSL_CERT="<file>"` |
+| `--ssl-key <file>`        | SSL certificate key PEM file, required for SSL. Default: `/opt/circonus/etc/na.key`<br />`NAD_SSL_KEY="<file>"` |
+| `--ssl-ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `/opt/circonus/etc/na.ca`<br />`NAD_SSL_CA="<file>"` |
 | `--ssl-verify`            | Enable SSL verification. Default: false<br />`NAD_SSL_VERIFY="yes"` |
 | **<a name="opt_misc">Miscellaneous</a>**        ||
 | `-u, --uid <id>`          | User id to drop privileges to on start. Default: nobody<br />`NAD_UID="<id>"` |
