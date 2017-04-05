@@ -61,10 +61,16 @@ while [[ $# -gt 0 ]]; do
 done
 
 NAD_OPTS=""
-[[ -s $nad_conf ]] && source $nad_conf #populate NAD_OPTS
-cmd="${node_bin} ${nad_script} ${NAD_OPTS} ${extra_opts}"
+
+if [[ -s $nad_conf ]]; then
+    set -o allexport
+    source $nad_conf
+    set +o allexport
+fi
 
 export NODE_PATH=$lib_dir #ensure node can find nad specific packages
+
+cmd="${node_bin} ${nad_script} ${NAD_OPTS} ${extra_opts}"
 
 if [[ $daemon -eq 1 ]]; then # start nad in background
     if [[ -n "$log_dir" ]]; then
