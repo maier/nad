@@ -72,22 +72,6 @@ function handler(req, res) {
                 return;
             }
 
-            // push plugin
-            if (push_receiver !== null) {
-                matches = (/^\/write\/(.+)$/).exec(url_path);
-                if (matches) {
-                    if (req.method !== 'PUT' && req.method !== 'POST') {
-                        res.writeHead(405, 'Method Not Allowed', { Allow: 'PUT, POST' });
-                        res.end();
-                        return;
-                    }
-                    push_receiver.native_obj.store_incoming_data(matches[1], body);
-                    res.writeHead(200, 'OK', { 'Content-Type': 'text/plan' });
-                    res.end();
-                    return;
-                }
-            }
-
             // request for meta-info about the loaded plugins
             if (/^\/inventory$/.test(url_path)) {
                 const full = (/\?full/).test(url_parts.search);
@@ -112,6 +96,19 @@ function handler(req, res) {
                     circwmi.get_counters_for_category(res, matches[1], settings.debug_dir, settings.wipe_debug_dir);
                     return;
                 }
+            }
+        } else if (push_receiver !== null) {
+            matches = (/^\/write\/(.+)$/).exec(url_path);
+            if (matches) {
+                if (req.method !== 'PUT' && req.method !== 'POST') {
+                    res.writeHead(405, 'Method Not Allowed', { Allow: 'PUT, POST' });
+                    res.end();
+                    return;
+                }
+                push_receiver.native_obj.store_incoming_data(matches[1], body);
+                res.writeHead(200, 'OK', { 'Content-Type': 'text/plan' });
+                res.end();
+                return;
             }
         }
 
