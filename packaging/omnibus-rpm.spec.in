@@ -64,7 +64,7 @@ fi
 %endif
 /etc/logrotate.d/nad
 %{_prefix}/man
-%{_prefix}/etc/nad.conf
+%config(noreplace) %{_prefix}/etc/nad.conf
 %{_prefix}/etc/node-agent.d
 %{_prefix}/bin/node
 %{_prefix}/bin/nad-log
