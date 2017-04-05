@@ -277,7 +277,7 @@ Providing an API token key without the reverse flag will initiate a self-configu
 ### Required:
 
 * `--api-key`
-* `--target`
+* `--target` - Note: environment variable `NAD_REVERSE_TARGET` is *not* used for self-configure, `--target` must be specified on command line.
 * `--brokerid`
 * `--configfile`
 
