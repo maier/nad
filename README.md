@@ -192,12 +192,12 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | Option                    | Description |
 | ---                       | ---         |
 | **<a name="opt_general">General</a>** ||
-| `--plugin-dir <dir>`      | Plugin directory. Default: `/opt/circonus/etc/node-agent.d`<br />NAD_PLUGIN_DIR="<dir>" |
-| `--listen <spec>`         | Listening IP address and port. (`ip`\|`port`\|`ip:port`) Default: 2609<br />NAD_LISTEN="<spec>" |
-| `--no-statsd`             | Disable built-in StatsD interface.<br />NAD_STATSD="no"|
-| `--statsd-config <file>`  | Configuration file for StatsD interface. Default: none<br />NAD_STATSD_CONFIG="<file>" |
+| `--plugin-dir <dir>`      | Plugin directory. Default: `/opt/circonus/etc/node-agent.d`<br />`NAD_PLUGIN_DIR="<dir>"` |
+| `--listen <spec>`         | Listening IP address and port. (`ip`\|`port`\|`ip:port`) Default: 2609<br />`NAD_LISTEN="<spec>"` |
+| `--no-statsd`             | Disable built-in StatsD interface.<br />`NAD_STATSD="no"`|
+| `--statsd-config <file>`  | Configuration file for StatsD interface. Default: none<br />`NAD_STATSD_CONFIG="<file>"` |
 | **<a name="opt_reverse">Reverse</a>**              ||
-| `-r, --reverse`           | Use reverse connection to broker. Default: false<br />NAD_REVERSE="yes" |
+| `-r, --reverse`           | Use reverse connection to broker. Default: false<br />`NAD_REVERSE="yes"` |
 | `--cid <cid>`             | Check bundle ID for reverse connection. Default: from cosi |
 | `--broker-ca <file>`      | CA file for broker reverse connection. Default: fetch from API |
 | `--target <target>`       | Target host -- see [Target](#target) below. Default: `os.hostname()` |
