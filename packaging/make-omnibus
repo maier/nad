@@ -18,7 +18,7 @@ umask 0022
 : ${PUBLISHDIR:="/mnt/node-agent"}
 
 PATH=$PATH:/opt/omni/bin
-NODE_VERSION="6.10.0"
+NODE_VERSION="v6.10.0"
 # extract actual node version to use from common place
 if [[ -f ../.node_version ]]; then
     NODE_VERSION=$(head -1 ../.node_version)
@@ -142,10 +142,10 @@ install_binary_nodejs() {
 
     [[ "$PLATFORM" == "i386" ]] && node_binary_arch="x86"
     [[ "$PLATFORM" == "x86_64" || "$PLATFORM" == "amd64" ]] && node_binary_arch="x64"
-    node_binary_tgz="node-v${NODE_VERSION}-linux-${node_binary_arch}.tar.gz"
-    node_binary_url="https://nodejs.org/dist/v${NODE_VERSION}/${node_binary_tgz}"
+    node_binary_tgz="node-${NODE_VERSION}-linux-${node_binary_arch}.tar.gz"
+    node_binary_url="https://nodejs.org/dist/${NODE_VERSION}/${node_binary_tgz}"
 
-    echo "Checking for NodeJS v${NODE_VERSION} ${PLATFORM} binary archive"
+    echo "Checking for NodeJS ${NODE_VERSION} ${PLATFORM} binary archive"
     pushd $BUILDDIR > /dev/null
     if [[ ! -f $node_binary_tgz ]]; then
         echo "--- node binary archive not found, downloading."
