@@ -187,7 +187,7 @@ NAD exposes an HTTP endpoint, the default is to listen to TCP:2609 (e.g. `curl h
 
 # Options
 
-Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.conf`.
+Options are configured in `/opt/circonus/etc/nad.conf`. Options can be set using their individual environment variables or added to a single `NAD_OPTS` variable.
 
 | Option                    | Description |
 | ---                       | ---         |
