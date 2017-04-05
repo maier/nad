@@ -192,12 +192,12 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | Option                    | Description |
 | ---                       | ---         |
 | **<a name="opt_general">General</a>** ||
-| `--plugin-dir <dir>`      | Plugin directory. Default: `/opt/circonus/etc/node-agent.d` |
-| `--listen <spec>`         | Listening IP address and port. (`ip`\|`port`\|`ip:port`) Default: 2609 |
-| `--no-statsd`             | Disable built-in StatsD interface. |
-| `--statsd-config <file>`  | Configuration file for StatsD interface. Default: none |
+| `--plugin-dir <dir>`      | Plugin directory. Default: `/opt/circonus/etc/node-agent.d`<br />NAD_PLUGIN_DIR="<dir>" |
+| `--listen <spec>`         | Listening IP address and port. (`ip`\|`port`\|`ip:port`) Default: 2609<br />NAD_LISTEN="<spec>" |
+| `--no-statsd`             | Disable built-in StatsD interface.<br />NAD_STATSD="no"|
+| `--statsd-config <file>`  | Configuration file for StatsD interface. Default: none<br />NAD_STATSD_CONFIG="<file>" |
 | **<a name="opt_reverse">Reverse</a>**              ||
-| `-r, --reverse`           | Use reverse connection to broker. Default: false |
+| `-r, --reverse`           | Use reverse connection to broker. Default: false<br />NAD_REVERSE="yes" |
 | `--cid <cid>`             | Check bundle ID for reverse connection. Default: from cosi |
 | `--broker-ca <file>`      | CA file for broker reverse connection. Default: fetch from API |
 | `--target <target>`       | Target host -- see [Target](#target) below. Default: `os.hostname()` |
@@ -207,15 +207,15 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | `--api-url <url>`         | Circonus API URL. Default: `https://api.circonus.com/v2/` |
 | `--api-ca <file>`         | CA file for API URL. Default: none |
 | **<a name="opt_ssl">SSL</a>**                  ||
-| `--ssl-listen <spec>`     | SSL listening IP address and port. (`ip`\|`port`\|`ip:port`) Default: none |
-| `--ssl-cert <file>`       | SSL certificate PEM file, required for SSL. Default: `<plugin-dir>/na.crt`|
-| `--ssl-key <file>`        | SSL certificate key PEM file, required for SSL. Default: `<plugin-dir>/na.key` |
-| `--ssl-ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `<plugin-dir>/na.ca` |
-| `--ssl-verify`            | Enable SSL verification. Default: false |
+| `--ssl-listen <spec>`     | SSL listening IP address and port. (`ip`\|`port`\|`ip:port`) Default: none<br />NAD_SSL_LISTEN="<spec>" |
+| `--ssl-cert <file>`       | SSL certificate PEM file, required for SSL. Default: `<plugin-dir>/na.crt`<br />NAD_SSL_CERT="<file>"|
+| `--ssl-key <file>`        | SSL certificate key PEM file, required for SSL. Default: `<plugin-dir>/na.key`<br />NAD_SSL_KEY="<file>" |
+| `--ssl-ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `<plugin-dir>/na.ca`<br />NAD_SSL_CA="<file>" |
+| `--ssl-verify`            | Enable SSL verification. Default: false<br />NAD_SSL_VERIFY="yes" |
 | **<a name="opt_misc">Miscellaneous</a>**        ||
 | `-u, --uid <id>`          | User id to drop privileges to on start. Default: nobody |
 | `-g, --gid <id>`          | Group id to drop privileges to on start. Default: nobody |
-| `--log-level <level>`     | Log level (trace, debug, info, warn, error, fatal). Default: info |
+| `--log-level <level>`     | Log level (trace, debug, info, warn, error, fatal). Default: info<br />NAD_LOG_LEVEL="<level>" |
 | `-d, --debug`             | Enable debug logging (verbose). Default: false |
 | `-t, --trace`             | Enable trace logging (very verbose). Default: false |
 | `--no-watch`              | Disable automatic plugin-dir rescan on changes. Send `SIGHUP` to force rescan. |
