@@ -207,11 +207,11 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | `--api-url <url>`         | Circonus API URL. Default: `https://api.circonus.com/v2/` |
 | `--api-ca <file>`         | CA file for API URL. Default: none |
 | **<a name="opt_ssl">SSL</a>**                  ||
-| `--ssl-listen <spec>`     | SSL listening IP address and port. (`ip`\|`port`\|`ip:port`) Default: none<br />NAD_SSL_LISTEN="<spec>" |
-| `--ssl-cert <file>`       | SSL certificate PEM file, required for SSL. Default: `<plugin-dir>/na.crt`<br />NAD_SSL_CERT="<file>"|
-| `--ssl-key <file>`        | SSL certificate key PEM file, required for SSL. Default: `<plugin-dir>/na.key`<br />NAD_SSL_KEY="<file>" |
-| `--ssl-ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `<plugin-dir>/na.ca`<br />NAD_SSL_CA="<file>" |
-| `--ssl-verify`            | Enable SSL verification. Default: false<br />NAD_SSL_VERIFY="yes" |
+| `--ssl-listen <spec>`     | SSL listening IP address and port. (`ip`\|`port`\|`ip:port`) Default: none<br />`NAD_SSL_LISTEN="<spec>"` |
+| `--ssl-cert <file>`       | SSL certificate PEM file, required for SSL. Default: `<plugin-dir>/na.crt`<br />`NAD_SSL_CERT="<file>"` |
+| `--ssl-key <file>`        | SSL certificate key PEM file, required for SSL. Default: `<plugin-dir>/na.key`<br />`NAD_SSL_KEY="<file>"` |
+| `--ssl-ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `<plugin-dir>/na.ca`<br />`NAD_SSL_CA="<file>"` |
+| `--ssl-verify`            | Enable SSL verification. Default: false<br />`NAD_SSL_VERIFY="yes"` |
 | **<a name="opt_misc">Miscellaneous</a>**        ||
 | `-u, --uid <id>`          | User id to drop privileges to on start. Default: nobody |
 | `-g, --gid <id>`          | Group id to drop privileges to on start. Default: nobody |
