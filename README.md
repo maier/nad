@@ -202,10 +202,10 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | `--broker-ca <file>`      | CA file for broker reverse connection. Default: fetch from API |
 | `--target <target>`       | Target host -- see [Target](#target) below. Default: `os.hostname()` |
 | **<a name="opt_api">API</a>**                  ||
-| `--api-key <key>`         | Circonus API Token key. Default: none |
-| `--api-app <app>`         | Circonus API Token app. Default: nad |
-| `--api-url <url>`         | Circonus API URL. Default: `https://api.circonus.com/v2/` |
-| `--api-ca <file>`         | CA file for API URL. Default: none |
+| `--api-key <key>`         | Circonus API Token key. Default: none<br />`NAD_API_KEY="<key>"` |
+| `--api-app <app>`         | Circonus API Token app. Default: nad<br />`NAD_API_APP="<app>"` |
+| `--api-url <url>`         | Circonus API URL. Default: `https://api.circonus.com/v2/`<br />`NAD_API_URL="<url>"` |
+| `--api-ca <file>`         | CA file for API URL. Default: none<br />`NAD_API_CA="<file>"` |
 | **<a name="opt_ssl">SSL</a>**                  ||
 | `--ssl-listen <spec>`     | SSL listening IP address and port. (`ip`\|`port`\|`ip:port`) Default: none<br />`NAD_SSL_LISTEN="<spec>"` |
 | `--ssl-cert <file>`       | SSL certificate PEM file, required for SSL. Default: `<plugin-dir>/na.crt`<br />`NAD_SSL_CERT="<file>"` |
@@ -213,9 +213,9 @@ Options should be added to the `NAD_OPTS` variable in `/opt/circonus/etc/nad.con
 | `--ssl-ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `<plugin-dir>/na.ca`<br />`NAD_SSL_CA="<file>"` |
 | `--ssl-verify`            | Enable SSL verification. Default: false<br />`NAD_SSL_VERIFY="yes"` |
 | **<a name="opt_misc">Miscellaneous</a>**        ||
-| `-u, --uid <id>`          | User id to drop privileges to on start. Default: nobody |
-| `-g, --gid <id>`          | Group id to drop privileges to on start. Default: nobody |
-| `--log-level <level>`     | Log level (trace, debug, info, warn, error, fatal). Default: info<br />NAD_LOG_LEVEL="<level>" |
+| `-u, --uid <id>`          | User id to drop privileges to on start. Default: nobody<br />`NAD_UID="<id>"` |
+| `-g, --gid <id>`          | Group id to drop privileges to on start. Default: nobody<br />`NAD_GID="<id>"` |
+| `--log-level <level>`     | Log level (trace, debug, info, warn, error, fatal). Default: info<br />`NAD_LOG_LEVEL="<level>"` |
 | `-d, --debug`             | Enable debug logging (verbose). Default: false |
 | `-t, --trace`             | Enable trace logging (very verbose). Default: false |
 | `--no-watch`              | Disable automatic plugin-dir rescan on changes. Send `SIGHUP` to force rescan. |
