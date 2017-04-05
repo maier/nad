@@ -169,6 +169,7 @@ function start_statsd() {
         log.debug('loading statsd listener');
         try {
             statsd = require(path.join(nad.lib_dir, 'statsd'));
+            statsd.start();
         } catch (err) {
             log.fatal({ err: err.message }, 'unable to load statsd listener');
             reject(err);
