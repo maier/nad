@@ -192,42 +192,42 @@ Options are configured in `/opt/circonus/etc/nad.conf`. Options can be set using
 | Option                    | Description |
 | ---                       | ---         |
 | **<a name="opt_general">General</a>** ||
-| `--plugin-dir <dir>`      | Plugin directory. Default: `/opt/circonus/etc/node-agent.d`<br />`NAD_PLUGIN_DIR="<dir>"` |
-| `--listen <spec>`         | Listening IP address and port. (`ip`\|`port`\|`ip:port`) Default: 2609<br />`NAD_LISTEN="<spec>"` |
+| `--plugin-dir <dir>`      | Plugin directory.<br />Default: `/opt/circonus/etc/node-agent.d`<br />`NAD_PLUGIN_DIR="<dir>"` |
+| `--listen <spec>`         | Listening IP address and port. (`ip`\|`port`\|`ip:port`)<br />Default: 2609<br />`NAD_LISTEN="<spec>"` |
 | `--no-statsd`             | Disable built-in StatsD interface.<br />`NAD_STATSD="no"`|
-| `--statsd-config <file>`  | Configuration file for StatsD interface. Default: none<br />`NAD_STATSD_CONFIG="<file>"` |
+| `--statsd-config <file>`  | Configuration file for StatsD interface.<br />Default: none<br />`NAD_STATSD_CONFIG="<file>"` |
 | **<a name="opt_reverse">Reverse</a>**              ||
-| `-r, --reverse`           | Use reverse connection to broker. Default: false<br />`NAD_REVERSE="yes"` |
-| `--cid <cid>`             | Check bundle ID for reverse connection. Default: from cosi<br />`NAD_REVERSE_CID="<cid>"` |
-| `--broker-ca <file>`      | CA file for broker reverse connection. Default: fetch from API<br />`NAD_REVERSE_BROKER_CA="<file>"` |
-| `--target <target>`       | Target host -- see [Target](#target) below. Default: `os.hostname()`<br />`NAD_REVERSE_TARGET="<target>"` |
+| `-r, --reverse`           | Use reverse connection to broker.<br />Default: false<br />`NAD_REVERSE="yes"` |
+| `--cid <cid>`             | Check bundle ID for reverse connection.<br />Default: from cosi<br />`NAD_REVERSE_CID="<cid>"` |
+| `--broker-ca <file>`      | CA file for broker reverse connection.<br />Default: fetch from API<br />`NAD_REVERSE_BROKER_CA="<file>"` |
+| `--target <target>`       | Target host -- see [Target](#target) below.<br />Default: `os.hostname()`<br />`NAD_REVERSE_TARGET="<target>"` |
 | **<a name="opt_api">API</a>**                  ||
-| `--api-key <key>`         | Circonus API Token key. Default: none<br />`NAD_API_KEY="<key>"` |
-| `--api-app <app>`         | Circonus API Token app. Default: nad<br />`NAD_API_APP="<app>"` |
-| `--api-url <url>`         | Circonus API URL. Default: `https://api.circonus.com/v2/`<br />`NAD_API_URL="<url>"` |
-| `--api-ca <file>`         | CA file for API URL. Default: none<br />`NAD_API_CA="<file>"` |
+| `--api-key <key>`         | Circonus API Token key.<br />Default: none<br />`NAD_API_KEY="<key>"` |
+| `--api-app <app>`         | Circonus API Token app.<br />Default: nad<br />`NAD_API_APP="<app>"` |
+| `--api-url <url>`         | Circonus API URL.<br />Default: `https://api.circonus.com/v2/`<br />`NAD_API_URL="<url>"` |
+| `--api-ca <file>`         | CA file for API URL.<br />Default: none<br />`NAD_API_CA="<file>"` |
 | **<a name="opt_ssl">SSL</a>**                  ||
-| `--ssl-listen <spec>`     | SSL listening IP address and port. (`ip`\|`port`\|`ip:port`) Default: none<br />`NAD_SSL_LISTEN="<spec>"` |
-| `--ssl-cert <file>`       | SSL certificate PEM file, required for SSL. Default: `/opt/circonus/etc/na.crt`<br />`NAD_SSL_CERT="<file>"` |
-| `--ssl-key <file>`        | SSL certificate key PEM file, required for SSL. Default: `/opt/circonus/etc/na.key`<br />`NAD_SSL_KEY="<file>"` |
-| `--ssl-ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify. Default: `/opt/circonus/etc/na.ca`<br />`NAD_SSL_CA="<file>"` |
-| `--ssl-verify`            | Enable SSL verification. Default: false<br />`NAD_SSL_VERIFY="yes"` |
+| `--ssl-listen <spec>`     | SSL listening IP address and port. (`ip`\|`port`\|`ip:port`)<br />Default: none<br />`NAD_SSL_LISTEN="<spec>"` |
+| `--ssl-cert <file>`       | SSL certificate PEM file, required for SSL.<br />Default: `/opt/circonus/etc/na.crt`<br />`NAD_SSL_CERT="<file>"` |
+| `--ssl-key <file>`        | SSL certificate key PEM file, required for SSL.<br />Default: `/opt/circonus/etc/na.key`<br />`NAD_SSL_KEY="<file>"` |
+| `--ssl-ca <file>`         | SSL CA certificate PEM file, required for SSL w/verify.<br />Default: `/opt/circonus/etc/na.ca`<br />`NAD_SSL_CA="<file>"` |
+| `--ssl-verify`            | Enable SSL verification.<br />Default: false<br />`NAD_SSL_VERIFY="yes"` |
 | **<a name="opt_misc">Miscellaneous</a>**        ||
-| `-u, --uid <id>`          | User id to drop privileges to on start. Default: nobody<br />`NAD_UID="<id>"` |
-| `-g, --gid <id>`          | Group id to drop privileges to on start. Default: nobody<br />`NAD_GID="<id>"` |
-| `--log-level <level>`     | Log level (trace, debug, info, warn, error, fatal). Default: info<br />`NAD_LOG_LEVEL="<level>"` |
-| `-d, --debug`             | Enable debug logging (verbose). Default: false |
-| `-t, --trace`             | Enable trace logging (very verbose). Default: false |
+| `-u, --uid <id>`          | User id to drop privileges to on start.<br />Default: nobody<br />`NAD_UID="<id>"` |
+| `-g, --gid <id>`          | Group id to drop privileges to on start.<br />Default: nobody<br />`NAD_GID="<id>"` |
+| `--log-level <level>`     | Log level (trace, debug, info, warn, error, fatal).<br />Default: info<br />`NAD_LOG_LEVEL="<level>"` |
+| `-d, --debug`             | Enable debug logging (verbose).<br />Default: false |
+| `-t, --trace`             | Enable trace logging (very verbose).<br />Default: false |
 | `--no-watch`              | Disable automatic plugin-dir rescan on changes. Send `SIGHUP` to force rescan. |
 | `-h, --help`              | Output usage information and exit. |
 | `-V, --version`           | Output the version number and exit. |
-| `--debugdir`              | Create debug files for each plugin and write to this directory. Default: none |
-| `--wipedebugdir`          | Wipe debug directory clean before each write. Default: false |
+| `--debugdir`              | Create debug files for each plugin and write to this directory.<br />Default: none |
+| `--wipedebugdir`          | Wipe debug directory clean before each write.<br />Default: false |
 | `-i, --inventory`         | Offline inventory and exit. |
 | **Self-configure**       ||
-| `--hostname <host>`       | Hostname self-configure to use in check and graph names. Default: `os.hostname()` |
-| `--brokerid <id>`         | Broker ID for self-configure to use for creating check. Default: **required** |
-| `--configfile <file>`     | File in plugin-dir for self-configure. Default: **required** |
+| `--hostname <host>`       | Hostname self-configure to use in check and graph names.<br />Default: `os.hostname()` |
+| `--brokerid <id>`         | Broker ID for self-configure to use for creating check.<br />Default: **required** |
+| `--configfile <file>`     | File in plugin-dir for self-configure.<br />Default: **required** |
 | **DEPRECATED**            | Obsolescence 1/2018 |
 | `-c <dir>`                | DEPRECATED use --plugin-dir |
 | `-p <spec>`               | DEPRECATED use --listen |
