@@ -75,7 +75,7 @@ cmd="${node_bin} ${nad_script} ${NAD_OPTS} ${extra_opts}"
 if [[ $daemon -eq 1 ]]; then # start nad in background
     if [[ -n "$log_dir" ]]; then
         # Linux - sends to /opt/circonus/log/nad.log, rotates with logrotate
-        $cmd > ${log_dir}/nad.log 2>&1 &
+        $cmd >> ${log_dir}/nad.log 2>&1 &
         pid=$!
         ret=$?
     elif [[ $syslog -eq 1 ]]; then
