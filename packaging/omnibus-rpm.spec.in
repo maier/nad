@@ -35,6 +35,7 @@ if [ -f /lib/systemd/system/nad.service ]; then
     /bin/systemctl enable nad
     /bin/systemctl start nad >/dev/null 2>&1
 elif [ -f /etc/init/nad.conf ]; then
+    /sbin/initctl reload-configuration
     /sbin/initctl start nad
 elif [ -f /etc/init.d/nad ]; then
     /sbin/chkconfig --add nad
@@ -53,6 +54,7 @@ if [ $1 = 0 ]; then
         /sbin/service nad stop >/dev/null 2>&1
     fi
 fi
+exit 0
 
 %files
 %defattr(-, root, root, 755)
