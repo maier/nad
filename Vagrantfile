@@ -37,10 +37,10 @@ Vagrant.configure('2') do |config|
             yum -q install -y git wget rpm-build redhat-rpm-config
             mkdir -p /mnt/node-agent/packages
             chown -R vagrant:vagrant /mnt/node-agent
-            node_tgz="node-v#{node_ver}-linux-x64.tar.gz"
+            node_tgz="node-#{node_ver}-linux-x64.tar.gz"
             [[ -f /vagrant/${node_tgz} ]] || {
                 echo "Fetching $node_tgz"
-                curl -sSL "https://nodejs.org/dist/v#{node_ver}/${node_tgz}" -o /vagrant/$node_tgz
+                curl -sSL "https://nodejs.org/dist/#{node_ver}/${node_tgz}" -o /vagrant/$node_tgz
             }
             [[ -x /opt/circonus/bin/node ]] || {
                 echo "Installing $node_tgz"
@@ -65,10 +65,10 @@ Vagrant.configure('2') do |config|
             yum -q install -y git wget rpm-build redhat-rpm-config
             mkdir -p /mnt/node-agent/packages
             chown -R vagrant:vagrant /mnt/node-agent
-            node_tgz="node-v#{node_ver}-linux-x64.tar.gz"
+            node_tgz="node-#{node_ver}-linux-x64.tar.gz"
             [[ -f /vagrant/${node_tgz} ]] || {
                 echo "Fetching $node_tgz"
-                curl -sSL "https://nodejs.org/dist/v#{node_ver}/${node_tgz}" -o /vagrant/$node_tgz
+                curl -sSL "https://nodejs.org/dist/#{node_ver}/${node_tgz}" -o /vagrant/$node_tgz
             }
             [[ -x /opt/circonus/bin/node ]] || {
                 echo "Installing $node_tgz"
@@ -95,10 +95,10 @@ Vagrant.configure('2') do |config|
             gem install fpm
             mkdir -p /mnt/node-agent/packages
             chown -R vagrant:vagrant /mnt/node-agent
-            node_tgz="node-v#{node_ver}-linux-x64.tar.gz"
+            node_tgz="node-#{node_ver}-linux-x64.tar.gz"
             [[ -f /vagrant/${node_tgz} ]] || {
                 echo "Fetching $node_tgz"
-                curl -sSL "https://nodejs.org/dist/v#{node_ver}/${node_tgz}" -o /vagrant/$node_tgz
+                curl -sSL "https://nodejs.org/dist/#{node_ver}/${node_tgz}" -o /vagrant/$node_tgz
             }
             [[ -x /opt/circonus/bin/node ]] || {
                 echo "Installing $node_tgz"
@@ -125,10 +125,10 @@ Vagrant.configure('2') do |config|
             gem install fpm
             mkdir -p /mnt/node-agent/packages
             chown -R vagrant:vagrant /mnt/node-agent
-            node_tgz="node-v#{node_ver}-linux-x64.tar.gz"
+            node_tgz="node-#{node_ver}-linux-x64.tar.gz"
             [[ -f /vagrant/${node_tgz} ]] || {
                 echo "Fetching $node_tgz"
-                curl -sSL "https://nodejs.org/dist/v#{node_ver}/${node_tgz}" -o /vagrant/$node_tgz
+                curl -sSL "https://nodejs.org/dist/#{node_ver}/${node_tgz}" -o /vagrant/$node_tgz
             }
             [[ -x /opt/circonus/bin/node ]] || {
                 echo "Installing $node_tgz"
