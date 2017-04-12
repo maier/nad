@@ -49,6 +49,8 @@ install-nad:	install-dirs
 		-e "s#@@ETC@@#$(ETC)#g" \
 		etc/nad.conf > etc/nad.conf.out
 	./install-sh -c -m 0644 etc/nad.conf.out $(DESTDIR)$(ETC)/nad.conf
+	@# shell statsd client
+	./install-sh -c -m 0755 bin/statsd.sh $(DESTDIR)$(BIN)/statsd.sh
 
 install-man:	install-dirs
 	./install-sh -c -m 0644 man/nad.8 $(DESTDIR)$(MAN)/nad.8
