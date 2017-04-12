@@ -118,7 +118,7 @@ else ifneq ($(and $(UPSTART_BIN), $(UPSTART_DIR)),)
 		-e "s#@@SBIN@@#$(SBIN)#g" \
 		-e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" \
 		linux-init/upstart > linux-init/upstart.out
-	./install-sh -c -m 0755 linux-init/upstart.out $(DESTDIR)/etc/init/nad.conf
+	./install-sh -c -m 0644 linux-init/upstart.out $(DESTDIR)/etc/init/nad.conf
 else
 ifneq ($(wildcard /etc/redhat-release),)
 	/bin/sed \
