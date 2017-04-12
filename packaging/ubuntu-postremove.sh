@@ -8,3 +8,5 @@ elif [ -f /etc/init/nad.conf ]; then
 elif [ -f /etc/init.d/nad ]; then
     /usr/sbin/update-rc.d nad remove
 fi
+
+exit 0
