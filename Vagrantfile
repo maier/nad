@@ -88,6 +88,7 @@ Vagrant.configure('2') do |config|
         u16.vm.network 'private_network', ip: '192.168.100.212'
         u16.vm.provision 'shell', inline: <<-SHELL
             echo "#{cosi_site_ip} cosi-site" >> /etc/hosts
+            apt-get update -qq
             echo "Installing needed packages for 'make install' and 'make install-ubuntu'"
             apt install -qq gcc
             echo "Installing needed packages for 'packaging/make-omnibus'"
@@ -118,6 +119,7 @@ Vagrant.configure('2') do |config|
         u14.vm.network 'private_network', ip: '192.168.100.211'
         u14.vm.provision 'shell', inline: <<-SHELL
             echo "#{cosi_site_ip} cosi-site" >> /etc/hosts
+            apt-get update -qq
             echo "Installing needed packages for 'make install' and 'make install-ubuntu'"
             apt-get install -qq gcc
             echo "Installing needed packages for 'packaging/make-omnibus'"
