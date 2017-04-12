@@ -68,6 +68,7 @@ fi
 %{_prefix}/etc/node-agent.d
 %{_prefix}/bin/node
 %{_prefix}/bin/nad-log
+%{_prefix}/bin/statsd.sh
 %{_prefix}/sbin/nad
 %{_prefix}/sbin/nad.js
 %{_prefix}/lib/node_modules
