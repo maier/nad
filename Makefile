@@ -26,8 +26,8 @@ SYSTEMD_DIR=$(wildcard /lib/systemd/system)
 # continue to use sysv init...leaving the upstart logic
 # in case a viable solution presents.
 # centos6 and ubuntu14
-UPSTART_BIN=$(wildcard /sbin/initctl)
-UPSTART_DIR=$(wildcard /etc/init)
+UPSTART_BIN=$(wildcard disabled/sbin/initctl)
+UPSTART_DIR=$(wildcard disabled/etc/init)
 
 all:
 
@@ -121,13 +121,12 @@ ifneq ($(and $(SYSTEMD_BIN), $(SYSTEMD_DIR)),)
 		-e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" \
 		linux-init/systemd.service > linux-init/systemd.service.out
 	./install-sh -c -m 0755 linux-init/systemd.service.out $(DESTDIR)/lib/systemd/system/nad.service
-@# upstart support disabled, see previous note
-@# else ifneq ($(and $(UPSTART_BIN), $(UPSTART_DIR)),)
-@# 	/bin/sed \
-@# 		-e "s#@@SBIN@@#$(SBIN)#g" \
-@# 		-e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" \
-@# 		linux-init/upstart > linux-init/upstart.out
-@# 	./install-sh -c -m 0644 linux-init/upstart.out $(DESTDIR)/etc/init/nad.conf
+else ifneq ($(and $(UPSTART_BIN), $(UPSTART_DIR)),)
+	/bin/sed \
+		-e "s#@@SBIN@@#$(SBIN)#g" \
+		-e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" \
+		linux-init/upstart > linux-init/upstart.out
+	./install-sh -c -m 0644 linux-init/upstart.out $(DESTDIR)/etc/init/nad.conf
 else
 ifneq ($(wildcard /etc/redhat-release),)
 	/bin/sed \
