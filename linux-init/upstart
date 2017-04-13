@@ -1,7 +1,7 @@
 description "Circonus Node Agent"
 author "circonus <support@circonus.com>"
 
-start on (local-filesystems and net-device-up IFACE!=lo)
+start on (local-filesystems and stopped networking)
 stop on shutdown
 
 expect daemon
