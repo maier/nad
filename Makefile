@@ -122,12 +122,12 @@ else ifneq ($(and $(UPSTART_BIN), $(UPSTART_DIR)),)
 else
 ifneq ($(wildcard /etc/redhat-release),)
 	/bin/sed \
-		-e "s#@@PREFIX@@#$(PREFIX)#g" \
+		-e "s#@@SBIN@@#$(SBIN)#g" \
 		-e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" \
 		linux-init/rhel-init > linux-init/initd.out
 else ifneq ($(wildcard /etc/debian_version),)
 	/bin/sed \
-		-e "s#@@PREFIX@@#$(PREFIX)#g" \
+		-e "s#@@SBIN@@#$(SBIN)#g" \
 		-e "s#@@PID_FILE@@#$(RUNSTATE_FILE)#g" \
 		linux-init/ubuntu-init > linux-init/initd.out
 else
