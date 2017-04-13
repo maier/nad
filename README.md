@@ -294,15 +294,6 @@ NAD-StatsD (nad-statsd) provides support for applications on the local system to
 
 Additionally, nad-statsd does *not* automatically generate derivative metrics from timings since they are represented as histograms in Circonus offering much more flexibility for analysis.
 
-| type | group default | option |
-| --- | --- | --- |
-| c | sum | `group_counter_op` ('sum' or 'average') |
-| g | average | `group_gauge_op` ('sum' or 'average') |
-| ms | n/a | all samples received are represented |
-| h | n/a | all samples received are represented |
-| s | sum | `group_set_op` ('sum' or 'average') |
-| t | n/a | note: with text metrics the last one received is used |
-
 > Note: nad-statsd uses a *push* method for submitting metrics to Circonus, as such, it is not fully compatible with real-time graphing (graphs will update as metrics are received rather than at the normal one second cadence).
 
 ## <a name="statsd_config">Configuration</a>
@@ -336,6 +327,9 @@ The default nad-statsd configuration is:
 * `flush_interval` - milliseconds - is the same as the StatsD flushInterval
 * `group_check_id` - /^[0-9]+$/ - the ID (numeric portion of CID) for the group check, default is to retrieve from COSI installation
 * `group_key` - string - metrics prefixed with this key will be sent to the group check (if enabled)
+* `group_counter_op` - string - sum or average group counter metrics
+* `group_gauge_op` - string - sum or average group gauge metrics
+* `group_set_op` - string - sum or average group set metrics
 * `host_key` - string - metrics prefixed with this key will be sent to NAD. Show up in Circonus in the host check
 * `host_category` - string - the category to hold the host metrics e.g. with the default host_category of 'statsd', a metric named 'my_metric' would appear in Circonus as 'statsd\`my_metric'
 * `send_process_stats` - boolean - send nad-statsd module's processing statistics
@@ -365,6 +359,16 @@ The `host_key` and `group_key` are metric name prefixes which determine the disp
 
 > Note: If a group check is not enabled, all metrics destined for *group* will be ignored.
 
+### how group metrics are handled
+
+| type | default | option |
+| --- | --- | --- |
+| c | sum | `group_counter_op` ('sum' or 'average') |
+| g | average | `group_gauge_op` ('sum' or 'average') |
+| ms | n/a | all samples received are represented |
+| h | n/a | all samples received are represented |
+| s | sum | `group_set_op` ('sum' or 'average') |
+| t | n/a | note: with text metrics the last one received is used |
 
 # Plugins
 
