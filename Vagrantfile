@@ -90,9 +90,9 @@ Vagrant.configure('2') do |config|
             echo "#{cosi_site_ip} cosi-site" >> /etc/hosts
             apt-get update -qq
             echo "Installing needed packages for 'make install' and 'make install-ubuntu'"
-            apt install -qq gcc
+            apt-get install -qq gcc
             echo "Installing needed packages for 'packaging/make-omnibus'"
-            apt install -qq git build-essential checkinstall python ruby ruby-dev
+            apt-get install -qq git build-essential checkinstall python ruby ruby-dev
             gem install fpm
             mkdir -p /mnt/node-agent/packages
             chown -R vagrant:vagrant /mnt/node-agent
