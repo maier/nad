@@ -61,7 +61,8 @@ exit 0
 /lib/systemd/system/nad.service
 %endif
 %if 0%{?el6}
-/etc/init/nad.conf
+### -upstart disabled- /etc/init/nad.conf
+/etc/init.d/nad
 %endif
 /etc/logrotate.d/nad
 %{_prefix}/man
