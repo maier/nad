@@ -26,8 +26,8 @@ test -x $DAEMON || exit 0
 . /lib/lsb/init-functions
 
 nad_start() {
-    if start-stop-daemon --start --quiet --background \
-        --pidfile $NAD_PID_FILE --exec $DAEMON
+    if start-stop-daemon --start --quiet --pidfile $NAD_PID_FILE \
+        --exec $DAEMON -- --daemon --pid_file @@PID_FILE@@
     then
         rc=0
         sleep 1
