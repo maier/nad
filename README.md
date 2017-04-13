@@ -294,6 +294,15 @@ NAD-StatsD (nad-statsd) provides support for applications on the local system to
 
 Additionally, nad-statsd does *not* automatically generate derivative metrics from timings since they are represented as histograms in Circonus offering much more flexibility for analysis.
 
+| type | group default | option |
+| --- | --- | --- |
+| c | sum | `group_counter_op` ('sum' or 'average') |
+| g | average | `group_gauge_op` ('sum' or 'average') |
+| ms | n/a | all samples received are represented |
+| h | n/a | all samples received are represented |
+| s | sum | `group_set_op` ('sum' or 'average') |
+| t | n/a | note: with text metrics the last one received is used |
+
 > Note: nad-statsd uses a *push* method for submitting metrics to Circonus, as such, it is not fully compatible with real-time graphing (graphs will update as metrics are received rather than at the normal one second cadence).
 
 ## <a name="statsd_config">Configuration</a>
@@ -314,6 +323,9 @@ The default nad-statsd configuration is:
     flush_interval: 10000,
     group_check_id: null,
     group_key: null,
+    group_counter_op: 'sum',
+    group_gauge_op: 'average',
+    group_set_op: 'sum',
     host_key: null,
     host_category: 'statsd',
     send_process_stats: true    
