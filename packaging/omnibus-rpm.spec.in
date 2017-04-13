@@ -36,10 +36,9 @@ if [ -f /lib/systemd/system/nad.service ]; then
     /bin/systemctl start nad >/dev/null 2>&1
 elif [ -f /etc/init/nad.conf ]; then
     /sbin/initctl reload-configuration
-    /sbin/initctl start nad
 elif [ -f /etc/init.d/nad ]; then
     /sbin/chkconfig --add nad
-    /sbin/service nad restart >/dev/null 2>&1
+    /sbin/service nad start >/dev/null 2>&1
 fi
 
 %preun

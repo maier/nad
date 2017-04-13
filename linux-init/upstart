@@ -4,6 +4,5 @@ author "circonus <support@circonus.com>"
 start on (local-filesystems and net-device-up IFACE!=lo)
 stop on shutdown
 
-respawn
-expect fork
+expect daemon
 exec @@SBIN@@/nad --daemon --pid_file @@PID_FILE@@
